@@ -1,0 +1,20 @@
+name: Deploy editor to Wiener Kreis Server
+
+on: workflow_dispatch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Execute remote ssh commands using ssh key
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST_WIENER_KREIS }}
+          key: ${{ secrets.SSH_KEY }}
+          username: ${{ secrets.USERNAME }}
+          # Images are built locally on the server
+          script: |
+            cd atag-editor
+            git checkout wiener-kreis
+            git pull
+            docker compose -f docker-compose.prod.yml up --build -d

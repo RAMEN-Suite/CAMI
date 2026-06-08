@@ -1,0 +1,206 @@
+{
+  "texts": {
+    "additionalLabels": []
+  },
+  "collections": {
+    "properties": {
+      "system": [
+        {
+          "name": "label",
+          "type": "string",
+          "required": true,
+          "editable": true,
+          "visible": false
+        }
+      ],
+      "base": []
+    },
+    "types": [
+      {
+        "additionalLabel": "Document",
+        "level": "primary",
+        "properties": [
+          {
+            "name": "author",
+            "type": "string",
+            "required": false,
+            "editable": true,
+            "visible": true
+          }
+        ],
+        "annotations": {
+          "types": [],
+          "properties": [],
+          "entities": [],
+          "additionalTexts": []
+        }
+      },
+      {
+        "additionalLabel": "Manuscript",
+        "level": "secondary",
+        "properties": []
+      }
+    ],
+    "annotations": {
+      "properties": {
+        "system": [],
+        "base": []
+      },
+      "types": [],
+      "entities": [],
+      "additionalTexts": []
+    }
+  },
+  "annotations": {
+    "types": [
+      {
+        "type": "bold",
+        "category": "edition",
+        "defaultSelected": true,
+        "isZeroPoint": false,
+        "hasAdditionalTexts": true
+      },
+      {
+        "type": "italic",
+        "category": "edition",
+        "defaultSelected": true,
+        "isZeroPoint": false,
+        "hasAdditionalTexts": true
+      },
+      {
+        "type": "commentary",
+        "category": "project",
+        "defaultSelected": true,
+        "isZeroPoint": false,
+        "hasAdditionalTexts": true
+      },
+      {
+        "type": "person",
+        "category": "entities",
+        "defaultSelected": true,
+        "isZeroPoint": false,
+        "hasEntities": true,
+        "hasAdditionalTexts": false
+      },
+      {
+        "type": "place",
+        "category": "entities",
+        "defaultSelected": true,
+        "isZeroPoint": false,
+        "hasEntities": true,
+        "hasAdditionalTexts": false
+      },
+      {
+        "type": "event",
+        "category": "entities",
+        "defaultSelected": true,
+        "isZeroPoint": false,
+        "hasEntities": true,
+        "hasAdditionalTexts": false
+      },
+      {
+        "type": "example",
+        "category": "entities",
+        "defaultSelected": true,
+        "isZeroPoint": false,
+        "hasEntities": true,
+        "hasAdditionalTexts": false
+      },
+      {
+        "type": "sentence",
+        "category": "entities",
+        "defaultSelected": true,
+        "isZeroPoint": false,
+        "hasEntities": true,
+        "hasAdditionalTexts": false
+      },
+      {
+        "type": "argument",
+        "category": "entities",
+        "defaultSelected": true,
+        "isZeroPoint": false,
+        "hasEntities": true,
+        "hasAdditionalTexts": false
+      },
+      {
+        "type": "term",
+        "category": "entities",
+        "defaultSelected": true,
+        "isZeroPoint": false,
+        "hasEntities": true,
+        "hasAdditionalTexts": false
+      },
+      {
+        "type": "concept",
+        "category": "entities",
+        "defaultSelected": true,
+        "isZeroPoint": false,
+        "hasEntities": true,
+        "hasAdditionalTexts": false
+      },
+      {
+        "type": "break",
+        "category": "layout",
+        "defaultSelected": true,
+        "isZeroPoint": true,
+        "shortcut": ["Ctrl", "Enter"],
+        "hasAdditionalTexts": true,
+        "properties": []
+      }
+    ],
+    "properties": {
+      "system": [
+        {
+          "name": "type",
+          "type": "string",
+          "required": true,
+          "editable": false,
+          "visible": true
+        },
+        {
+          "name": "text",
+          "type": "string",
+          "required": true,
+          "editable": false,
+          "visible": true
+        }
+      ],
+      "base": []
+    },
+    "entities": [
+      {
+        "category": "arguments",
+        "nodeLabel": "Argument"
+      },
+      {
+        "category": "concepts",
+        "nodeLabel": "Concept"
+      },
+      {
+        "category": "events",
+        "nodeLabel": "Event"
+      },
+      {
+        "category": "examples",
+        "nodeLabel": "Example"
+      },
+      {
+        "category": "persons",
+        "nodeLabel": "Person"
+      },
+      {
+        "category": "places",
+        "nodeLabel": "Place"
+      },
+      {
+        "category": "sentences",
+        "nodeLabel": "Sentence"
+      },
+      {
+        "category": "terms",
+        "nodeLabel": "Term"
+      }
+    ],
+    "additionalTexts": []
+  }
+}

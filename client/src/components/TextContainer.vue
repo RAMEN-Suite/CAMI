@@ -1,0 +1,195 @@
+<script setup lang="ts">
+import { NodeDto, NodeStatusObject, TextNode } from '../models/types';
+import Card from 'primevue/card';
+import NodeTag from './NodeTag.vue';
+import Button from 'primevue/button';
+import MultiSelect from 'primevue/multiselect';
+import Textarea from 'primevue/textarea';
+import { useGuidelinesStore } from '../store/guidelines';
+import { computed } from 'vue';
+import { useBookmarks } from '../composables/useBookmarks';
+import NodeStatusBadge from './NodeStatusBadge.vue';
+
+const props = defineProps<{
+  status: 'existing' | 'temporary';
+  text: NodeStatusObject<TextNode>;
+  mode: 'view' | 'edit';
+}>();
+
+const emit = defineEmits<{
+  (e: 'textAdded', text: NodeDto<TextNode>): void;
+  (e: 'textRemoved', text: NodeDto<TextNode>): void;
+}>();
+
+const { getAvailableTextLabels } = useGuidelinesStore();
+const { bookmarks, toggleBookmark } = useBookmarks();
+
+const isBookmarked = computed<boolean>(() => {
+  return bookmarks.value.some(b => b.data.data.uuid === props.text.node.data.uuid);
+});
+
+function handleBookmarkAction() {
+  toggleBookmark({ data: props.text.node, type: 'text' });
+}
+
+const PREVIEW_LENGTH: number = 300;
+
+const displayedText = computed<string>(
+  () =>
+    props.text.node.data.text.slice(0, PREVIEW_LENGTH) +
+    (props.text.node.data.text.length > PREVIEW_LENGTH ? '...' : ''),
+);
+
+function handleRemoveText() {
+  emit('textRemoved', props.text);
+}
+
+function handleAddTextClick() {
+  emit('textAdded', props.text);
+}
+
+/**
+ * Handles a click event on the Card component, which will the corresponding text in a new tab. The click event is ignored
+ * if the click target is part of the MultiSelect component, to prevent interference with label editing.
+ *
+ * @param {PointerEvent} event - The click event.
+ * @returns {void} This function does not return any value.
+ */
+function handleClickContainer(event: PointerEvent): void {
+  // Temporary texts can not be opened in the editor, obviously
+  if (props.status === 'temporary') {
+    return;
+  }
+
+  // TODO: Change this when multiselect is moved to its own component
+  if ((event.target as HTMLElement).closest('.multiselect')) {
+    return;
+  }
+
+  window.open(`/editor/${props.text.node.data.uuid}`, '_blank', 'noopener noreferrer');
+}
+</script>
+
+<template>
+  <Card
+    class="my-2 text-left"
+    :pt="{
+      root: {
+        style: {
+          border: '1px solid gray',
+          cursor: 'pointer',
+        },
+      },
+      body: {
+        style: {
+          padding: '15px',
+        },
+      },
+    }"
+    @click="handleClickContainer"
+  >
+    <template #title>
+      <div class="header">
+        <div class="button-pane flex justify-content-end align-items-center">
+          <NodeStatusBadge :status="props.text.meta.status" :style="{ marginRight: 'auto' }" />
+
+          <Button
+            type="button"
+            severity="secondary"
+            v-if="props.status === 'existing'"
+            :icon="`pi pi-bookmark${isBookmarked ? '-fill' : ''}`"
+            size="small"
+            :title="isBookmarked ? 'Remove text from bookmarks' : 'Add text to bookmarks'"
+            @click.stop="handleBookmarkAction"
+            :pt="{
+              icon: {
+                style: isBookmarked ? { color: 'var(--p-primary-color)' } : {},
+              },
+            }"
+          />
+          <Button
+            v-if="mode === 'edit' && props.status !== 'temporary'"
+            type="button"
+            icon="pi pi-times"
+            severity="danger"
+            outlined
+            size="small"
+            title="Remove text"
+            @click.stop="handleRemoveText"
+          />
+        </div>
+        <div class="node-labels-container">
+          <template v-if="mode === 'view'">
+            <NodeTag v-for="label in props.text.node.nodeLabels" :content="label" type="Text" />
+          </template>
+
+          <template v-if="mode === 'edit'">
+            <MultiSelect
+              size="small"
+              v-model="text.node.nodeLabels"
+              :options="getAvailableTextLabels()"
+              display="chip"
+              placeholder="Text labels"
+              class="multiselect text-center"
+              :filter="false"
+              :pt="{
+                root: {
+                  title: `Select Text labels`,
+                },
+              }"
+            >
+              <template #chip="{ value }">
+                <NodeTag type="Text" :content="value" class="mr-1" />
+              </template>
+            </MultiSelect>
+          </template>
+        </div>
+      </div>
+    </template>
+
+    <template #content>
+      <div v-if="props.status === 'existing'">
+        <div class="text" title="Open text in Editor">
+          {{ displayedText }}
+        </div>
+      </div>
+      <div v-else>
+        <Textarea v-model="text.node.data.text" class="w-full" placeholder="Add text" />
+      </div>
+    </template>
+
+    <template #footer>
+      <div class="flex justify-content-center gap-2">
+        <Button
+          v-if="props.status === 'temporary'"
+          class="w-2"
+          icon="pi pi-check"
+          title="Add new text to Collection"
+          @click.stop="handleAddTextClick"
+        />
+
+        <Button
+          v-if="props.status === 'temporary'"
+          severity="secondary"
+          outlined
+          class="w-2"
+          icon="pi pi-times"
+          title="Discard text draft"
+          @click.stop="handleRemoveText"
+        />
+      </div>
+    </template>
+  </Card>
+</template>
+
+<style scoped>
+.text a {
+  color: inherit;
+  display: block;
+}
+
+*:has(.text):hover {
+  background-color: #efefef;
+  transition: background-color 0.2s;
+}
+</style>

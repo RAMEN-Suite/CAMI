@@ -1,0 +1,37 @@
+{
+  "name": "atag_editor_backend",
+  "version": "1.0.0",
+  "description": "BE Express",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"nodemon node ./dist/start.js\" \"npm run compile:watch\"",
+    "compile": "tsc -p ./",
+    "compile:watch": "tsc -p ./ --watch",
+    "start": "node ./dist/start.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "author": "Maximilian Michel",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.22.1",
+    "morgan": "^1.10.1",
+    "neo4j-driver": "^5.22.0",
+    "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^20.12.10",
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.1.0",
+    "prettier": "^3.2.5",
+    "typescript": "^5.8.3"
+  }
+}
