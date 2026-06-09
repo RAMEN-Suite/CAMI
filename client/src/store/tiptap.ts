@@ -13,7 +13,7 @@ import Heading from '@tiptap/extension-heading';
 import Document from '@tiptap/extension-document';
 import Paragraph from '@tiptap/extension-paragraph';
 import Text from '@tiptap/extension-text';
-import { BulletList, ListItem, ListKit } from '@tiptap/extension-list';
+import { BulletList, ListItem } from '@tiptap/extension-list';
 import UniqueID from '@tiptap/extension-unique-id';
 import HardBreak from '@tiptap/extension-hard-break';
 import { TableKit } from '@tiptap/extension-table';
@@ -21,20 +21,13 @@ import { UndoRedo } from '@tiptap/extensions';
 import { Gapcursor } from '@tiptap/extensions';
 import { ZeroPointAnnotation } from '../editors/text/extensions/zeroPointAnnotation';
 import StandoffConverter from '../services/standoffConverter';
-import { standoffJson } from '../services/standoffJson';
-import {
-  buildDocStructure,
-  cloneDeep,
-  createExtendedStandoffObject,
-  getVisibleDocRange,
-} from '../utils/helper/helper';
+import { buildDocStructure, cloneDeep, getVisibleDocRange } from '../utils/helper/helper';
 import { AnnotationDecoration } from '../editors/text/extensions/annotationDecoration';
 import { useFilterStore } from './filter';
 import { useEventListener } from '@vueuse/core';
 import { AnnotationAttributes } from '../editors/text/extensions/AnnotationAttributes';
 import { CustomBlock } from '../editors/text/extensions/customBlock';
 import { history } from 'prosemirror-history';
-import { StructureParser } from '../services/structureParser';
 
 const { selectedOptions } = useFilterStore();
 
