@@ -7,6 +7,7 @@ declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     annotationAttributes: {
       addSemanticBlockLabel: (annotation: Annotation, from: number, to: number) => ReturnType;
+      removeSemanticBlock: (uuid: string) => ReturnType;
     };
   }
 }
@@ -43,7 +44,9 @@ function createDefaultAttrs(defaultType: string | null): Record<string, Attribut
       default: [],
       renderHTML: attributes => {
         return {
-          'data-semantic-block-types': attributes._semanticBlocks.map(b => b.type).join(','),
+          'data-semantic-block-types': attributes._semanticBlocks
+            .map((b: { uuid: string; type: string }) => b.type)
+            .join(','),
         };
       },
     },
@@ -123,6 +126,36 @@ export const AnnotationAttributes = Extension.create({
             const updated: { uuid: string; type: string }[] = [...existing, { uuid, type }];
 
             tr.setNodeAttribute(pos, '_semanticBlocks', updated);
+          });
+
+          dispatch?.(tr);
+
+          return true;
+        },
+      removeSemanticBlock:
+        (uuid: string) =>
+        ({ tr, dispatch }) => {
+          tr.doc.descendants((node, pos) => {
+            if (node.type.isText) {
+              return;
+            }
+
+            const existing: { uuid: string; type: string }[] = node.attrs._semanticBlocks ?? [];
+
+            if (!existing.some(b => b.uuid === uuid)) {
+              return;
+            }
+
+            // Do NOT set status to 'deleted' - this is determined during save preprocessing
+            // when checked what annotations are in the document
+            // annoEntry.meta.status = 'deleted';
+
+            // Remove semantic block from node's `_semanticBlocks` array
+            tr.setNodeAttribute(
+              pos,
+              '_semanticBlocks',
+              existing.filter(b => b.uuid !== uuid),
+            );
           });
 
           dispatch?.(tr);
