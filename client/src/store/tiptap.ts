@@ -158,6 +158,7 @@ function initializeTiptap(standoffObject?: { text: string; annotations: NodeDto[
       updateTableOfContent(editor.state.doc);
     },
     onUpdate: ({ transaction }) => {
+      console.log('update :)');
       updateTableOfContent(transaction.doc);
     },
   });
@@ -198,8 +199,7 @@ function resetToInitialState(): void {
   structuralAnnotations.value = cloneDeep(initialStructuralAnnotations.value);
 
   // setContent goes through TipTap's dispatchTransaction, keeping internal state in sync.
-  // false = suppress the intermediate 'update' event; initializeDecorations below will emit one.
-  tiptap.value.commands.setContent(initialDoc, { emitUpdate: false });
+  tiptap.value.commands.setContent(initialDoc);
 
   initializeDecorationView(annotations.value!);
 
