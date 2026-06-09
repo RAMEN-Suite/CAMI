@@ -45,7 +45,7 @@ import EditorAnnotationButtonPaneNew from '../components/EditorAnnotationButtonP
 import { Node as DocNode } from '@tiptap/pm/model';
 import { cloneDeep } from '../utils/helper/helper';
 import { useCreateIndexMaps } from '../composables/useCreateIndexMaps';
-import { useGuidelinesStore } from '../store/guidelines';
+import { useGuidelinesStore, BUILTIN_STRUCTURAL_TYPES_SET } from '../store/guidelines';
 import { IAnnotation } from '../models/IAnnotation';
 import EditorToC from '../components/EditorToC.vue';
 
@@ -59,6 +59,7 @@ const textUuid = computed<string>(() => route.params.uuid as string);
 
 const {
   annotations,
+  structuralAnnotations,
   initialStructuralAnnotations,
   initialAnnotations,
   tiptap,
@@ -362,7 +363,7 @@ function findChangedStructureElements(indexMap: IndexMap, plainText: string): An
   });
 
   // Loop through nodes currently in the editor
-  indexMap.forEach((value, uuid) => {
+  indexMap.forEach(({ startIndex, endIndex }, uuid) => {
     const docNode: DocNode | undefined = docNodes.get(uuid);
 
     // Should not happen actually
@@ -373,7 +374,6 @@ function findChangedStructureElements(indexMap: IndexMap, plainText: string): An
 
     const initialEntry: Annotation | undefined = initialStructuralAnnotations.value?.get(uuid);
 
-    const { startIndex, endIndex } = value;
     const textSlice: string = plainText.slice(startIndex, endIndex + 1);
 
     // TODO: Always "modified" for now since it is likely anyway (changed text). Fix later maybe
@@ -399,10 +399,17 @@ function findChangedStructureElements(indexMap: IndexMap, plainText: string): An
     affectedElements.push(annotation);
   });
 
-  // Get elements which are deleted in editor
-  const uuidsInEditor = new Set<string>([...indexMap.keys()]);
-  const initialUuids = new Set<string>([...(initialStructuralAnnotations.value?.keys() ?? [])]);
-  const deletedUuids = initialUuids.difference(uuidsInEditor);
+  // Get elements which are deleted in editor.
+  // Only consider built-in structural types here — semantic block deletions are handled
+  // separately by `findChangedLabelAnnotations` to avoid false deletions.
+  const uuidsInEditor = new Set<string>(indexMap.keys());
+
+  const initialUuids = new Set<string>(
+    (initialStructuralAnnotations.value?.entries() ?? [])
+      .filter(([_, anno]) => BUILTIN_STRUCTURAL_TYPES_SET.has(anno.node.data.type))
+      .map(([uuid]) => uuid),
+  );
+  const deletedUuids: Set<string> = initialUuids.difference(uuidsInEditor);
 
   deletedUuids.forEach(uuid => {
     const annoEntry: Annotation = initialStructuralAnnotations.value?.get(uuid)!;
@@ -415,16 +422,60 @@ function findChangedStructureElements(indexMap: IndexMap, plainText: string): An
   return affectedElements;
 }
 
+function findChangedSemanticBlocks(indexMap: IndexMap, plainText: string): Annotation[] {
+  const affectedElements: Annotation[] = [];
+
+  // Updated/created label annotations: derive live startIndex/endIndex from the doc
+  indexMap.forEach(({ startIndex, endIndex }, uuid) => {
+    const storeEntry: Annotation | undefined = structuralAnnotations.value?.get(uuid);
+
+    if (!storeEntry) {
+      return;
+    }
+
+    const status: NodeStatus = initialStructuralAnnotations.value?.has(uuid)
+      ? 'modified'
+      : 'created';
+
+    affectedElements.push({
+      node: {
+        data: {
+          ...storeEntry.node.data,
+          startIndex,
+          endIndex,
+          text: plainText.slice(startIndex, endIndex + 1),
+        } as IAnnotation,
+        nodeLabels: ['Annotation'],
+      },
+      connectedNodes: [...storeEntry.connectedNodes],
+      meta: {
+        status: status,
+      },
+    });
+  });
+
+  // Deleted: was semantic block annotation in the initial snapshot but no longer present in the doc
+  const uuidsInEditor = new Set<string>(indexMap.keys());
+
+  initialStructuralAnnotations.value!.forEach((anno, uuid) => {
+    if (!BUILTIN_STRUCTURAL_TYPES_SET.has(anno.node.data.type) && !uuidsInEditor.has(uuid)) {
+      affectedElements.push({ ...cloneDeep(anno), meta: { status: 'deleted' } });
+    }
+  });
+
+  return affectedElements;
+}
+
 function getAffectedAnnotations(): { annotations: Annotation[]; structureElements: Annotation[] } {
   const plainText: string = tiptap.value!.state.doc.textContent;
 
-  const { decorationIndexMap, structureBlockIndexMap, zeroPointIndexMap, hardBreakIndexMap } =
-    useCreateIndexMaps().buildIndexMaps();
-
-  // logMap('structureBlockIndexMap', structureBlockIndexMap as IndexMap);
-  // logMap('hardBreakIndexMap', hardBreakIndexMap as IndexMap);
-  // logMap('zeroPointIndexMap', zeroPointIndexMap as IndexMap);
-  // logMap('decorationIndexMap', decorationIndexMap as IndexMap);
+  const {
+    decorationIndexMap,
+    structureBlockIndexMap,
+    semanticBlockIndexMap,
+    zeroPointIndexMap,
+    hardBreakIndexMap,
+  } = useCreateIndexMaps().buildIndexMaps();
 
   // Zero point and range annotation are stored in the same store and can therefore share the same index map
   const changedAnnotations = findChangedAnnotations(
@@ -438,7 +489,16 @@ function getAffectedAnnotations(): { annotations: Annotation[]; structureElement
     plainText,
   );
 
-  return { annotations: changedAnnotations, structureElements: affectedStructureBlocks };
+  // Semantic blocks (closer, address, div) are tracked via _semanticBlocks on block nodes
+  const affectedLabelAnnotations = findChangedSemanticBlocks(
+    semanticBlockIndexMap as IndexMap,
+    plainText,
+  );
+
+  return {
+    annotations: changedAnnotations,
+    structureElements: [...affectedStructureBlocks, ...affectedLabelAnnotations],
+  };
 }
 
 export type EdgeDescriptor = {
@@ -919,6 +979,25 @@ watch(
   /* background-color: green; */
   outline: 0;
   flex-grow: 1;
+}
+
+[data-semantic-block-types] {
+  border: 2px solid var(--black);
+  border-radius: 0.5rem;
+  padding: 1.25rem 0 0 0;
+  position: relative;
+
+  &::before {
+    background-color: black;
+    border-radius: 0 0 0.5rem 0;
+    color: white;
+    content: attr(data-semantic-block-types);
+    font-size: 0.75rem;
+    left: 0;
+    padding: 0.1rem 0.2rem;
+    position: absolute;
+    top: 0;
+  }
 }
 
 /* Table-specific styling */

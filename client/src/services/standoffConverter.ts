@@ -20,11 +20,11 @@ type StructureNode = {
 export default class StandoffConverter {
   // Built-in structural annotations (paragraph, heading, table, …) — form the TipTap tree.
   private structuralAnnotations: Map<string, Anno> = new Map();
-  // Custom structural annotations (closer, address, addrLine, …) — attached as _annotations
-  // labels on the built-in nodes that contain them, never form tree nodes.
-  private labelAnnotations: Map<string, Anno> = new Map();
+  // Custom structural annotations (closer, address, addrLine, …) — attached as _semanticBlocks
+  // Semantic blocks on the built-in nodes that contain them (e.g. closer, div, ...), never form tree nodes.
+  private semanticBlockAnnotations: Map<string, Anno> = new Map();
   // Content annotations (person, place, …) — rendered as decorations.
-  private annotations: Map<string, Anno> = new Map();
+  private inlineAnnotations: Map<string, Anno> = new Map();
 
   private standoffJson: ApiJson;
   private tiptapJson: TiptapJson | null = null;
@@ -40,6 +40,7 @@ export default class StandoffConverter {
   constructor(newStandoffJson: ApiJson) {
     this.standoffJson = newStandoffJson;
     this.structuralAnnotationTypes = new Set(getStructuralAnnotationConfigs().map(c => c.type));
+
     this.convertStandoffToTipTap();
   }
 
@@ -50,9 +51,13 @@ export default class StandoffConverter {
   } {
     // Merge built-in structural + label annotations so the annotation panel can display and
     // edit all structural annotations regardless of whether they form tree nodes or labels.
-    const allStructural = new Map([...this.structuralAnnotations, ...this.labelAnnotations]);
+    const allStructural = new Map<string, Anno>([
+      ...this.structuralAnnotations,
+      ...this.semanticBlockAnnotations,
+    ]);
+
     return {
-      annotations: this.annotations,
+      annotations: this.inlineAnnotations,
       structuralAnnotations: allStructural,
       tipTapJson: this.tiptapJson as TiptapJson,
     };
@@ -77,9 +82,9 @@ export default class StandoffConverter {
         this.structuralAnnotations.set(a.node.data.uuid, a);
       } else if (this.structuralAnnotationTypes.has(type)) {
         // Custom structural (isBlock:true, not a built-in) → label
-        this.labelAnnotations.set(a.node.data.uuid, a);
+        this.semanticBlockAnnotations.set(a.node.data.uuid, a);
       } else {
-        this.annotations.set(a.node.data.uuid, a);
+        this.inlineAnnotations.set(a.node.data.uuid, a);
       }
     }
   }
@@ -89,6 +94,7 @@ export default class StandoffConverter {
   private getContainsList(type: string): string[] | null {
     const config = getStructuralAnnotationConfigs().find(c => c.type === type);
     const list = config?.contains;
+
     return list && list.length > 0 ? list : null;
   }
 
@@ -139,7 +145,7 @@ export default class StandoffConverter {
     const inRange = (a: Anno) =>
       a.node.data.startIndex >= startIndex && a.node.data.startIndex <= endIndex;
 
-    const zeroPointEntries: InlineEntry[] = [...this.annotations.values()]
+    const zeroPointEntries: InlineEntry[] = [...this.inlineAnnotations.values()]
       .filter(a => isZeroPoint(a.node) && inRange(a))
       .map(a => ({
         pos: a.node.data.startIndex,
@@ -157,7 +163,6 @@ export default class StandoffConverter {
           type: 'hardBreak',
           attrs: {
             uuid: a.node.data.uuid,
-            _type: a.node.data.type,
             _annotationData: { ...a.node.data },
           },
         },
@@ -202,10 +207,47 @@ export default class StandoffConverter {
       attrs: {
         uuid,
         _annotationData: { type: 'paragraph', uuid, startIndex, endIndex },
-        _type: 'paragraph',
       },
       content,
     };
+  }
+
+  // Splits a gap range [gapStart, gapEnd] at label annotation boundaries so that each
+  // resulting sub-range can become its own synthetic paragraph and receive the correct labels.
+  // Without this, a single large synthetic paragraph would span the entire gap and no label
+  // annotation (which starts mid-gap) would satisfy the "label fully contains node" filter.
+  private splitGapBySemanticBlocks(
+    gapStart: number,
+    gapEnd: number,
+  ): { start: number; end: number }[] {
+    const boundaries = new Set<number>([gapStart, gapEnd + 1]);
+
+    for (const la of this.semanticBlockAnnotations.values()) {
+      const s = la.node.data.startIndex;
+      const e = la.node.data.endIndex;
+      if (s <= gapEnd && e >= gapStart) {
+        if (s >= gapStart) boundaries.add(s);
+        if (e + 1 <= gapEnd + 1) boundaries.add(e + 1);
+      }
+    }
+
+    const sorted = [...boundaries].sort((a, b) => a - b);
+    const result: { start: number; end: number }[] = [];
+    for (let i = 0; i < sorted.length - 1; i++) {
+      result.push({ start: sorted[i], end: sorted[i + 1] - 1 });
+    }
+    return result;
+  }
+
+  private createSyntheticParagraphsForGap(gapStart: number, gapEnd: number): TiptapNode[] {
+    if (gapStart > gapEnd) return [];
+    const nodes: TiptapNode[] = [];
+    for (const { start, end } of this.splitGapBySemanticBlocks(gapStart, gapEnd)) {
+      if (this.hasText(start, end)) {
+        nodes.push(this.syntheticParagraph(start, end, this.createLeafContent(start, end)));
+      }
+    }
+    return nodes;
   }
 
   private buildStructuralNode(annotation: Anno, allStructural: Anno[]): TiptapNode {
@@ -214,7 +256,6 @@ export default class StandoffConverter {
     const attrs: Record<string, any> = {
       uuid: annotation.node.data.uuid,
       _annotationData: { ...annotation.node.data },
-      _type: type,
     };
 
     if (type === 'heading') attrs.level = annotation.node.data.level ?? 1;
@@ -235,15 +276,15 @@ export default class StandoffConverter {
 
     for (const child of directChildren) {
       const gapEnd: number = child.node.data.startIndex - 1;
-      if (cursor <= gapEnd && this.hasText(cursor, gapEnd)) {
-        content.push(this.syntheticParagraph(cursor, gapEnd, this.createLeafContent(cursor, gapEnd)));
+      if (cursor <= gapEnd) {
+        content.push(...this.createSyntheticParagraphsForGap(cursor, gapEnd));
       }
       content.push(this.buildStructuralNode(child, allStructural));
       cursor = child.node.data.endIndex + 1;
     }
 
-    if (cursor <= endIndex && this.hasText(cursor, endIndex)) {
-      content.push(this.syntheticParagraph(cursor, endIndex, this.createLeafContent(cursor, endIndex)));
+    if (cursor <= endIndex) {
+      content.push(...this.createSyntheticParagraphsForGap(cursor, endIndex));
     }
 
     if (content.length === 0) {
@@ -279,7 +320,7 @@ export default class StandoffConverter {
   // range they cover. Labels are sorted outermost-first (widest range first).
   // Full annotation data including UUID is stored so the editor can look up and edit each one.
   private attachLabels(nodes: TiptapNode[]): void {
-    const labelAnnos = [...this.labelAnnotations.values()];
+    const labelAnnos = [...this.semanticBlockAnnotations.values()];
     if (labelAnnos.length === 0) return;
     this.attachLabelsToNodes(nodes, labelAnnos);
   }
@@ -294,12 +335,13 @@ export default class StandoffConverter {
           .filter(a => a.node.data.startIndex <= s && a.node.data.endIndex >= e)
           .sort(
             (a, b) =>
-              b.node.data.endIndex - b.node.data.startIndex -
+              b.node.data.endIndex -
+              b.node.data.startIndex -
               (a.node.data.endIndex - a.node.data.startIndex),
           )
-          .map(a => ({ ...a.node.data }));
+          .map(a => ({ uuid: a.node.data.uuid, type: a.node.data.type }));
         if (labels.length > 0) {
-          node.attrs!._annotations = labels;
+          node.attrs!._semanticBlocks = labels;
         }
       }
       if (node.content?.length) {
@@ -311,7 +353,7 @@ export default class StandoffConverter {
   private toStructureNode(node: TiptapNode): StructureNode {
     const types = [
       node.attrs?._annotationData?.type ?? node.type,
-      ...(node.attrs?._annotations ?? []).map((a: any) => a.type),
+      ...(node.attrs?._semanticBlocks ?? []).map((a: any) => a.type),
     ].join(',');
     return {
       node: [
@@ -330,12 +372,12 @@ export default class StandoffConverter {
 
     const allStructural: Anno[] = [...this.structuralAnnotations.values()];
 
-    console.log(
-      'Structural annotations (built-ins): ',
-      allStructural
-        .toSorted((a, b) => a.node.data.startIndex - b.node.data.startIndex)
-        .map(n => [n.node.data.type, n.node.data.startIndex, n.node.data.endIndex]),
-    );
+    // console.log(
+    //   'Structural annotations (built-ins): ',
+    //   allStructural
+    //     .toSorted((a, b) => a.node.data.startIndex - b.node.data.startIndex)
+    //     .map(n => [n.node.data.type, n.node.data.startIndex, n.node.data.endIndex]),
+    // );
 
     const topLevelAnnos = this.findTopLevelAnnotations(allStructural);
     topLevelAnnos.forEach(a => this.usedUuids.add(a.node.data.uuid));
@@ -350,20 +392,16 @@ export default class StandoffConverter {
 
     for (const node of topLevelAnnos) {
       const gapEnd: number = node.node.data.startIndex - 1;
-      if (cursor <= gapEnd && this.hasText(cursor, gapEnd)) {
-        docContent.push(
-          this.syntheticParagraph(cursor, gapEnd, this.createLeafContent(cursor, gapEnd)),
-        );
+      if (cursor <= gapEnd) {
+        docContent.push(...this.createSyntheticParagraphsForGap(cursor, gapEnd));
       }
       docContent.push(this.buildStructuralNode(node, allStructural));
       cursor = node.node.data.endIndex + 1;
     }
 
     const textEnd: number = this.standoffJson.text.length - 1;
-    if (cursor <= textEnd && this.hasText(cursor, textEnd)) {
-      docContent.push(
-        this.syntheticParagraph(cursor, textEnd, this.createLeafContent(cursor, textEnd)),
-      );
+    if (cursor <= textEnd) {
+      docContent.push(...this.createSyntheticParagraphsForGap(cursor, textEnd));
     }
 
     // Attach custom structural annotations as labels on the built-in tree nodes.
@@ -371,9 +409,13 @@ export default class StandoffConverter {
 
     this.tiptapJson = { type: 'doc', content: docContent };
 
-    console.log(
-      'Structure tree:',
-      JSON.stringify(docContent.map(n => this.toStructureNode(n)), null, 2),
-    );
+    // console.log(
+    //   'Structure tree:',
+    //   JSON.stringify(
+    //     docContent.map(n => this.toStructureNode(n)),
+    //     null,
+    //     2,
+    //   ),
+    // );
   }
 }

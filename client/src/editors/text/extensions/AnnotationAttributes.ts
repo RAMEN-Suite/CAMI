@@ -1,8 +1,15 @@
 import { Attribute, Extension, GlobalAttributes } from '@tiptap/vue-3';
 import { getDefaultValueForProperty } from '../../../utils/helper/helper';
-import { AnnotationType, PropertyConfig } from '../../../models/types';
+import { Annotation, AnnotationType, PropertyConfig } from '../../../models/types';
 import { useGuidelinesStore } from '../../../store/guidelines';
-import { Node } from '@tiptap/pm/model';
+
+declare module '@tiptap/core' {
+  interface Commands<ReturnType> {
+    annotationAttributes: {
+      addSemanticBlockLabel: (annotation: Annotation, from: number, to: number) => ReturnType;
+    };
+  }
+}
 
 const { structuralAnnotationConfigs } = useGuidelinesStore();
 
@@ -22,36 +29,39 @@ const BUILTIN_STRUCTURAL_NODE_TYPES = [
 
 type BuiltinNodeType = (typeof BUILTIN_STRUCTURAL_NODE_TYPES)[number];
 
-// Returns { _type, _annotationData, _annotations } attributes.
-// _type: stores the actual neo4j/semantic type (e.g. 'paragraph', 'address').
-//   Default = typeName for built-ins (new nodes already know their type),
-//   null for customBlock (always set explicitly via wrapIn attrs).
+// Returns {_annotationData, _semanticBlocks } attributes.
 // _annotationData: full neo4j round-trip payload; default = { type } for built-ins, null for customBlock.
-// _annotations: custom TEI structural annotations (closer, address, …) that wrap this node's range,
-//   stored as an array of full annotation data objects sorted outermost-first. null when none.
-function makeDataAttr(defaultType: string | null): Record<string, Attribute> {
+// _semanticBlocks: custom structural annotations (closer, address, …) that wrap this node's range,
+//  stored as an array of full annotation data objects sorted outermost-first. null when none.
+function createDefaultAttrs(defaultType: string | null): Record<string, Attribute> {
   return {
-    _type: {
-      default: defaultType,
-      renderHTML: () => {
-        return { 'data-annotation-type': defaultType };
-      },
-    },
     _annotationData: {
       default: defaultType !== null ? { type: defaultType } : null,
       rendered: false,
     },
-    _annotations: {
-      default: null,
-      rendered: false,
+    _semanticBlocks: {
+      default: [],
+      renderHTML: attributes => {
+        return {
+          'data-semantic-block-types': attributes._semanticBlocks.map(b => b.type).join(','),
+        };
+      },
     },
   };
 }
 
-function propertiesToAttributes(config: AnnotationType): Record<string, Attribute> {
+/**
+ * Add per-type specific properties.
+ *
+ * @param config Configuration of the the annotation type
+ * @returns
+ */
+function createCustomAttributes(config: AnnotationType): Record<string, Attribute> {
   let nodeAttrs: Record<string, Attribute> = {};
 
-  (config?.properties ?? []).forEach((field: PropertyConfig) => {
+  const configuredFields: PropertyConfig[] = config?.properties ?? [];
+
+  configuredFields.forEach((field: PropertyConfig) => {
     const defaultValue: any =
       field.required === true ? getDefaultValueForProperty(field.type) : null;
 
@@ -60,7 +70,7 @@ function propertiesToAttributes(config: AnnotationType): Record<string, Attribut
     nodeAttrs[field.name] = {
       default: defaultValue,
       parseHTML: (el: HTMLElement) => el.getAttribute(field.name),
-      renderHTML: attrs => ({ [htmlDataKey]: attrs[field.name] }),
+      renderHTML: (attrs: Record<string, any>) => ({ [htmlDataKey]: attrs[field.name] }),
     };
   });
 
@@ -68,36 +78,17 @@ function propertiesToAttributes(config: AnnotationType): Record<string, Attribut
 }
 
 /**
- * On every doc change, the `_type` property from the tiptap node must be transferred to `_annotationData.type`
- * since these are the actual neo4j node data. Is done on save too, but for ToC etc. this is useful
+ * Adds `_annotationData`, `_semanticBlocks` and per-property attributes to all structural node types.
  *
- * @param {Node} doc - The doc root
- */
-function transferTiptapTypeToAnnotationType(doc: Node) {
-  doc.forEach(node => {
-    if (node.isBlock) {
-      node.attrs._annotationData.type = node.attrs._type;
-    }
-  });
-}
-
-/**
- * Adds `_type`, `_annotationData`, and per-property attributes to all structural node types.
+ * Their per-property data lives in `_annotationData`;
+ * Built-in types (paragraph, heading, ...) use their own tiptap node type name and get
+ * per-property attributes from the guidelines config so freshly created nodes are usable without a neo4j round-trip.
  *
- * Built-in types (paragraph, heading, ...) use their own tiptap node type name, get
- * per-property attributes from the guidelines config, and get `_type` defaulting to their
- * type name so freshly created nodes are usable without a neo4j round-trip.
- *
- * Custom types (address, addrLine, closer, ...) all share the 'customBlock' tiptap node type.
- * Their per-property data lives in `_annotationData`; `_type` is set explicitly when the
- * node is created via the `wrapIn` command and is here null by default (`customBlock` does not know its type).
+ * Custom block/structural types (address, addrLine, closer, ...) live in the structural annotations store whose
+ * uuid and type properties are derived to the tiptap node here
  */
 export const AnnotationAttributes = Extension.create({
   name: 'annotationAttributes',
-
-  onUpdate({ editor }) {
-    transferTiptapTypeToAnnotationType(editor.state.doc);
-  },
 
   addGlobalAttributes() {
     const builtinAttrs: GlobalAttributes = BUILTIN_STRUCTURAL_NODE_TYPES.map(typeName => {
@@ -108,21 +99,36 @@ export const AnnotationAttributes = Extension.create({
       return {
         types: [typeName as BuiltinNodeType],
         attributes: {
-          ...(config ? propertiesToAttributes(config) : {}),
-          ...makeDataAttr(typeName),
+          ...(config ? createCustomAttributes(config) : {}),
+          ...createDefaultAttrs(typeName),
         },
       };
     });
 
-    // All custom (non-built-in) types use 'customBlock'. Their properties are stored in
-    // _annotationData rather than as separate tiptap attrs to avoid schema conflicts.
-    const customBlockAttrs: GlobalAttributes = [
-      {
-        types: ['customBlock'],
-        attributes: makeDataAttr(null),
-      },
-    ];
+    return [...builtinAttrs];
+  },
 
-    return [...builtinAttrs, ...customBlockAttrs];
+  addCommands() {
+    return {
+      addSemanticBlockLabel:
+        (newAnnotation: Annotation, from: number, to: number) =>
+        ({ tr, dispatch }) => {
+          tr.doc.nodesBetween(from, to, (node, pos) => {
+            if (node.type.isText) {
+              return;
+            }
+
+            const existing: { uuid: string; type: string }[] = node.attrs._semanticBlocks ?? [];
+            const { uuid, type } = newAnnotation.node.data;
+            const updated: { uuid: string; type: string }[] = [...existing, { uuid, type }];
+
+            tr.setNodeAttribute(pos, '_semanticBlocks', updated);
+          });
+
+          dispatch?.(tr);
+
+          return true;
+        },
+    };
   },
 });

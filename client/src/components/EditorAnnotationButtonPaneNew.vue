@@ -19,14 +19,13 @@ import TableInsertPopover from './TableInsertPopover.vue';
 import Tabs from 'primevue/tabs';
 import TabList from 'primevue/tablist';
 import Tab from 'primevue/tab';
-import { useCustomBlockCommand } from '../composables/useCustomBlockCommand';
 
 const { isValid: isSelectionValid } = useValidateTextSelection();
 const { groupedAnnotationTypes, annotationHasConstraints, getAnnotationConfig, isZeroPoint } =
   useGuidelinesStore();
 const { addToastMessage, createModalInstance, destroyModalInstance } = useAppStore();
 const { selectedOptions } = useFilterStore();
-const { tiptap, annotations } = useTiptapStore();
+const { tiptap, annotations, structuralAnnotations } = useTiptapStore();
 const { createTextAnnotation: createAnnotation } = useCreateAnnotation('Content');
 
 const selectedTab = ref<'annotations' | 'structure'>('annotations');
@@ -58,7 +57,7 @@ function isAnnotationTypeEnabled(type: string): boolean {
   return true;
 }
 
-function handleClick(data: { type: string; subType?: string | number }) {
+function handleInlineAnnotationButtonClick(data: { type: string; subType?: string | number }) {
   const selection: Selection | undefined = tiptap.value?.state.selection;
 
   if (!selection) {
@@ -163,12 +162,33 @@ function addAnnotation(annotation: Annotation, selection: { from: number; to: nu
   annotations.value?.set(annotation.node.data.uuid, annotation);
 }
 
-function isCustomBlockActive(type: string): boolean {
-  return useCustomBlockCommand(tiptap.value).isCustomBlockActive(type);
-}
+function handleBlockAnnotationClick(data: { type: string; subType?: string | number }): void {
+  const selection: Selection | undefined = tiptap.value?.state.selection;
 
-function toggleCustomBlock(type: string): void {
-  useCustomBlockCommand(tiptap.value).toggleCustomBlock(type);
+  if (!selection) {
+    return;
+  }
+
+  // Needs to be captured since modal opening collapses editor selection
+  const capturedSelection = { from: selection.from, to: selection.to };
+
+  const textInSelection: string =
+    tiptap.value?.state.doc.textBetween(selection.from, selection.to) ?? '';
+
+  const newAnnotationTemplate: NodeStatusObject<AnnotationNode> = createAnnotation({
+    ...data,
+    selectedText: textInSelection,
+  });
+
+  // Add block annotation to all nodes in selection
+  tiptap.value?.commands.addSemanticBlockLabel(
+    newAnnotationTemplate,
+    capturedSelection.from,
+    capturedSelection.to,
+  );
+
+  // Add to store
+  structuralAnnotations.value?.set(newAnnotationTemplate.node.data.uuid, newAnnotationTemplate);
 }
 </script>
 
@@ -194,7 +214,7 @@ function toggleCustomBlock(type: string): void {
             :key="type.type"
             :disabled="!selectedOptions.includes(type.type)"
             :config="getAnnotationConfig(type.type)"
-            @clicked="handleClick($event)"
+            @clicked="handleInlineAnnotationButtonClick($event)"
           />
         </div>
       </div>
@@ -203,7 +223,7 @@ function toggleCustomBlock(type: string): void {
       <Button
         severity="secondary"
         v-tooltip.hover.top="{ value: 'h1', showDelay: 50 }"
-        @click="tiptap?.chain().focus().toggleHeading({ level: 1, _type: 'heading' }).run()"
+        @click="tiptap?.chain().focus().toggleHeading({ level: 1 }).run()"
         :class="{ 'is-active': tiptap?.isActive('heading', { level: 1 }) }"
       >
         H1
@@ -211,7 +231,7 @@ function toggleCustomBlock(type: string): void {
       <Button
         severity="secondary"
         v-tooltip.hover.top="{ value: 'h2', showDelay: 50 }"
-        @click="tiptap?.chain().focus().toggleHeading({ level: 2, _type: 'heading' }).run()"
+        @click="tiptap?.chain().focus().toggleHeading({ level: 2 }).run()"
         :class="{ 'is-active': tiptap?.isActive('heading', { level: 2 }) }"
       >
         H2
@@ -219,7 +239,7 @@ function toggleCustomBlock(type: string): void {
       <Button
         severity="secondary"
         v-tooltip.hover.top="{ value: 'h3', showDelay: 50 }"
-        @click="tiptap?.chain().focus().toggleHeading({ level: 3, _type: 'heading' }).run()"
+        @click="tiptap?.chain().focus().toggleHeading({ level: 3 }).run()"
         :class="{ 'is-active': tiptap?.isActive('heading', { level: 3 }) }"
       >
         H3
@@ -228,7 +248,7 @@ function toggleCustomBlock(type: string): void {
         severity="secondary"
         icon="pi pi-align-justify"
         v-tooltip.hover.top="{ value: 'paragraph', showDelay: 50 }"
-        @click="tiptap?.chain().focus().setNode('paragraph', { _type: 'paragraph' }).run()"
+        @click="tiptap?.chain().focus().setNode('paragraph').run()"
         :class="{ 'is-active': tiptap?.isActive('paragraph') }"
       >
       </Button>
@@ -245,8 +265,8 @@ function toggleCustomBlock(type: string): void {
         :key="blockType.type"
         severity="secondary"
         v-tooltip.hover.top="{ value: blockType.type, showDelay: 50 }"
-        :class="{ 'is-active': isCustomBlockActive(blockType.type) }"
-        @click="toggleCustomBlock(blockType.type)"
+        :class="{ 'is-active': true }"
+        @click="handleBlockAnnotationClick({ type: blockType.type })"
       >
         {{ blockType.type }}
       </Button>
