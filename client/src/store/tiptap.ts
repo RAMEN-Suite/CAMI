@@ -13,7 +13,7 @@ import Heading from '@tiptap/extension-heading';
 import Document from '@tiptap/extension-document';
 import Paragraph from '@tiptap/extension-paragraph';
 import Text from '@tiptap/extension-text';
-import { ListKit } from '@tiptap/extension-list';
+import { BulletList, ListItem, ListKit } from '@tiptap/extension-list';
 import UniqueID from '@tiptap/extension-unique-id';
 import HardBreak from '@tiptap/extension-hard-break';
 import { TableKit } from '@tiptap/extension-table';
@@ -59,7 +59,8 @@ function getConfiguredExtensions(): any[] {
     TableKit.configure({
       table: { resizable: true },
     }),
-    ListKit,
+    BulletList,
+    ListItem,
     Gapcursor,
     HardBreak,
     UndoRedo,
