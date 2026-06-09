@@ -165,30 +165,53 @@ function addAnnotation(annotation: Annotation, selection: { from: number; to: nu
 function handleBlockAnnotationClick(data: { type: string; subType?: string | number }): void {
   const selection: Selection | undefined = tiptap.value?.state.selection;
 
-  if (!selection) {
-    return;
+  try {
+    const config: AnnotationType = getAnnotationConfig(data.type);
+
+    console.log(config);
+
+    isAnnotationTypeEnabled(data.type);
+    isSelectionValid(selection, config);
+
+    // Needs to be captured since modal opening collapses editor selection
+    const capturedSelection = { from: selection!.from, to: selection!.to };
+
+    const textInSelection: string =
+      tiptap.value?.state.doc.textBetween(capturedSelection.from, capturedSelection.to) ?? '';
+
+    const newAnnotationTemplate: NodeStatusObject<AnnotationNode> = createAnnotation({
+      ...data,
+      selectedText: textInSelection,
+    });
+
+    // Add block annotation to all nodes in selection
+    tiptap.value?.commands.addSemanticBlockLabel(
+      newAnnotationTemplate,
+      capturedSelection.from,
+      capturedSelection.to,
+    );
+
+    // Add to store
+    structuralAnnotations.value?.set(newAnnotationTemplate.node.data.uuid, newAnnotationTemplate);
+  } catch (error: unknown) {
+    if (error instanceof AnnotationRangeError) {
+      addToastMessage({
+        severity: 'warn',
+        summary: 'Invalid selection',
+        detail: error.message,
+        life: 3000,
+      });
+    } else if (error instanceof ShortcutError) {
+      addToastMessage({
+        severity: 'warn',
+        summary: 'Annotation type not enabled',
+        detail: error.message,
+        life: 3000,
+      });
+    } else {
+      console.error('Unexpected error:', error);
+    }
   }
-
-  // Needs to be captured since modal opening collapses editor selection
-  const capturedSelection = { from: selection.from, to: selection.to };
-
-  const textInSelection: string =
-    tiptap.value?.state.doc.textBetween(selection.from, selection.to) ?? '';
-
-  const newAnnotationTemplate: NodeStatusObject<AnnotationNode> = createAnnotation({
-    ...data,
-    selectedText: textInSelection,
-  });
-
-  // Add block annotation to all nodes in selection
-  tiptap.value?.commands.addSemanticBlockLabel(
-    newAnnotationTemplate,
-    capturedSelection.from,
-    capturedSelection.to,
-  );
-
-  // Add to store
-  structuralAnnotations.value?.set(newAnnotationTemplate.node.data.uuid, newAnnotationTemplate);
 }
 </script>
 
