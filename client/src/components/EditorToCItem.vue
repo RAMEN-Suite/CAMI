@@ -117,7 +117,7 @@ const displayedLabel = computed<string>(() => {
           rounded
           @click="toggleSemanticBlockDataPopover(Number(index), $event)"
         >
-          {{ annotation.annotationType }}
+          {{ annotation.type }}
         </Tag>
         <!-- <span class="annotation-label text-xs px-1 py-0.5 rounded bg-gray-200">{{}}</span> -->
       </span>
