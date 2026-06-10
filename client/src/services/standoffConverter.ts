@@ -6,9 +6,10 @@ import {
   NodeStatusObject,
   AnnotationNode,
 } from '../models/types';
-import { useGuidelinesStore, BUILTIN_STRUCTURAL_TYPES_SET } from '../store/guidelines';
+import { useGuidelinesStore } from '../store/guidelines';
 
-const { getStructuralAnnotationConfigs, isZeroPoint } = useGuidelinesStore();
+const { BUILTIN_STRUCTURAL_TYPES_SET, getStructuralAnnotationConfigs, isZeroPoint } =
+  useGuidelinesStore();
 
 type Anno = NodeStatusObject<AnnotationNode>;
 

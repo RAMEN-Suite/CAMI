@@ -150,7 +150,7 @@ const BUILTIN_STRUCTURAL_CONFIGS: AnnotationType[] = [
   },
 ];
 
-export const BUILTIN_STRUCTURAL_TYPES_SET: ReadonlySet<string> = new Set(
+const BUILTIN_STRUCTURAL_TYPES_SET: ReadonlySet<string> = new Set(
   BUILTIN_STRUCTURAL_CONFIGS.map(c => c.type),
 );
 
@@ -545,6 +545,8 @@ export function useGuidelinesStore() {
     availableCollectionLabels,
     availableEntityLabels,
     availableTextLabels,
+    BUILTIN_STRUCTURAL_CONFIGS,
+    BUILTIN_STRUCTURAL_TYPES_SET,
     error: readonly(error),
     groupedAndSortedAnnotationTypes,
     groupedAnnotationTypes,

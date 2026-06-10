@@ -45,7 +45,7 @@ import EditorAnnotationButtonPane from '../components/EditorAnnotationButtonPane
 import { Node as DocNode } from '@tiptap/pm/model';
 import { cloneDeep } from '../utils/helper/helper.ts';
 import { useCreateIndexMaps } from '../composables/useCreateIndexMaps.ts';
-import { useGuidelinesStore, BUILTIN_STRUCTURAL_TYPES_SET } from '../store/guidelines.ts';
+import { useGuidelinesStore } from '../store/guidelines.ts';
 import { IAnnotation } from '../models/IAnnotation.ts';
 import EditorToC from '../components/EditorToC.vue';
 
@@ -70,7 +70,7 @@ const {
   setNewInitialState,
 } = useTiptapStore();
 
-const { getStructuralAnnotationConfig } = useGuidelinesStore();
+const { BUILTIN_STRUCTURAL_TYPES_SET, getStructuralAnnotationConfig } = useGuidelinesStore();
 
 onUnmounted(() => destroyTiptap());
 
@@ -317,7 +317,7 @@ function getConfiguredNodeAttrs(node: DocNode, _tiptapType: string) {
 
   // 1. retrieve configured attributes from node (e.g. not "data-toc-id" or anything editor related)
   const fields: PropertyConfig[] =
-    getStructuralAnnotationConfig(node.attrs._type)?.properties ?? [];
+    getStructuralAnnotationConfig(node.attrs._annotationData.type)?.properties ?? [];
 
   fields.forEach((field: PropertyConfig) => {
     if (field.name in node.attrs._annotationData) {
@@ -332,7 +332,7 @@ function getConfiguredNodeAttrs(node: DocNode, _tiptapType: string) {
   neo4jProperties.uuid = node.attrs.uuid;
 
   // Type property: Essential for saving annotations
-  neo4jProperties.type = node.attrs._type ?? node.attrs._annotationData.type ?? node.type.name;
+  neo4jProperties.type = node.attrs._annotationData.type ?? node.type.name;
 
   // tiptap-native attrs that may have been edited in the UI, override the
   // stale _annotationData values with the current tiptap attr values.

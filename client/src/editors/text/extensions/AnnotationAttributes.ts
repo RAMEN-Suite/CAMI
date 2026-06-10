@@ -2,6 +2,7 @@ import { Attribute, Extension, GlobalAttributes } from '@tiptap/vue-3';
 import { getDefaultValueForProperty } from '../../../utils/helper/helper';
 import { Annotation, AnnotationType, PropertyConfig } from '../../../models/types';
 import { useGuidelinesStore } from '../../../store/guidelines';
+import { Node } from '@tiptap/pm/model';
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -12,23 +13,8 @@ declare module '@tiptap/core' {
   }
 }
 
-const { structuralAnnotationConfigs } = useGuidelinesStore();
-
-// Built-in structural tiptap node types. For these, the tiptap node type name == the neo4j type.
-// Custom types all use 'customBlock' as tiptap nodeType regardless of their neo4j type name.
-const BUILTIN_STRUCTURAL_NODE_TYPES = [
-  'paragraph',
-  'heading',
-  'hardBreak',
-  'table',
-  'tableRow',
-  'tableCell',
-  'tableHeader',
-  'bulletList',
-  'listItem',
-] as const;
-
-type BuiltinNodeType = (typeof BUILTIN_STRUCTURAL_NODE_TYPES)[number];
+const { BUILTIN_STRUCTURAL_CONFIGS, BUILTIN_STRUCTURAL_TYPES_SET, structuralAnnotationConfigs } =
+  useGuidelinesStore();
 
 // Returns {_annotationData, _semanticBlocks } attributes.
 // _annotationData: full neo4j round-trip payload; default = { type } for built-ins, null for customBlock.
@@ -81,6 +67,20 @@ function createCustomAttributes(config: AnnotationType): Record<string, Attribut
 }
 
 /**
+ * On every doc change, the node type from the tiptap node must be transferred to `_annotationData.type`
+ * since these are the actual neo4j node data. Is done on save too, but for ToC etc. this is useful.
+ *
+ * @param {Node} doc - The doc root
+ */
+function transferTiptapTypeToAnnotationType(doc: Node): void {
+  doc.forEach(node => {
+    if (node.isBlock && BUILTIN_STRUCTURAL_TYPES_SET.has(node.type.name)) {
+      node.attrs._annotationData.type = node.type.name;
+    }
+  });
+}
+
+/**
  * Adds `_annotationData`, `_semanticBlocks` and per-property attributes to all structural node types.
  *
  * Their per-property data lives in `_annotationData`;
@@ -93,20 +93,21 @@ function createCustomAttributes(config: AnnotationType): Record<string, Attribut
 export const AnnotationAttributes = Extension.create({
   name: 'annotationAttributes',
 
+  onUpdate({ editor }) {
+    transferTiptapTypeToAnnotationType(editor.state.doc);
+  },
   addGlobalAttributes() {
-    const builtinAttrs: GlobalAttributes = BUILTIN_STRUCTURAL_NODE_TYPES.map(typeName => {
-      const config = structuralAnnotationConfigs.value.find(
-        (c: AnnotationType) => c.type === typeName,
-      );
+    const builtinAttrs: GlobalAttributes = BUILTIN_STRUCTURAL_CONFIGS.map(
+      (config: AnnotationType) => {
+        const defaultAttrs: Record<string, Attribute> = createDefaultAttrs(config.type);
+        const customAttrs: Record<string, Attribute> = createCustomAttributes(config);
 
-      return {
-        types: [typeName as BuiltinNodeType],
-        attributes: {
-          ...(config ? createCustomAttributes(config) : {}),
-          ...createDefaultAttrs(typeName),
-        },
-      };
-    });
+        return {
+          types: [config.type],
+          attributes: { ...defaultAttrs, ...customAttrs },
+        };
+      },
+    );
 
     return [...builtinAttrs];
   },

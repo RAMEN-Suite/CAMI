@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useTemplateRef, computed, ref } from 'vue';
-import { useGuidelinesStore, BUILTIN_STRUCTURAL_TYPES_SET } from '../store/guidelines';
+import { useGuidelinesStore } from '../store/guidelines';
 import { capitalize } from '../utils/helper/helper';
 import AnnotationButton from './AnnotationButton.vue';
 import { AnnotationType, NodeStatusObject, AnnotationNode, Annotation } from '../models/types';
@@ -21,8 +21,13 @@ import TabList from 'primevue/tablist';
 import Tab from 'primevue/tab';
 
 const { isValid: isSelectionValid } = useValidateTextSelection();
-const { groupedAnnotationTypes, annotationHasConstraints, getAnnotationConfig, isZeroPoint } =
-  useGuidelinesStore();
+const {
+  BUILTIN_STRUCTURAL_TYPES_SET,
+  groupedAnnotationTypes,
+  annotationHasConstraints,
+  getAnnotationConfig,
+  isZeroPoint,
+} = useGuidelinesStore();
 const { addToastMessage, createModalInstance, destroyModalInstance } = useAppStore();
 const { selectedOptions } = useFilterStore();
 const { tiptap, annotations, structuralAnnotations } = useTiptapStore();
