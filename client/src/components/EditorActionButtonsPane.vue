@@ -3,14 +3,18 @@ import Button from 'primevue/button';
 
 const isDevelopment: boolean = import.meta.env.DEV;
 
-const emit = defineEmits(['save', 'cancel', 'log']);
+const emit = defineEmits(['save', 'cancel', 'log-json', 'log-text']);
 
 function handleSave(): void {
   emit('save');
 }
 
-function handleLog() {
-  emit('log');
+function handleLogJson() {
+  emit('log-json');
+}
+
+function handleLogText() {
+  emit('log-text');
 }
 
 function handleCancel(): void {
@@ -33,8 +37,17 @@ function handleCancel(): void {
       aria-label="Log doc"
       title="Log doc"
       severity="info"
-      @click="handleLog"
-      >Log</Button
+      @click="handleLogJson"
+      >JSON</Button
+    >
+
+    <Button
+      v-if="isDevelopment"
+      aria-label="Log text"
+      title="Log text"
+      severity="info"
+      @click="handleLogText"
+      >Text</Button
     >
   </div>
 </template>

@@ -936,7 +936,8 @@ watch(
       <EditorActionButtonsPane
         @save="handleSaveChanges"
         @cancel="handleCancelChanges"
-        @log="console.log(tiptap?.state.doc)"
+        @log-json="console.log(tiptap?.state.doc)"
+        @log-text="console.log(tiptap?.state.doc.textContent)"
       />
     </section>
     <EditorResizer
