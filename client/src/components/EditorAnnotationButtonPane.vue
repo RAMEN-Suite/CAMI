@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useTemplateRef, computed, ref } from 'vue';
+import { useTemplateRef, computed, ref, watchEffect } from 'vue';
 import { useGuidelinesStore } from '../store/guidelines';
 import { capitalize } from '../utils/helper/helper';
 import AnnotationButton from './AnnotationButton.vue';
@@ -19,6 +19,8 @@ import TableInsertPopover from './TableInsertPopover.vue';
 import Tabs from 'primevue/tabs';
 import TabList from 'primevue/tablist';
 import Tab from 'primevue/tab';
+import TabPanels from 'primevue/tabpanels';
+import TabPanel from 'primevue/tabpanel';
 
 const { isValid: isSelectionValid } = useValidateTextSelection();
 const {
@@ -34,6 +36,20 @@ const { tiptap, annotations, structuralAnnotations } = useTiptapStore();
 const { createTextAnnotation: createAnnotation } = useCreateAnnotation('Content');
 
 const selectedTab = ref<'annotations' | 'structure'>('annotations');
+
+const annotationCategories = computed(() =>
+  Object.entries(groupedAnnotationTypes.value ?? {}).filter(
+    ([category]) => category !== 'structure',
+  ),
+);
+
+const selectedCategory = ref<string>('');
+
+watchEffect(() => {
+  if (!selectedCategory.value && annotationCategories.value.length > 0) {
+    selectedCategory.value = annotationCategories.value[0][0];
+  }
+});
 
 const tablePopover = useTemplateRef<InstanceType<typeof TableInsertPopover>>('table-popover');
 const dialog: ReturnType<typeof useDialog> = useDialog();
@@ -226,80 +242,100 @@ function handleBlockAnnotationClick(data: { type: string; subType?: string | num
       <Tab value="annotations">Annotations</Tab>
       <Tab value="structure">Structure</Tab>
     </TabList>
-  </Tabs>
-  <div class="annotation-button-pane flex flex-wrap gap-3">
-    <template
-      v-if="selectedTab === 'annotations'"
-      v-for="(annotationTypes, category) in groupedAnnotationTypes"
-      :key="category"
+    <TabPanels
+      :pt="{
+        root: {
+          style: {
+            paddingTop: 0,
+            paddingLeft: 0,
+            paddingRight: 0,
+          },
+        },
+      }"
     >
-      <div class="group" v-if="category !== 'structure'">
-        <div class="name font-semibold pb-2">{{ capitalize(category) }}</div>
-        <div class="buttons">
-          <AnnotationButton
-            v-for="type in annotationTypes"
-            :type="type.type"
-            :key="type.type"
-            :disabled="!selectedOptions.includes(type.type)"
-            :config="getAnnotationConfig(type.type)"
-            @clicked="handleInlineAnnotationButtonClick($event)"
-          />
+      <TabPanel value="annotations">
+        <Tabs v-model:value="selectedCategory">
+          <TabList>
+            <Tab v-for="[category, types] in annotationCategories" :key="category" :value="category">
+              {{ capitalize(category) }} ({{ types.length }})
+            </Tab>
+          </TabList>
+          <TabPanels>
+            <TabPanel
+              v-for="[category, types] in annotationCategories"
+              :key="category"
+              :value="category"
+            >
+              <div class="buttons">
+                <AnnotationButton
+                  v-for="type in types"
+                  :type="type.type"
+                  :key="type.type"
+                  :disabled="!selectedOptions.includes(type.type)"
+                  :config="getAnnotationConfig(type.type)"
+                  @clicked="handleInlineAnnotationButtonClick($event)"
+                />
+              </div>
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
+      </TabPanel>
+      <TabPanel value="structure">
+        <div class="flex flex-wrap gap-3">
+          <Button
+            severity="secondary"
+            v-tooltip.hover.top="{ value: 'h1', showDelay: 50 }"
+            @click="tiptap?.chain().focus().toggleHeading({ level: 1 }).run()"
+            :class="{ 'is-active': tiptap?.isActive('heading', { level: 1 }) }"
+          >
+            H1
+          </Button>
+          <Button
+            severity="secondary"
+            v-tooltip.hover.top="{ value: 'h2', showDelay: 50 }"
+            @click="tiptap?.chain().focus().toggleHeading({ level: 2 }).run()"
+            :class="{ 'is-active': tiptap?.isActive('heading', { level: 2 }) }"
+          >
+            H2
+          </Button>
+          <Button
+            severity="secondary"
+            v-tooltip.hover.top="{ value: 'h3', showDelay: 50 }"
+            @click="tiptap?.chain().focus().toggleHeading({ level: 3 }).run()"
+            :class="{ 'is-active': tiptap?.isActive('heading', { level: 3 }) }"
+          >
+            H3
+          </Button>
+          <Button
+            severity="secondary"
+            icon="pi pi-align-justify"
+            v-tooltip.hover.top="{ value: 'paragraph', showDelay: 50 }"
+            @click="tiptap?.chain().focus().setNode('paragraph').run()"
+            :class="{ 'is-active': tiptap?.isActive('paragraph') }"
+          >
+          </Button>
+          <Button
+            severity="secondary"
+            icon="pi pi-table"
+            v-tooltip.hover.top="{ value: 'table', showDelay: 50 }"
+            :class="{ 'is-active': tiptap?.isActive('table') }"
+            @click="tablePopover?.toggle($event)"
+          >
+          </Button>
+          <Button
+            v-for="blockType in customStructureTypes"
+            :key="blockType.type"
+            severity="secondary"
+            v-tooltip.hover.top="{ value: blockType.type, showDelay: 50 }"
+            :class="{ 'is-active': true }"
+            @click="handleBlockAnnotationClick({ type: blockType.type })"
+          >
+            {{ blockType.type }}
+          </Button>
         </div>
-      </div>
-    </template>
-    <template v-else>
-      <Button
-        severity="secondary"
-        v-tooltip.hover.top="{ value: 'h1', showDelay: 50 }"
-        @click="tiptap?.chain().focus().toggleHeading({ level: 1 }).run()"
-        :class="{ 'is-active': tiptap?.isActive('heading', { level: 1 }) }"
-      >
-        H1
-      </Button>
-      <Button
-        severity="secondary"
-        v-tooltip.hover.top="{ value: 'h2', showDelay: 50 }"
-        @click="tiptap?.chain().focus().toggleHeading({ level: 2 }).run()"
-        :class="{ 'is-active': tiptap?.isActive('heading', { level: 2 }) }"
-      >
-        H2
-      </Button>
-      <Button
-        severity="secondary"
-        v-tooltip.hover.top="{ value: 'h3', showDelay: 50 }"
-        @click="tiptap?.chain().focus().toggleHeading({ level: 3 }).run()"
-        :class="{ 'is-active': tiptap?.isActive('heading', { level: 3 }) }"
-      >
-        H3
-      </Button>
-      <Button
-        severity="secondary"
-        icon="pi pi-align-justify"
-        v-tooltip.hover.top="{ value: 'paragraph', showDelay: 50 }"
-        @click="tiptap?.chain().focus().setNode('paragraph').run()"
-        :class="{ 'is-active': tiptap?.isActive('paragraph') }"
-      >
-      </Button>
-      <Button
-        severity="secondary"
-        icon="pi pi-table"
-        v-tooltip.hover.top="{ value: 'table', showDelay: 50 }"
-        :class="{ 'is-active': tiptap?.isActive('table') }"
-        @click="tablePopover?.toggle($event)"
-      >
-      </Button>
-      <Button
-        v-for="blockType in customStructureTypes"
-        :key="blockType.type"
-        severity="secondary"
-        v-tooltip.hover.top="{ value: blockType.type, showDelay: 50 }"
-        :class="{ 'is-active': true }"
-        @click="handleBlockAnnotationClick({ type: blockType.type })"
-      >
-        {{ blockType.type }}
-      </Button>
-    </template>
-  </div>
+      </TabPanel>
+    </TabPanels>
+  </Tabs>
 
   <TableInsertPopover ref="table-popover" />
 </template>
