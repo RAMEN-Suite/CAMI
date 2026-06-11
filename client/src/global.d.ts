@@ -1,12 +1,12 @@
 import 'vue-router';
-import { CollectionNode, NodeAncestry } from './models/types';
+import { CollectionNode, NodeAncestry, NodeDto } from './models/types';
 
 declare module 'vue-router' {
   /**
    * Extended type for vue-router's `meta` field.
    */
   interface RouteMeta {
-    collection?: CollectionNode;
+    collection?: NodeDto<CollectionNode>;
     ancestryPaths?: NodeAncestry[];
   }
 }

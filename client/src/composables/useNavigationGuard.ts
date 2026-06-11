@@ -1,5 +1,5 @@
 import { RouteLocationNormalized, RouteLocationRaw } from 'vue-router';
-import { CollectionNode, NodeAncestry } from '../models/types';
+import { CollectionNode, NodeAncestry, NodeDto } from '../models/types';
 import { useAppStore } from '../store/app';
 
 export function useNavigationGuard() {
@@ -41,8 +41,9 @@ export function useNavigationGuard() {
     const uuid: string = route.params.uuid as string;
     const ancestryPaths: NodeAncestry[] = await api.getCollectionAncestry(uuid);
 
+    // If multiple paths exist, set data to route object and return back to router
     if (ancestryPaths.length > 1) {
-      const collection: CollectionNode = await api.getCollection(uuid);
+      const collection: NodeDto<CollectionNode> = await api.getCollection(uuid);
 
       route.meta.collection = collection;
       route.meta.ancestryPaths = ancestryPaths;
@@ -56,7 +57,7 @@ export function useNavigationGuard() {
 
     // The api response only contains item's the ancestry, not the item itself
     if (singleAncestry?.length > 0) {
-      pathQuery = [...singleAncestry.map(n => n.data.uuid), uuid].join(',');
+      pathQuery = [...singleAncestry.map(n => n.node.data.uuid), uuid].join(',');
     } else {
       pathQuery = uuid;
     }

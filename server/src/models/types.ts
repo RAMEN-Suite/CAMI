@@ -150,7 +150,7 @@ export type NetworkPostData = {
   target: CollectionNode | null;
 };
 
-export type NodeAncestry = (TextNode | CollectionNode | IAnnotation)[];
+export type NodeAncestry = NodeDto<CollectionNode>[];
 
 export type NodeSearchParams = {
   nodeLabels?: string[];
