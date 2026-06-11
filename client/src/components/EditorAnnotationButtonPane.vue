@@ -256,7 +256,11 @@ function handleBlockAnnotationClick(data: { type: string; subType?: string | num
       <TabPanel value="annotations">
         <Tabs v-model:value="selectedCategory">
           <TabList>
-            <Tab v-for="[category, types] in annotationCategories" :key="category" :value="category">
+            <Tab
+              v-for="[category, types] in annotationCategories"
+              :key="category"
+              :value="category"
+            >
               {{ capitalize(category) }} ({{ types.length }})
             </Tab>
           </TabList>

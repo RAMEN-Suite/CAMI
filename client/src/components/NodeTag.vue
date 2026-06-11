@@ -19,6 +19,9 @@ const config = {
   Collection: {
     severity: 'contrast',
   },
+  Content: {
+    severity: 'contrast',
+  },
   Entity: {
     severity: 'info',
   },
