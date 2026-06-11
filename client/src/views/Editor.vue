@@ -974,6 +974,7 @@ watch(
   display: flex;
   padding: 5px;
   /* outline: 1px solid var(--purple); */
+  text-decoration-skip-ink: none;
 }
 
 .tiptap-editor-pane:focus-visible {
