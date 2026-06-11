@@ -13,7 +13,7 @@ import Heading from '@tiptap/extension-heading';
 import Document from '@tiptap/extension-document';
 import Paragraph from '@tiptap/extension-paragraph';
 import Text from '@tiptap/extension-text';
-import { ListKit } from '@tiptap/extension-list';
+import { BulletList, ListItem } from '@tiptap/extension-list';
 import UniqueID from '@tiptap/extension-unique-id';
 import HardBreak from '@tiptap/extension-hard-break';
 import { TableKit } from '@tiptap/extension-table';
@@ -21,20 +21,13 @@ import { UndoRedo } from '@tiptap/extensions';
 import { Gapcursor } from '@tiptap/extensions';
 import { ZeroPointAnnotation } from '../editors/text/extensions/zeroPointAnnotation';
 import StandoffConverter from '../services/standoffConverter';
-import { standoffJson } from '../services/standoffJson';
-import {
-  buildDocStructure,
-  cloneDeep,
-  createExtendedStandoffObject,
-  getVisibleDocRange,
-} from '../utils/helper/helper';
+import { buildDocStructure, cloneDeep, getVisibleDocRange } from '../utils/helper/helper';
 import { AnnotationDecoration } from '../editors/text/extensions/annotationDecoration';
 import { useFilterStore } from './filter';
 import { useEventListener } from '@vueuse/core';
 import { AnnotationAttributes } from '../editors/text/extensions/AnnotationAttributes';
 import { CustomBlock } from '../editors/text/extensions/customBlock';
 import { history } from 'prosemirror-history';
-import { StructureParser } from '../services/structureParser';
 
 const { selectedOptions } = useFilterStore();
 
@@ -59,7 +52,8 @@ function getConfiguredExtensions(): any[] {
     TableKit.configure({
       table: { resizable: true },
     }),
-    ListKit,
+    BulletList,
+    ListItem,
     Gapcursor,
     HardBreak,
     UndoRedo,
@@ -130,11 +124,8 @@ function hasUnsavedChanges(): boolean {
 }
 
 function initializeTiptap(standoffObject?: { text: string; annotations: NodeDto[] }): void {
-  const data = standoffObject ? createExtendedStandoffObject(standoffObject) : standoffJson;
-  const converter: StandoffConverter = new StandoffConverter(data as ApiJson);
+  const converter: StandoffConverter = new StandoffConverter(standoffObject as ApiJson);
   const { tipTapJson, annotations, structuralAnnotations } = converter.getData();
-
-  const structureParser = new StructureParser(data.text, data.annotations);
 
   setAnnotations({ annotations, structuralAnnotations });
 
@@ -161,6 +152,7 @@ function initializeTiptap(standoffObject?: { text: string; annotations: NodeDto[
       updateTableOfContent(editor.state.doc);
     },
     onUpdate: ({ transaction }) => {
+      console.log('update :)');
       updateTableOfContent(transaction.doc);
     },
   });
@@ -201,8 +193,7 @@ function resetToInitialState(): void {
   structuralAnnotations.value = cloneDeep(initialStructuralAnnotations.value);
 
   // setContent goes through TipTap's dispatchTransaction, keeping internal state in sync.
-  // false = suppress the intermediate 'update' event; initializeDecorations below will emit one.
-  tiptap.value.commands.setContent(initialDoc, { emitUpdate: false });
+  tiptap.value.commands.setContent(initialDoc);
 
   initializeDecorationView(annotations.value!);
 

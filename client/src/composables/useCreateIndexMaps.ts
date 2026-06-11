@@ -28,6 +28,7 @@ export function useCreateIndexMaps() {
   // Maps for standoff indices
   const decorationIndexMap = ref<IndexMap>(new Map());
   const structureBlockIndexMap = ref<IndexMap>(new Map());
+  const semanticBlockIndexMap = ref<IndexMap>(new Map());
   const zeroPointIndexMap = ref<IndexMap>(new Map());
   const hardBreakIndexMap = ref<IndexMap>(new Map());
 
@@ -39,6 +40,7 @@ export function useCreateIndexMaps() {
    */
   function buildIndexMaps() {
     buildStructureIndexMap();
+    buildSemanticBlockIndexMap();
     buildZeroPointIndexMap();
     buildHardBreakIndexMap();
     buildDecorationIndexMap();
@@ -48,6 +50,7 @@ export function useCreateIndexMaps() {
       hardBreakIndexMap: readonly(hardBreakIndexMap.value),
       zeroPointIndexMap: readonly(zeroPointIndexMap.value),
       structureBlockIndexMap: readonly(structureBlockIndexMap.value),
+      semanticBlockIndexMap: readonly(semanticBlockIndexMap.value),
     };
   }
 
@@ -60,6 +63,54 @@ export function useCreateIndexMaps() {
     const map: IndexMap = new Map();
     traverseNode(doc.value, 0, map);
     structureBlockIndexMap.value = map;
+
+    return map;
+  }
+
+  /**
+   * Walks the document and builds a map of label annotation UUIDs → their live char range.
+   *
+   * Label annotations (e.g. `closer`, `address`) are not block nodes themselves; instead, their
+   * UUID references are stored in the `_semanticBlocks` attribute on the built-in block nodes that
+   * fall within their range. For each UUID found, this function accumulates the union of all
+   * contributing nodes' char ranges, giving the annotation's current `startIndex`/`endIndex`.
+   *
+   * @returns The populated `IndexMap` (also stored in `semanticBlockIndexMap`).
+   */
+  function buildSemanticBlockIndexMap(): IndexMap {
+    const map: IndexMap = new Map();
+
+    function walk(node: Node, charIndex: number): number {
+      if (node.isText) {
+        return charIndex + node.text!.length;
+      }
+
+      const start: number = charIndex;
+      let current = charIndex;
+
+      node.forEach((child: Node) => {
+        current = walk(child, current);
+      });
+
+      const semanticBlocks: { uuid: string; type: string }[] = node.attrs?._semanticBlocks ?? [];
+
+      semanticBlocks.forEach(({ uuid }) => {
+        const existing = map.get(uuid);
+
+        if (!existing) {
+          map.set(uuid, { startIndex: start, endIndex: current - 1 });
+        } else {
+          existing.startIndex = Math.min(existing.startIndex, start);
+          existing.endIndex = Math.max(existing.endIndex, current - 1);
+        }
+      });
+
+      return current;
+    }
+
+    walk(doc.value, 0);
+
+    semanticBlockIndexMap.value = map;
 
     return map;
   }
@@ -215,10 +266,12 @@ export function useCreateIndexMaps() {
     hardBreakIndexMap,
     zeroPointIndexMap,
     structureBlockIndexMap,
+    blockAnnotationIndexMap: semanticBlockIndexMap,
     buildDecorationIndexMap,
     buildHardBreakIndexMap,
     buildIndexMaps,
     buildStructureIndexMap,
     buildZeroPointIndexMap,
+    buildBlockAnnotationIndexMap: buildSemanticBlockIndexMap,
   };
 }

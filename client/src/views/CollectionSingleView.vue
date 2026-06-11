@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouteLocationNormalized, useRoute } from 'vue-router';
-import { CollectionNode, NodeAncestry } from '../models/types';
+import { CollectionNode, NodeAncestry, NodeDto } from '../models/types';
 import CollectionBreadcrumbs from '../components/CollectionBreadcrumbs.vue';
 import Card from 'primevue/card';
 
@@ -9,19 +9,19 @@ const route: RouteLocationNormalized = useRoute();
 const uuid: string = route.params.uuid as string;
 
 // These two are added to the route in the beforeEnter navigation guard
-const collection: CollectionNode = route.meta.collection as CollectionNode;
+const collection: NodeDto<CollectionNode> = route.meta.collection as NodeDto<CollectionNode>;
 const ancestryPaths: NodeAncestry[] = route.meta.ancestryPaths as NodeAncestry[];
 </script>
 <template>
   <div class="container text-center">
-    <h2>Collection "{{ collection.data.label }}"</h2>
+    <h2>Collection "{{ collection.node.data.label }}"</h2>
 
     <p>This collection is part of {{ ancestryPaths.length }} hierarchies. Select one of them:</p>
 
     <div class="collection-path-pane flex flex-column align-items-center">
       <RouterLink
         v-for="path in ancestryPaths"
-        :to="`/?path=${[...path.map(n => n.data.uuid), uuid].join(',')}`"
+        :to="`/?path=${[...path.map(n => n.node.data.uuid), uuid].join(',')}`"
       >
         <Card
           class="path cursor-pointer mb-4"

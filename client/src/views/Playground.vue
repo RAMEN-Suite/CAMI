@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { EditorContent } from '@tiptap/vue-3';
 import { h, onMounted, onUnmounted } from 'vue';
-import EditorAnnotationButtonPaneNew from '../components/EditorAnnotationButtonPaneNew.vue';
+import EditorAnnotationButtonPane from '../components/EditorAnnotationButtonPane.vue';
 import EditorToC from '../components/EditorToC.vue';
 import { AnnotationOld, NodeStatusObject } from '../models/types';
-import EditorAnnotationFormNew from '../components/EditorAnnotationFormNew.vue';
+import EditorAnnotationForm from '../components/EditorAnnotationForm.vue';
 import Button from 'primevue/button';
 import { useTiptapStore } from '../store/tiptap';
 import { useDialog } from 'primevue';
@@ -136,7 +136,7 @@ function toggleTextHightlighting(annotation: AnnotationOld, direction: 'on' | 'o
         Zero point test
       </button>
     </div>
-    <EditorAnnotationButtonPaneNew />
+    <EditorAnnotationButtonPane />
     <div class="flex">
       <EditorToC />
       <editor-content id="editor" :editor="tiptap" spellcheck="false" />
@@ -147,7 +147,7 @@ function toggleTextHightlighting(annotation: AnnotationOld, direction: 'on' | 'o
           v-for="annotation in annotations?.values()"
           :key="annotation.data.properties.uuid"
         >
-          <EditorAnnotationFormNew :annotation="annotation" />
+          <EditorAnnotationForm :annotation="annotation" />
         </template>
       </div>
     </div>

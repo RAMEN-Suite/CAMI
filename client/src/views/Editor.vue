@@ -1,18 +1,16 @@
 <script setup lang="ts">
-import { ComputedRef, computed, onUnmounted, ref, watch } from 'vue';
+import { ComputedRef, computed, onUnmounted, ref, toValue, watch } from 'vue';
 import {
   RouteLocationNormalizedLoaded,
   useRoute,
   onBeforeRouteUpdate,
   onBeforeRouteLeave,
 } from 'vue-router';
+import { EditorContent } from '@tiptap/vue-3';
 import { useEventListener, useTitle } from '@vueuse/core';
-import { useCharactersStore } from '../store/characters';
-import EditorAnnotationButtonPane from '../components/EditorAnnotationButtonPane.vue';
 import EditorAnnotationPanel from '../components/EditorAnnotationPanel.vue';
 import EditorSidebar from '../components/EditorSidebar.vue';
 import EditorHeader from '../components/EditorHeader.vue';
-import EditorText from '../components/EditorText.vue';
 import EditorActionButtonsPane from '../components/EditorActionButtonsPane.vue';
 import EditorAnnotations from '../components/EditorAnnotations.vue';
 import EditorError from '../components/EditorError.vue';
@@ -21,14 +19,35 @@ import EditorResizer from '../components/EditorResizer.vue';
 import EditorMetadata from '../components/EditorMetadata.vue';
 import LoadingSpinner from '../components/LoadingSpinner.vue';
 import Message from 'primevue/message';
-import { cloneDeep } from '../utils/helper/helper';
-import { AnnotationOld, Character, CharacterPostData } from '../models/types';
-import { useAnnotationStore } from '../store/annotations';
-import { useEditorStore } from '../store/editor';
-import { useShortcutsStore } from '../store/shortcuts';
-import { useTextStore } from '../store/text';
-import { useAppStore } from '../store/app';
+import {
+  NodeDto,
+  IndexMap,
+  PropertyConfig,
+  TextAccessObject,
+  Annotation,
+  Node,
+  NodeStatusObject,
+  EntityNode,
+  TextNode,
+  CollectionNode,
+  AnnotationNode,
+  BaseNodeData,
+  TextUpdateDto,
+  NodeStatus,
+} from '../models/types.ts';
+import { useEditorStore } from '../store/editor.ts';
+import { useShortcutsStore } from '../store/shortcuts.ts';
+import { useTextStore } from '../store/text.ts';
+import { useAppStore } from '../store/app.ts';
 import PageOverlay from '../components/PageOverlay.vue';
+import { useTiptapStore } from '../store/tiptap.ts';
+import EditorAnnotationButtonPane from '../components/EditorAnnotationButtonPane.vue';
+import { Node as DocNode } from '@tiptap/pm/model';
+import { cloneDeep } from '../utils/helper/helper.ts';
+import { useCreateIndexMaps } from '../composables/useCreateIndexMaps.ts';
+import { useGuidelinesStore } from '../store/guidelines.ts';
+import { IAnnotation } from '../models/IAnnotation.ts';
+import EditorToC from '../components/EditorToC.vue';
 
 interface SidebarConfig {
   isCollapsed: boolean;
@@ -38,12 +57,22 @@ interface SidebarConfig {
 const route: RouteLocationNormalizedLoaded = useRoute();
 const textUuid = computed<string>(() => route.params.uuid as string);
 
-onUnmounted((): void => {
-  resetCharacters();
-  resetAnnotations();
-  resetEditor();
-  resetHistory();
-});
+const {
+  annotations,
+  structuralAnnotations,
+  initialStructuralAnnotations,
+  initialAnnotations,
+  tiptap,
+  destroyTiptap,
+  hasUnsavedChanges,
+  initializeTiptap,
+  resetToInitialState,
+  setNewInitialState,
+} = useTiptapStore();
+
+const { BUILTIN_STRUCTURAL_TYPES_SET, getStructuralAnnotationConfig } = useGuidelinesStore();
+
+onUnmounted(() => destroyTiptap());
 
 onBeforeRouteUpdate(() => preventUserFromRouteLeaving());
 onBeforeRouteLeave(() => preventUserFromRouteLeaving());
@@ -55,55 +84,44 @@ useEventListener('keydown', handleKeyDown);
 
 // Initial page load
 const isLoading = ref<boolean>(true);
-const isValidText = computed<boolean>(
-  () => !textFetchError.value && !annotationFetchError.value && !charactersFetchError.value,
-);
+const isValidText = computed<boolean>(() => !textFetchError.value);
 
 // For fetch during save/cancel action
 const asyncOperationRunning = ref<boolean>(false);
 
 const { api, addToastMessage } = useAppStore();
 
-const {
-  isRedrawMode,
-  redrawMode,
-  hasUnsavedChanges,
-  initializeEditor,
-  initializeHistory,
-  resetEditor,
-  resetHistory,
-  toggleRedrawMode,
-} = useEditorStore();
+const { isRedrawMode, redrawMode, toggleRedrawMode } = useEditorStore();
 const { error: textFetchError, text, initialText, fetchAndInitializeText } = useTextStore();
-const {
-  afterEndIndex,
-  beforeStartIndex,
-  error: charactersFetchError,
-  initialAfterEndCharacter,
-  initialBeforeStartCharacter,
-  initialSnippetCharacters,
-  snippetCharacters,
-  totalCharacters,
-  fetchAndInitializeCharacters,
-  insertSnippetIntoChain,
-  resetCharacters,
-  resetInitialBoundaryCharacters,
-} = useCharactersStore();
-const {
-  error: annotationFetchError,
-  initialSnippetAnnotations,
-  initialTotalAnnotations,
-  snippetAnnotations,
-  totalAnnotations,
-  extractSnippetAnnotations,
-  fetchAndInitializeAnnotations,
-  insertSnippetIntoTotalAnnotations,
-  getAnnotationsToSave,
-  resetAnnotations,
-  updateAnnotationsBeforeSave,
-  updateAnnotationStatuses,
-  updateTruncationStatus,
-} = useAnnotationStore();
+// const {
+//   afterEndIndex,
+//   beforeStartIndex,
+//   error: charactersFetchError,
+//   initialAfterEndCharacter,
+//   initialBeforeStartCharacter,
+//   initialSnippetCharacters,
+//   snippetCharacters,
+//   totalCharacters,
+//   fetchAndInitializeCharacters,
+//   insertSnippetIntoChain,
+//   resetCharacters,
+//   resetInitialBoundaryCharacters,
+// } = useCharactersStore();
+// const {
+//   error: annotationFetchError,
+//   initialSnippetAnnotations,
+//   initialTotalAnnotations,
+//   snippetAnnotations,
+//   totalAnnotations,
+//   extractSnippetAnnotations,
+//   fetchAndInitializeAnnotations,
+//   insertSnippetIntoTotalAnnotations,
+//   getAnnotationsToSave,
+//   resetAnnotations,
+//   updateAnnotationsBeforeSave,
+//   updateAnnotationStatuses,
+//   updateTruncationStatus,
+// } = useAnnotationStore();
 const { shortcutMap, normalizeKeys } = useShortcutsStore();
 
 useTitle(computed(() => `Text | ${text.value?.nodeLabels.join(', ') ?? ''}`));
@@ -120,7 +138,7 @@ const mainWidth: ComputedRef<number> = computed(() => {
 
 const sidebars = ref<Record<string, SidebarConfig>>({
   left: {
-    isCollapsed: true,
+    isCollapsed: false,
     resizerActive: false,
     width: 350,
   },
@@ -136,35 +154,507 @@ const metadataRef = ref(null);
 const labelInputRef = ref(null);
 const editorRef = ref<HTMLDivElement>(null);
 
+function cleanUpAfterSave(
+  updatedText: NodeStatusObject<TextNode>,
+  updatedAnnotations: { annotations: Annotation[]; structureElements: Annotation[] },
+): void {
+  text.value = cloneDeep(updatedText.node);
+
+  cleanUpAnnotations(updatedAnnotations.annotations);
+  cleanUpStructureElements(updatedAnnotations.structureElements);
+
+  setNewInitialState();
+}
+
+function cleanUpAnnotations(updatedAnnotations: NodeStatusObject[]): void {
+  updatedAnnotations.forEach(a => {
+    if (a.meta.status === 'deleted') {
+      // Can be removed from the map safely
+      annotations.value?.delete(a.node.data.uuid);
+    } else {
+      // Recursively set all nodes to "unchanged"
+      traverseNodeTreeAndSetToCreated(a);
+
+      // Update value
+      annotations.value?.set(a.node.data.uuid, a as Annotation);
+    }
+  });
+
+  // Reset
+  initialAnnotations.value = cloneDeep(annotations.value);
+}
+
+function cleanUpStructureElements(structureElements: NodeStatusObject[]): void {
+  structureElements.forEach((elm: NodeStatusObject) => {
+    const uuid: string = elm.node.data.uuid;
+
+    if (elm.meta.status === 'deleted') {
+      // Can be removed from the map safely
+      initialStructuralAnnotations.value?.delete(uuid);
+    } else {
+      // Recursively set all nodes to "unchanged". Technically, this is currently not necessary
+      // since the structure elements can not have any connected nodes.
+      traverseNodeTreeAndSetToCreated(elm);
+
+      // Update value
+      initialStructuralAnnotations.value?.set(uuid, elm as Annotation);
+    }
+  });
+
+  // const docNodes = new Map<string, DocNode>();
+
+  // tiptap.value?.state.doc.descendants(node => {
+  //   if (isStructureElement(node)) {
+  //     docNodes.set(node.attrs.uuid, node);
+  //   }
+  // });
+
+  // console.log(docNodes);
+  // console.log(initialStructuralAnnotations.value);
+  // Reset
+}
+
+/**
+ * Checks if a node is a structure element editor-wise, meaning that it is either a block element that contains text or other block elmements
+ * (div, paragraph) or a `hardBreak`.
+ *
+ * @param {DocNode} node - Tiptap node to be checked
+ */
+function isStructureElement(node: DocNode): boolean {
+  if (node.type.isBlock || node.type.name === 'hardBreak') {
+    return true;
+  }
+
+  return false;
+}
+
+function getEmptyNodes(): DocNode[] {
+  const emptyNodes: DocNode[] = [];
+
+  tiptap.value!.state.doc.descendants((node: DocNode) => {
+    if (node.type.name === 'zeroPointAnnotation' || node.type.name === 'hardBreak') {
+      return false;
+    }
+
+    if (!node.isText && node.textContent === '') {
+      emptyNodes.push(node);
+      return false;
+    }
+  });
+
+  return emptyNodes;
+}
+
+function findChangedAnnotations(indexMap: IndexMap, plainText: string): Annotation[] {
+  const affectedAnnos: Annotation[] = [];
+
+  // Loop through annotations currently in the editor
+  indexMap.forEach((value, uuid) => {
+    const currentEntry: Annotation | undefined = annotations.value?.get(uuid);
+    const initialEntry: Annotation | undefined = initialAnnotations.value?.get(uuid);
+
+    // Should not happen actually
+    if (!currentEntry) {
+      console.error(`The annotation with uuid ${uuid} could not be found`);
+      return;
+    }
+
+    const { startIndex, endIndex } = value;
+    const textSlice: string = plainText.slice(startIndex, endIndex + 1);
+
+    const hasNewStart: boolean = !initialEntry || initialEntry.node.data.startIndex !== startIndex;
+    const hasNewEnd: boolean = !initialEntry || initialEntry.node.data.endIndex !== endIndex;
+    const hasChangedText: boolean = !initialEntry || initialEntry.node.data.text !== textSlice;
+    const isEditedOrDeleted: boolean = ['created', 'deleted', 'modified'].includes(
+      currentEntry.meta.status,
+    );
+
+    if (hasNewStart || hasNewEnd || hasChangedText || isEditedOrDeleted) {
+      // Needs to be cloned object to keep editor data clean. Otherwise, a failed operation would make problems
+      // ("status" field is updated, doc history not clean etc.)
+      const cloned: Annotation = cloneDeep(currentEntry);
+
+      // Apply indices to cloned object (for existing or new annotations)
+      if (hasNewStart || currentEntry.meta.status === 'created') {
+        cloned.node.data.startIndex = value.startIndex;
+      }
+
+      if (hasNewEnd || currentEntry.meta.status === 'created') {
+        cloned.node.data.endIndex = value.endIndex;
+      }
+
+      // Get slice of plain text
+      cloned.node.data.text = textSlice;
+
+      // Update status explicitly for changed indices. Otherwised changed/added/deleted annotations keep their status
+      if (currentEntry.meta.status !== 'created' && (hasNewStart || hasNewEnd)) {
+        cloned.meta.status = 'modified';
+      }
+
+      affectedAnnos.push(cloned);
+    }
+  });
+
+  // Get elements which are deleted in editor
+  const uuidsInEditor = new Set<string>([...indexMap.keys()]);
+  const initialUuids = new Set<string>([...(initialAnnotations.value?.keys() ?? [])]);
+  const deletedUuids = initialUuids.difference(uuidsInEditor);
+
+  deletedUuids.forEach(uuid => {
+    const annoEntry: Annotation = initialAnnotations.value?.get(uuid)!;
+
+    const cloned: Annotation = { ...cloneDeep(annoEntry), meta: { status: 'deleted' } };
+
+    affectedAnnos.push(cloned);
+  });
+
+  return affectedAnnos;
+}
+
+function getConfiguredNodeAttrs(node: DocNode, _tiptapType: string) {
+  // Base: all neo4j data stored in _annotationData at load time (uuid, type, custom properties, …)
+  const neo4jProperties: Record<string, any> = {};
+
+  // 1. retrieve configured attributes from node (e.g. not "data-toc-id" or anything editor related)
+  const fields: PropertyConfig[] =
+    getStructuralAnnotationConfig(node.attrs._annotationData.type)?.properties ?? [];
+
+  fields.forEach((field: PropertyConfig) => {
+    if (field.name in node.attrs._annotationData) {
+      neo4jProperties[field.name] = node.attrs._annotationData[field.name];
+    }
+  });
+
+  // 2. Override properties that are handled by tiptap
+
+  // UUID is managed by the UniqueID extension — this is authoritative after
+  // any tiptap operations (e.g. copy-paste that assigns a fresh uuid to a duplicated block).
+  neo4jProperties.uuid = node.attrs.uuid;
+
+  // Type property: Essential for saving annotations
+  neo4jProperties.type = node.attrs._annotationData.type ?? node.type.name;
+
+  // tiptap-native attrs that may have been edited in the UI, override the
+  // stale _annotationData values with the current tiptap attr values.
+  if (neo4jProperties.type === 'heading' && node.attrs.level !== undefined) {
+    neo4jProperties.level = node.attrs.level;
+  }
+
+  const isPartOfTable: boolean =
+    neo4jProperties.type === 'tableCell' || neo4jProperties.type === 'tableHeader';
+
+  if (isPartOfTable && node.attrs.colspan !== undefined) {
+    neo4jProperties.colspan = node.attrs.colspan;
+    neo4jProperties.rowspan = node.attrs.rowspan;
+  }
+
+  return neo4jProperties;
+}
+
+function findChangedStructureElements(indexMap: IndexMap, plainText: string): Annotation[] {
+  const affectedElements: Annotation[] = [];
+
+  const docNodes = new Map<string, DocNode>();
+
+  tiptap.value?.state.doc.descendants(node => {
+    if (isStructureElement(node)) {
+      docNodes.set(node.attrs.uuid, node);
+    }
+  });
+
+  // Loop through nodes currently in the editor
+  indexMap.forEach(({ startIndex, endIndex }, uuid) => {
+    const docNode: DocNode | undefined = docNodes.get(uuid);
+
+    // Should not happen actually
+    if (!docNode) {
+      console.error(`The annotation with uuid ${uuid} could not be found`);
+      return;
+    }
+
+    const initialEntry: Annotation | undefined = initialStructuralAnnotations.value?.get(uuid);
+
+    const textSlice: string = plainText.slice(startIndex, endIndex + 1);
+
+    // TODO: Always "modified" for now since it is likely anyway (changed text). Fix later maybe
+    const status: NodeStatus = initialEntry ? 'modified' : 'created';
+
+    // Create annotation object (needed)
+    const annotation: Annotation = {
+      node: {
+        data: {
+          ...getConfiguredNodeAttrs(docNode, docNode.type.name),
+          startIndex,
+          endIndex,
+          text: textSlice,
+        } as IAnnotation,
+        nodeLabels: ['Annotation'],
+      },
+      connectedNodes: [],
+      meta: {
+        status: status,
+      },
+    };
+
+    affectedElements.push(annotation);
+  });
+
+  // Get elements which are deleted in editor.
+  // Only consider built-in structural types here — semantic block deletions are handled
+  // separately by `findChangedLabelAnnotations` to avoid false deletions.
+  const uuidsInEditor = new Set<string>(indexMap.keys());
+
+  const initialUuids = new Set<string>(
+    (initialStructuralAnnotations.value?.entries() ?? [])
+      .filter(([_, anno]) => BUILTIN_STRUCTURAL_TYPES_SET.has(anno.node.data.type))
+      .map(([uuid]) => uuid),
+  );
+  const deletedUuids: Set<string> = initialUuids.difference(uuidsInEditor);
+
+  deletedUuids.forEach(uuid => {
+    const annoEntry: Annotation = initialStructuralAnnotations.value?.get(uuid)!;
+
+    const cloned: Annotation = { ...cloneDeep(annoEntry), meta: { status: 'deleted' } };
+
+    affectedElements.push(cloned);
+  });
+
+  return affectedElements;
+}
+
+function findChangedSemanticBlocks(indexMap: IndexMap, plainText: string): Annotation[] {
+  const affectedElements: Annotation[] = [];
+
+  // Updated/created label annotations: derive live startIndex/endIndex from the doc
+  indexMap.forEach(({ startIndex, endIndex }, uuid) => {
+    const storeEntry: Annotation | undefined = structuralAnnotations.value?.get(uuid);
+
+    if (!storeEntry) {
+      return;
+    }
+
+    const status: NodeStatus = initialStructuralAnnotations.value?.has(uuid)
+      ? 'modified'
+      : 'created';
+
+    affectedElements.push({
+      node: {
+        data: {
+          ...storeEntry.node.data,
+          startIndex,
+          endIndex,
+          text: plainText.slice(startIndex, endIndex + 1),
+        } as IAnnotation,
+        nodeLabels: ['Annotation'],
+      },
+      connectedNodes: [...storeEntry.connectedNodes],
+      meta: {
+        status: status,
+      },
+    });
+  });
+
+  // Deleted: was semantic block annotation in the initial snapshot but no longer present in the doc
+  const uuidsInEditor = new Set<string>(indexMap.keys());
+
+  initialStructuralAnnotations.value!.forEach((anno, uuid) => {
+    if (!BUILTIN_STRUCTURAL_TYPES_SET.has(anno.node.data.type) && !uuidsInEditor.has(uuid)) {
+      affectedElements.push({ ...cloneDeep(anno), meta: { status: 'deleted' } });
+    }
+  });
+
+  return affectedElements;
+}
+
+function getAffectedAnnotations(): { annotations: Annotation[]; structureElements: Annotation[] } {
+  const plainText: string = tiptap.value!.state.doc.textContent;
+
+  const {
+    decorationIndexMap,
+    structureBlockIndexMap,
+    semanticBlockIndexMap,
+    zeroPointIndexMap,
+    hardBreakIndexMap,
+  } = useCreateIndexMaps().buildIndexMaps();
+
+  // Zero point and range annotation are stored in the same store and can therefore share the same index map
+  const changedAnnotations = findChangedAnnotations(
+    new Map([...decorationIndexMap, ...zeroPointIndexMap]) as IndexMap,
+    plainText,
+  );
+
+  // hardBreaks and blocks are stored in the same store and can therefore share the same index map
+  const affectedStructureBlocks = findChangedStructureElements(
+    new Map([...structureBlockIndexMap, ...hardBreakIndexMap]) as IndexMap,
+    plainText,
+  );
+
+  // Semantic blocks (closer, address, div) are tracked via _semanticBlocks on block nodes
+  const affectedLabelAnnotations = findChangedSemanticBlocks(
+    semanticBlockIndexMap as IndexMap,
+    plainText,
+  );
+
+  return {
+    annotations: changedAnnotations,
+    structureElements: [...affectedStructureBlocks, ...affectedLabelAnnotations],
+  };
+}
+
+export type EdgeDescriptor = {
+  type: string;
+  startUuid: string;
+  endUuid: string;
+};
+
+function inferRelationship(parent: Node<BaseNodeData>, child: Node<BaseNodeData>): EdgeDescriptor {
+  const parentUuid: string = (parent.data as BaseNodeData).uuid;
+  const childUuid: string = (child.data as BaseNodeData).uuid;
+
+  const p: string[] = parent.nodeLabels;
+  const c: string[] = child.nodeLabels;
+
+  // Annotation → Annotation: sub-annotation (e.g. commentary text)
+  if (p.includes('Annotation') && c.includes('Annotation')) {
+    return { type: 'HAS_ANNOTATION', startUuid: parentUuid, endUuid: childUuid };
+  }
+
+  // Annotation → Entity | Collection | Text: referenced nodes
+  if (p.includes('Annotation')) {
+    return { type: 'REFERS_TO', startUuid: parentUuid, endUuid: childUuid };
+  }
+
+  // Text | Collection → Annotation
+  if (c.includes('Annotation')) {
+    return { type: 'HAS_ANNOTATION', startUuid: parentUuid, endUuid: childUuid };
+  }
+
+  // Collection → Text | Collection → Collection: edge runs (Text|Collection)-[:PART_OF]->(Collection)
+  if (p.includes('Collection') && (c.includes('Content') || c.includes('Collection'))) {
+    return { type: 'PART_OF', startUuid: childUuid, endUuid: parentUuid };
+  }
+
+  throw new Error(`Cannot infer relationship between [${p.join(', ')}] and [${c.join(', ')}]`);
+}
+
+type UpdateObject = {
+  create: (AnnotationNode | CollectionNode | EntityNode | TextNode)[];
+  delete: (AnnotationNode | CollectionNode | EntityNode | TextNode)[];
+  update: (AnnotationNode | CollectionNode | EntityNode | TextNode)[];
+  remove: { startUuid: string; endUuid: string }[];
+  attach: { startUuid: string; endUuid: string }[];
+};
+
+/** Temporary, used in backend */
+function insertNodeIntoObject(
+  parent: NodeStatusObject | null,
+  node: NodeStatusObject,
+  obj: UpdateObject,
+): UpdateObject {
+  node.connectedNodes.forEach(child => insertNodeIntoObject(node, child, obj));
+
+  if (node.meta.status === 'deleted') {
+    obj.delete.push(node.node);
+  }
+
+  if (node.meta.status === 'created') {
+    obj.create.push(node.node);
+  }
+
+  if (node.meta.status === 'modified') {
+    obj.update.push(node.node);
+  }
+
+  // Added/created with existing parent
+  if (parent && (node.meta.status === 'created' || node.meta.status === 'added')) {
+    obj.attach.push(inferRelationship(parent.node, node.node));
+  }
+
+  // Removed, but parent was deleted anyway
+  if (parent && node.meta.status === 'removed' && parent.meta.status !== 'deleted') {
+    obj.remove.push(inferRelationship(parent.node, node.node));
+  }
+
+  return obj;
+}
+
+/** Temporary, used in backend */
+function flattenNodeTree(textDto: TextUpdateDto): UpdateObject {
+  const obj: UpdateObject = {
+    create: [],
+    delete: [],
+    update: [],
+    remove: [],
+    attach: [],
+  };
+
+  insertNodeIntoObject(null, { ...textDto.text, connectedNodes: textDto.annotations }, obj);
+
+  return obj;
+}
+
 // TODO: Annotations structure has changed, overhaul all methods inside
 async function handleSaveChanges(): Promise<void> {
-  if (!hasUnsavedChanges()) {
-    console.log('no changes made, no request needed');
+  if (!tiptap.value) {
     return;
   }
 
+  // if (!hasUnsavedChanges()) {
+  //   console.log('no changes made, no request needed');
+  //   return;
+  // }
+
+  const nodesWithoutChildrenOrText = getEmptyNodes();
+
+  if (nodesWithoutChildrenOrText.length > 0) {
+    console.warn('Some nodes have no text: ', nodesWithoutChildrenOrText);
+
+    addToastMessage({
+      severity: 'warn',
+      summary: 'Empty block',
+      detail:
+        'Some nodes do not contain text or children. Please delete them or add text: ' +
+        nodesWithoutChildrenOrText,
+      life: 3000,
+    });
+
+    return;
+  }
+
+  const affectedAnnotations = getAffectedAnnotations();
+
+  const { structureElements, annotations } = affectedAnnotations;
+
+  const annotationsToUpdate: Annotation[] = [...structureElements, ...annotations];
+  const newTextNode: NodeStatusObject<TextNode> = {
+    node: {
+      data: {
+        uuid: text.value.data.uuid,
+        text: tiptap.value!.state.doc.textContent,
+      },
+      nodeLabels: [...text.value.nodeLabels],
+    },
+    meta: { status: 'modified' },
+    connectedNodes: [],
+  };
+
+  // Object to send via API
+  const textToUpdate: TextUpdateDto = {
+    text: toValue(newTextNode),
+    annotations: toValue(annotationsToUpdate),
+  };
+
+  // Only for testing purposes
+  const flattened = flattenNodeTree(textToUpdate);
+  console.log(flattened);
+
   asyncOperationRunning.value = true;
-
   try {
-    // TODO: Text needs to be saved to when labels are changed
-    // await saveText();
-    await saveCharacters();
-    await saveAnnotations();
+    await api.updateText(text.value.data.uuid, textToUpdate);
 
-    // All Annotation statuses are updated explicitly to "existing" and the initialData property set to the current data
-    updateAnnotationStatuses();
+    // Update all initial values: Annotations, structuralAnnotations and text
 
-    // Reset initial values of all state components
-    initialText.value = cloneDeep(text.value);
-    initialSnippetCharacters.value = cloneDeep(snippetCharacters.value);
-    initialTotalAnnotations.value = cloneDeep(totalAnnotations.value);
-
-    // Check which annotations are now in snippet. Calling this function is less error prone than setting the state variables explicitly
-    // since the new snippetAnnotations will be extracted from the new totalAnnotations state
-    extractSnippetAnnotations();
-
-    // Store function is used, combines boundaries resettings
-    resetInitialBoundaryCharacters();
+    cleanUpAfterSave(newTextNode, affectedAnnotations);
 
     showMessage('success');
   } catch (error: unknown) {
@@ -175,67 +665,16 @@ async function handleSaveChanges(): Promise<void> {
   }
 }
 
+function traverseNodeTreeAndSetToCreated(node: NodeStatusObject) {
+  node.meta.status = 'unchanged';
+
+  node.connectedNodes.forEach(child => traverseNodeTreeAndSetToCreated(child));
+}
+
 async function handleCancelChanges(): Promise<void> {
   text.value = cloneDeep(initialText.value);
-  snippetCharacters.value = cloneDeep(initialSnippetCharacters.value);
-  snippetAnnotations.value = cloneDeep(initialSnippetAnnotations.value);
 
-  // TODO: Combine this with extractSnippetAnnotations.
-  updateTruncationStatus();
-
-  totalCharacters.value[beforeStartIndex.value] = cloneDeep(initialBeforeStartCharacter.value);
-  totalCharacters.value[afterEndIndex.value] = cloneDeep(initialAfterEndCharacter.value);
-
-  initializeHistory();
-}
-
-async function saveCharacters(): Promise<void> {
-  // This can be done within the snippet since changes in the chain can only occur here
-  const { uuidStart, uuidEnd } = findChangesetBoundaries();
-
-  // Insert the snippet into the whole chain to simplify index finding -> only one chain to consider
-  // TODO: This might take a while on longer texts...fix?
-  insertSnippetIntoChain();
-
-  const startNodeIndex = uuidStart
-    ? totalCharacters.value.findIndex((c: Character) => c.data.uuid === uuidStart)
-    : -1;
-
-  let endNodeIndex = uuidEnd
-    ? totalCharacters.value.findIndex((c: Character) => c.data.uuid === uuidEnd)
-    : totalCharacters.value.length;
-
-  if (endNodeIndex === -1) {
-    endNodeIndex = totalCharacters.value.length;
-  }
-
-  const sliceStart: number = startNodeIndex + 1;
-  const sliceEnd: number = endNodeIndex;
-
-  const snippetToUpdate: Character[] = totalCharacters.value.slice(sliceStart, sliceEnd);
-
-  // TODO: textUuid is not really needed since it is parsed from the url parameter
-  const characterPostData: CharacterPostData = {
-    textUuid: text.value.data.uuid,
-    uuidStart: uuidStart,
-    uuidEnd: uuidEnd,
-    characters: snippetToUpdate.map((c: Character) => c.data),
-    text: totalCharacters.value.map(c => c.data.text).join(''),
-  };
-
-  await api.updateCharacterChain(textUuid.value, characterPostData);
-}
-
-async function saveAnnotations(): Promise<void> {
-  // Insert into total map since next operations are executed on the total map
-  insertSnippetIntoTotalAnnotations();
-
-  updateAnnotationsBeforeSave();
-
-  // Reduce amount of data that need to sent to the backend
-  const annotationsToSave: AnnotationOld[] = getAnnotationsToSave();
-
-  await api.updateAnnotations(textUuid.value, annotationsToSave);
+  resetToInitialState();
 }
 
 function toggleSidebar(position: 'left' | 'right', wasCollapsed: boolean): void {
@@ -317,57 +756,57 @@ function showMessage(result: 'success' | 'error', error?: Error) {
   });
 }
 
-function findChangesetBoundaries(): {
-  uuidStart: string | null;
-  uuidEnd: string | null;
-} {
-  let uuidStart: string | null = beforeStartIndex.value
-    ? totalCharacters.value[beforeStartIndex.value].data.uuid
-    : null;
+// function findChangesetBoundaries(): {
+//   uuidStart: string | null;
+//   uuidEnd: string | null;
+// } {
+//   let uuidStart: string | null = beforeStartIndex.value
+//     ? totalCharacters.value[beforeStartIndex.value].data.uuid
+//     : null;
 
-  let uuidEnd: string | null = afterEndIndex.value
-    ? totalCharacters.value[afterEndIndex.value].data.uuid
-    : null;
+//   let uuidEnd: string | null = afterEndIndex.value
+//     ? totalCharacters.value[afterEndIndex.value].data.uuid
+//     : null;
 
-  for (let index = 0; index < snippetCharacters.value.length; index++) {
-    if (
-      snippetCharacters.value[index].data.uuid !== initialSnippetCharacters.value[index]?.data.uuid
-    ) {
-      break;
-    }
+//   for (let index = 0; index < snippetCharacters.value.length; index++) {
+//     if (
+//       snippetCharacters.value[index].data.uuid !== initialSnippetCharacters.value[index]?.data.uuid
+//     ) {
+//       break;
+//     }
 
-    uuidStart = snippetCharacters.value[index].data.uuid;
+//     uuidStart = snippetCharacters.value[index].data.uuid;
 
-    if (
-      index === snippetCharacters.value.length - 1 &&
-      snippetCharacters.value.length >= initialSnippetCharacters.value.length
-    ) {
-      uuidStart = beforeStartIndex.value
-        ? totalCharacters.value[beforeStartIndex.value].data.uuid
-        : null;
-    }
-  }
+//     if (
+//       index === snippetCharacters.value.length - 1 &&
+//       snippetCharacters.value.length >= initialSnippetCharacters.value.length
+//     ) {
+//       uuidStart = beforeStartIndex.value
+//         ? totalCharacters.value[beforeStartIndex.value].data.uuid
+//         : null;
+//     }
+//   }
 
-  const reversedCharacters: Character[] = [...snippetCharacters.value].reverse();
-  const reversedInitialCharacters: Character[] = [...initialSnippetCharacters.value].reverse();
+//   const reversedCharacters: Character[] = [...snippetCharacters.value].reverse();
+//   const reversedInitialCharacters: Character[] = [...initialSnippetCharacters.value].reverse();
 
-  for (let index = 0; index < reversedCharacters.length; index++) {
-    if (reversedCharacters[index].data.uuid !== reversedInitialCharacters[index]?.data.uuid) {
-      break;
-    }
+//   for (let index = 0; index < reversedCharacters.length; index++) {
+//     if (reversedCharacters[index].data.uuid !== reversedInitialCharacters[index]?.data.uuid) {
+//       break;
+//     }
 
-    uuidEnd = reversedCharacters[index].data.uuid;
+//     uuidEnd = reversedCharacters[index].data.uuid;
 
-    if (
-      index === reversedCharacters.length - 1 &&
-      reversedCharacters.length >= reversedInitialCharacters.length
-    ) {
-      uuidEnd = afterEndIndex.value ? totalCharacters.value[afterEndIndex.value].data.uuid : null;
-    }
-  }
+//     if (
+//       index === reversedCharacters.length - 1 &&
+//       reversedCharacters.length >= reversedInitialCharacters.length
+//     ) {
+//       uuidEnd = afterEndIndex.value ? totalCharacters.value[afterEndIndex.value].data.uuid : null;
+//     }
+//   }
 
-  return { uuidStart, uuidEnd };
-}
+//   return { uuidStart, uuidEnd };
+// }
 
 function preventUserFromPageLeaving(event: BeforeUnloadEvent): string {
   if (!isValidText.value) {
@@ -402,6 +841,8 @@ function preventUserFromRouteLeaving(): boolean {
   if (!answer) {
     return false;
   }
+
+  return true;
 }
 
 watch(
@@ -412,26 +853,29 @@ watch(
     // TODO: This needs refactoring. Centralize fetches, split fetch/initialize logic
     await fetchAndInitializeText(textUuid.value);
 
+    const text: TextAccessObject = await api.getTextAccessObject(textUuid.value);
+
     if (!isValidText.value) {
       isLoading.value = false;
       return;
     }
 
-    await fetchAndInitializeCharacters(text.value.data.uuid);
+    // await fetchAndInitializeCharacters(text.value.data.uuid);
 
-    if (charactersFetchError.value) {
-      isLoading.value = false;
-      return;
-    }
+    // if (charactersFetchError.value) {
+    //   isLoading.value = false;
+    //   return;
+    // }
 
-    await fetchAndInitializeAnnotations(text.value.data.uuid);
+    const fetchedAnnotations: NodeDto[] = await api.getAnnotations('text', textUuid.value);
+    // if (annotationFetchError.value) {
+    //   isLoading.value = false;
+    //   return;
+    // }
 
-    if (annotationFetchError.value) {
-      isLoading.value = false;
-      return;
-    }
+    const standoffObject = { text: text.text.data.text, annotations: fetchedAnnotations };
 
-    initializeEditor();
+    initializeTiptap(standoffObject);
 
     isLoading.value = false;
   },
@@ -470,7 +914,8 @@ watch(
       :isCollapsed="sidebars['left'].isCollapsed === true"
       :width="sidebars['left'].width"
     >
-      <EditorMetadata ref="metadataRef" />
+      <EditorMetadata />
+      <EditorToC />
       <EditorAnnotations />
     </EditorSidebar>
     <EditorResizer
@@ -486,8 +931,14 @@ watch(
     >
       <EditorHeader ref="labelInputRef" />
       <EditorAnnotationButtonPane />
-      <EditorText ref="editorRef" :async-operation-running="asyncOperationRunning" />
-      <EditorActionButtonsPane @save="handleSaveChanges" @cancel="handleCancelChanges" />
+      <editor-content id="editor" :editor="tiptap" spellcheck="false" />
+
+      <EditorActionButtonsPane
+        @save="handleSaveChanges"
+        @cancel="handleCancelChanges"
+        @log-json="console.log(tiptap?.state.doc)"
+        @log-text="console.log(tiptap?.state.doc.textContent)"
+      />
     </section>
     <EditorResizer
       position="right"
@@ -507,4 +958,120 @@ watch(
   </div>
 </template>
 
-<style scoped></style>
+<style>
+:root {
+  --gray-1: rgba(61, 37, 20, 0.05);
+  --gray-2: rgba(61, 37, 20, 0.08);
+  --gray-3: rgba(61, 37, 20, 0.12);
+  --gray-4: rgba(53, 38, 28, 0.3);
+  --gray-5: rgba(28, 25, 23, 0.6);
+  --purple: #6a00f5;
+}
+
+#editor {
+  overflow-y: scroll;
+  flex-grow: 1;
+  display: flex;
+  padding: 5px;
+  /* outline: 1px solid var(--purple); */
+  text-decoration-skip-ink: none;
+}
+
+.tiptap-editor-pane:focus-visible {
+  /* background-color: green; */
+  outline: 0;
+  flex-grow: 1;
+}
+
+[data-semantic-block-types] {
+  border: 2px solid var(--black);
+  border-radius: 0.5rem;
+  padding: 1.25rem 0 0 0;
+  position: relative;
+
+  &::before {
+    background-color: black;
+    border-radius: 0 0 0.5rem 0;
+    color: white;
+    content: attr(data-semantic-block-types);
+    font-size: 0.75rem;
+    left: 0;
+    padding: 0.1rem 0.2rem;
+    position: absolute;
+    top: 0;
+  }
+}
+
+/* Table-specific styling */
+table {
+  border-collapse: collapse;
+  margin: 0;
+  overflow: hidden;
+  table-layout: fixed;
+  width: 100%;
+
+  td,
+  th {
+    border: 1px solid var(--gray-3);
+    box-sizing: border-box;
+    min-width: 1em;
+    padding: 6px 8px;
+    position: relative;
+    vertical-align: top;
+
+    > * {
+      margin-bottom: 0;
+    }
+  }
+
+  th {
+    background-color: var(--gray-1);
+    font-weight: bold;
+    text-align: left;
+  }
+
+  .selectedCell:after {
+    background: var(--gray-2);
+    content: '';
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    pointer-events: none;
+    position: absolute;
+    z-index: 2;
+  }
+
+  .column-resize-handle {
+    background-color: var(--purple);
+    bottom: -2px;
+    pointer-events: none;
+    position: absolute;
+    right: -2px;
+    top: 0;
+    width: 4px;
+  }
+}
+
+.tableWrapper {
+  margin: 1.5rem 0;
+  overflow-x: auto;
+}
+
+&.resize-cursor {
+  cursor: ew-resize;
+  cursor: col-resize;
+}
+
+/* List styles */
+ul,
+ol {
+  padding: 0 1rem;
+  margin: 1.25rem 1rem 1.25rem 0.4rem;
+
+  li p {
+    margin-top: 0.25em;
+    margin-bottom: 0.25em;
+  }
+}
+</style>

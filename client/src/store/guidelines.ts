@@ -150,7 +150,7 @@ const BUILTIN_STRUCTURAL_CONFIGS: AnnotationType[] = [
   },
 ];
 
-export const BUILTIN_STRUCTURAL_TYPES_SET: ReadonlySet<string> = new Set(
+const BUILTIN_STRUCTURAL_TYPES_SET: ReadonlySet<string> = new Set(
   BUILTIN_STRUCTURAL_CONFIGS.map(c => c.type),
 );
 
@@ -503,13 +503,13 @@ export function useGuidelinesStore() {
 
   /**
    * Returns whether an annotation is a zero-point annotation, based on its type
-   * config or its own `isZeroPoint` property.
+   * config.
    *
    * @param annotation - The annotation to check.
-   * @returns `true` if the annotation is a zero-point annotation, `false` otherwise.
+   * @returns {boolean} `true` if the annotation is a zero-point annotation, `false` otherwise.
    */
   function isZeroPoint(annotation: AnnotationNode): boolean {
-    const config: AnnotationType = getAnnotationConfig(annotation.data.type);
+    const config: AnnotationType | undefined = getAnnotationConfig(annotation.data.type);
 
     if (!config) {
       console.error(
@@ -519,8 +519,7 @@ export function useGuidelinesStore() {
       return false;
     }
 
-    // TODO: Should the isZeroPoint property of the annotation also (or instead) be included?
-    return config.isZeroPoint || annotation.data.isZeroPoint === true;
+    return config.isZeroPoint ?? false;
   }
 
   /**
@@ -545,6 +544,8 @@ export function useGuidelinesStore() {
     availableCollectionLabels,
     availableEntityLabels,
     availableTextLabels,
+    BUILTIN_STRUCTURAL_CONFIGS,
+    BUILTIN_STRUCTURAL_TYPES_SET,
     error: readonly(error),
     groupedAndSortedAnnotationTypes,
     groupedAnnotationTypes,

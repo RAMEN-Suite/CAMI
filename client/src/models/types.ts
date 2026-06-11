@@ -250,7 +250,7 @@ export type Node<T = AnnotationNode | CollectionNode | EntityNode | TextNode> = 
   nodeLabels: string[];
 };
 
-export type NodeAncestry = NodeDto<TextNode | CollectionNode | AnnotationNode>[];
+export type NodeAncestry = NodeDto<CollectionNode>[];
 
 export type PaginationData = {
   limit: number;
@@ -355,8 +355,8 @@ export type ToCItem = TreeNode & {
     nodeType: string;
     pos: number;
     text: string;
-    _type: string;
     _annotationData: Record<string, any>;
+    _semanticBlocks: { uuid: string; annotationType: string }[] | null;
   };
   children: ToCItem[];
 };
