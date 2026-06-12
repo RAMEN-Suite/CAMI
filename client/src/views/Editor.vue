@@ -983,22 +983,25 @@ watch(
   flex-grow: 1;
 }
 
-[data-semantic-block-types] {
-  border: 2px solid var(--black);
-  border-radius: 0.5rem;
-  padding: 1.25rem 0 0 0;
-  position: relative;
+table,
+p:not(table p, li p) {
+  &[data-semantic-block-types] {
+    border: 2px solid var(--black);
+    border-radius: 0.5rem;
+    padding: 1.25rem 0 0 0;
+    position: relative;
 
-  &::before {
-    background-color: black;
-    border-radius: 0 0 0.5rem 0;
-    color: white;
-    content: attr(data-semantic-block-types);
-    font-size: 0.75rem;
-    left: 0;
-    padding: 0.1rem 0.2rem;
-    position: absolute;
-    top: 0;
+    &::before {
+      background-color: black;
+      border-radius: 0 0 0.5rem 0;
+      color: white;
+      content: attr(data-semantic-block-types);
+      font-size: 0.75rem;
+      left: 0;
+      padding: 0.1rem 0.2rem;
+      position: absolute;
+      top: 0;
+    }
   }
 }
 
