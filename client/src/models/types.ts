@@ -72,6 +72,7 @@ export type AnnotationType = {
   contains?: string[];
   topLevel?: boolean;
   priority?: number;
+  editorRole?: BuiltinStructuralType;
 };
 
 export type AnnotationReference = {
@@ -91,6 +92,17 @@ export type ApiJson = {
   text: string;
   annotations: NodeDto[];
 };
+
+export type BuiltinStructuralType =
+  | 'paragraph'
+  | 'heading'
+  | 'hardBreak'
+  | 'table'
+  | 'tableRow'
+  | 'tableCell'
+  | 'tableHeader'
+  | 'bulletList'
+  | 'listItem';
 
 export type TiptapMark = {
   type: string;
