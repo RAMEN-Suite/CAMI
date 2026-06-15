@@ -24,10 +24,10 @@ import TabPanel from 'primevue/tabpanel';
 
 const { isValid: isSelectionValid } = useValidateTextSelection();
 const {
-  BUILTIN_STRUCTURAL_TYPES_SET,
   groupedAnnotationTypes,
   annotationHasConstraints,
   getAnnotationConfig,
+  isBuiltinStructuralType,
   isZeroPoint,
 } = useGuidelinesStore();
 const { addToastMessage, createModalInstance, destroyModalInstance } = useAppStore();
@@ -58,7 +58,7 @@ const dialog: ReturnType<typeof useDialog> = useDialog();
 // These get a generic wrapIn/lift toggle button rather than a dedicated tiptap command button.
 const customStructureTypes = computed(() =>
   (groupedAnnotationTypes.value?.['structure'] ?? []).filter(
-    t => t.isBlock && !BUILTIN_STRUCTURAL_TYPES_SET.has(t.type),
+    t => t.isBlock && !isBuiltinStructuralType(t.type),
   ),
 );
 

@@ -8,8 +8,13 @@ import {
 } from '../models/types';
 import { useGuidelinesStore } from '../store/guidelines';
 
-const { BUILTIN_STRUCTURAL_TYPES_SET, getStructuralAnnotationConfigs, isZeroPoint } =
-  useGuidelinesStore();
+const {
+  getStructuralAnnotationConfigs,
+  isZeroPoint,
+  getEditorRole,
+  getTypeByEditorRole,
+  isBuiltinStructuralType,
+} = useGuidelinesStore();
 
 type Anno = NodeStatusObject<AnnotationNode>;
 
@@ -77,9 +82,22 @@ export default class StandoffConverter {
       this.createNodeStatusObjectFromRawData(a),
     );
 
+    const onlyBLocks = statusObjects.filter(a1 =>
+      isBuiltinStructuralType(a1.node.data.type),
+    );
+
+    console.log(
+      onlyBLocks.map(a => {
+        const { startIndex, endIndex, type } = a.node.data;
+
+        return [startIndex, endIndex, type];
+      }),
+    );
+
     for (const a of statusObjects) {
       const type = a.node.data.type;
-      if (BUILTIN_STRUCTURAL_TYPES_SET.has(type)) {
+
+      if (isBuiltinStructuralType(type)) {
         this.structuralAnnotations.set(a.node.data.uuid, a);
       } else if (this.structuralAnnotationTypes.has(type)) {
         // Custom structural (isBlock:true, not a built-in) → label
@@ -87,7 +105,21 @@ export default class StandoffConverter {
       } else {
         this.inlineAnnotations.set(a.node.data.uuid, a);
       }
+
+      // if (type === 'hardBreak') {
+      //   this.structuralAnnotations.set(a.node.data.uuid, a);
+      // }
+
+      // if (!this.structuralAnnotationTypes.has(type)) {
+      //   this.inlineAnnotations.set(a.node.data.uuid, a);
+      // }
     }
+
+    // console.log(
+    //   [...this.structuralAnnotations.values()].toSorted(
+    //     (a, b) => a.node.data.endIndex - b.node.data.startIndex,
+    //   ),
+    // );
   }
 
   // Returns the `contains` list for the given type if non-empty, or null otherwise.
@@ -114,10 +146,10 @@ export default class StandoffConverter {
     const candidates = allStructural.filter(
       a =>
         !this.usedUuids.has(a.node.data.uuid) &&
-        !StandoffConverter.EXCLUDED_FROM_BLOCK_CHILDREN.has(a.node.data.type) &&
+        !StandoffConverter.EXCLUDED_FROM_BLOCK_CHILDREN.has(getEditorRole(a.node.data.type)) &&
         a.node.data.startIndex >= startIndex &&
         a.node.data.endIndex <= endIndex &&
-        (containsList === null || containsList.includes(a.node.data.type)),
+        (containsList === null || containsList.includes(getEditorRole(a.node.data.type))),
     );
 
     return candidates
@@ -157,7 +189,7 @@ export default class StandoffConverter {
       }));
 
     const hardBreakEntries: InlineEntry[] = [...this.structuralAnnotations.values()]
-      .filter(a => a.node.data.type === 'hardBreak' && inRange(a))
+      .filter(a => getEditorRole(a.node.data.type) === 'hardBreak' && inRange(a))
       .map(a => ({
         pos: a.node.data.startIndex,
         node: {
@@ -203,11 +235,12 @@ export default class StandoffConverter {
     content: TiptapNode[],
   ): TiptapNode {
     const uuid = crypto.randomUUID();
+    const paragraphType = getTypeByEditorRole('paragraph');
     return {
       type: 'paragraph',
       attrs: {
         uuid,
-        _annotationData: { type: 'paragraph', uuid, startIndex, endIndex },
+        _annotationData: { type: paragraphType, uuid, startIndex, endIndex },
       },
       content,
     };
@@ -253,20 +286,21 @@ export default class StandoffConverter {
 
   private buildStructuralNode(annotation: Anno, allStructural: Anno[]): TiptapNode {
     const { startIndex, endIndex, type } = annotation.node.data;
+    const tiptapType = getEditorRole(type);
 
     const attrs: Record<string, any> = {
       uuid: annotation.node.data.uuid,
       _annotationData: { ...annotation.node.data },
     };
 
-    if (type === 'heading') attrs.level = annotation.node.data.level ?? 1;
-    if (type === 'tableCell' || type === 'tableHeader') {
+    if (tiptapType === 'heading') attrs.level = annotation.node.data.level ?? 1;
+    if (tiptapType === 'tableCell' || tiptapType === 'tableHeader') {
       attrs.colspan = annotation.node.data.colspan ?? 1;
       attrs.rowspan = annotation.node.data.rowspan ?? 1;
     }
 
-    if (StandoffConverter.LEAF_BLOCK_TYPES.has(type)) {
-      return { type, attrs, content: this.createLeafContent(startIndex, endIndex) };
+    if (StandoffConverter.LEAF_BLOCK_TYPES.has(tiptapType)) {
+      return { type: tiptapType, attrs, content: this.createLeafContent(startIndex, endIndex) };
     }
 
     const directChildren = this.findDirectChildren(type, startIndex, endIndex, allStructural);
@@ -292,7 +326,7 @@ export default class StandoffConverter {
       content.push(this.syntheticParagraph(startIndex, endIndex, []));
     }
 
-    return { type, attrs, content };
+    return { type: tiptapType, attrs, content };
   }
 
   // Finds top-level built-in structural annotations — those not contained by any other
@@ -303,7 +337,7 @@ export default class StandoffConverter {
     return allStructural
       .filter(
         a =>
-          !StandoffConverter.EXCLUDED_FROM_BLOCK_CHILDREN.has(a.node.data.type) &&
+          !StandoffConverter.EXCLUDED_FROM_BLOCK_CHILDREN.has(getEditorRole(a.node.data.type)) &&
           !allStructural.some(
             b =>
               b.node.data.uuid !== a.node.data.uuid &&
@@ -311,7 +345,7 @@ export default class StandoffConverter {
               b.node.data.endIndex >= a.node.data.endIndex &&
               (b.node.data.startIndex < a.node.data.startIndex ||
                 b.node.data.endIndex > a.node.data.endIndex ||
-                (this.getContainsList(b.node.data.type) ?? []).includes(a.node.data.type)),
+                (this.getContainsList(b.node.data.type) ?? []).includes(getEditorRole(a.node.data.type))),
           ),
       )
       .sort((a, b) => a.node.data.startIndex - b.node.data.startIndex);

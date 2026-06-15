@@ -13,8 +13,7 @@ declare module '@tiptap/core' {
   }
 }
 
-const { BUILTIN_STRUCTURAL_CONFIGS, BUILTIN_STRUCTURAL_TYPES_SET, structuralAnnotationConfigs } =
-  useGuidelinesStore();
+const { BUILTIN_STRUCTURAL_TYPES_SET, structuralAnnotationConfigs } = useGuidelinesStore();
 
 // Returns {_annotationData, _semanticBlocks } attributes.
 // _annotationData: full neo4j round-trip payload; default = { type } for built-ins, null for customBlock.
@@ -97,13 +96,13 @@ export const AnnotationAttributes = Extension.create({
     transferTiptapTypeToAnnotationType(editor.state.doc);
   },
   addGlobalAttributes() {
-    const builtinAttrs: GlobalAttributes = BUILTIN_STRUCTURAL_CONFIGS.map(
+    const builtinAttrs: GlobalAttributes = structuralAnnotationConfigs.value.map(
       (config: AnnotationType) => {
         const defaultAttrs: Record<string, Attribute> = createDefaultAttrs(config.type);
         const customAttrs: Record<string, Attribute> = createCustomAttributes(config);
 
         return {
-          types: [config.type],
+          types: [config.editorRole ?? config.type],
           attributes: { ...defaultAttrs, ...customAttrs },
         };
       },
