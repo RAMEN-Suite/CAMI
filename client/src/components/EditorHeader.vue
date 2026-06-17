@@ -5,7 +5,7 @@ import FulltextSearchbar from './FulltextSearchbar.vue';
 import Button from 'primevue/button';
 import BookmarkButton from './BookmarkButton.vue';
 import EditorExportButton from './EditorExportButton.vue';
-import EditorSwitchButton from './EditorSwitchButton.vue';
+import EditorSettingsButton from './EditorSettingsButton.vue';
 </script>
 
 <template>
@@ -26,6 +26,7 @@ import EditorSwitchButton from './EditorSwitchButton.vue';
         <EditorImportButton />
         <EditorExportButton />
         <BookmarkButton />
+        <EditorSettingsButton />
       </div>
     </div>
   </div>

@@ -56,7 +56,6 @@ function openImportModal(): void {
     outlined
     class="h-2rem mr-1"
     title="Import JSON"
-    label="Import"
     :disabled="editorContainsText"
     @click="openImportModal"
   ></Button>

@@ -182,6 +182,14 @@ export type CollectionPreview = {
   };
 };
 
+export type EditorSettings = {
+  blockDecorations: {
+    outline: boolean;
+    baseType: boolean;
+    semanticTypes: boolean;
+  };
+};
+
 export type NodeSearchParams = {
   searchInput?: string;
   nodeLabels?: string[];

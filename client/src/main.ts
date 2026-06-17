@@ -8,6 +8,7 @@ import ToastService from 'primevue/toastservice';
 import App from './App.vue';
 import router from './router.ts';
 import '../src/styles/style.css';
+import '../src/styles/tiptap.css';
 import '../src/styles/variables.css';
 import 'primeicons/primeicons.css';
 import '/node_modules/primeflex/primeflex.css';
