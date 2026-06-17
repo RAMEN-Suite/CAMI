@@ -18,6 +18,10 @@
   text-decoration-skip-ink: none;
 }
 
+.tiptap-editor-pane {
+  width: 100%;
+}
+
 .tiptap-editor-pane:focus-visible {
   outline: 0;
   flex-grow: 1;
@@ -118,17 +122,15 @@ ol {
   font-size: 0.7rem;
   line-height: 1.3;
   white-space: nowrap;
+  font-weight: normal;
+  color: var(--gray-5);
 }
 
 .block-deco-tag-base {
   background-color: white;
-  color: var(--gray-5);
-  /* outline: 1px solid red; */
-  /* font-weight: 600; */
 }
 
 .block-deco-tag-semantic {
-  color: rgba(28, 25, 23, 0.85);
   padding: 0 5px;
 
   /* background-color: rgb(213, 239, 248); */

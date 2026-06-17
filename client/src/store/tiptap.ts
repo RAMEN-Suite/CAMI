@@ -27,9 +27,12 @@ import { useFilterStore } from './filter';
 import { useEventListener } from '@vueuse/core';
 import { AnnotationAttributes } from '../editors/text/extensions/AnnotationAttributes';
 import { CustomBlock } from '../editors/text/extensions/customBlock';
+import { BlockDecorations } from '../editors/text/extensions/blockDecorations';
 import { history } from 'prosemirror-history';
+import { useEditorSettingsStore } from './editorSettings';
 
 const { selectedOptions } = useFilterStore();
+const { settings } = useEditorSettingsStore();
 
 const tiptap = shallowRef<Editor | null>(null);
 
@@ -63,6 +66,7 @@ function getConfiguredExtensions(): any[] {
       getAnnotationByUuid: (uuid: string) =>
         annotations.value?.get(uuid)?.node ?? structuralAnnotations.value?.get(uuid)?.node,
     }),
+    BlockDecorations,
     UniqueID.configure({
       types: 'all',
       attributeName: 'uuid',
@@ -123,7 +127,7 @@ function hasUnsavedChanges(): boolean {
   return false;
 }
 
-function initializeTiptap(standoffObject?: { text: string; annotations: NodeDto[] }): void {
+function initializeTiptap(standoffObject: { text: string; annotations: NodeDto[] }): void {
   const converter: StandoffConverter = new StandoffConverter(standoffObject as ApiJson);
   const { tipTapJson, annotations, structuralAnnotations } = converter.getData();
 
@@ -141,6 +145,9 @@ function initializeTiptap(standoffObject?: { text: string; annotations: NodeDto[
     onCreate: ({ editor }) => {
       // Needs to be initialized after creation since full text is needed to calculate visible range
       initializeDecorationView(annotations);
+
+      // Push initial block-decoration settings now that the full doc exists.
+      editor.commands.setBlockDecorationSettings(settings.value);
 
       // This is done in the hook since it has more context than just the raw JSON from the converter.
       // TODO: Might be worth to refactor later, keep in mind
@@ -182,6 +189,19 @@ watch(selectedOptions, newVal => {
 
   tiptap.value.commands.applyFilterUpdates(newVal);
 });
+
+// Re-apply outline/pill decorations whenever the user toggles a view setting.
+watch(
+  settings,
+  newVal => {
+    if (!tiptap.value) {
+      return;
+    }
+
+    tiptap.value.commands.setBlockDecorationSettings(newVal);
+  },
+  { deep: true },
+);
 
 function resetToInitialState(): void {
   if (!tiptap.value || !initialDoc || !initialPlainText) {
