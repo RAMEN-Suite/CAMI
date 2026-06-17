@@ -22,7 +22,6 @@ function togglePopoverVisibility(event: PointerEvent): void {
   <Button
     type="button"
     severity="secondary"
-    label="Bookmarks"
     icon="pi pi-bookmark-fill"
     size="small"
     @click="togglePopoverVisibility"
