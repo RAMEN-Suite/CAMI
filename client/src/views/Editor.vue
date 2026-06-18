@@ -70,7 +70,8 @@ const {
   setNewInitialState,
 } = useTiptapStore();
 
-const { BUILTIN_STRUCTURAL_TYPES_SET, getStructuralAnnotationConfig } = useGuidelinesStore();
+const { BUILTIN_STRUCTURAL_TYPES_SET, getStructuralAnnotationConfig, isBuiltinStructuralType } =
+  useGuidelinesStore();
 
 onUnmounted(() => destroyTiptap());
 
@@ -458,7 +459,7 @@ function findChangedSemanticBlocks(indexMap: IndexMap, plainText: string): Annot
   const uuidsInEditor = new Set<string>(indexMap.keys());
 
   initialStructuralAnnotations.value!.forEach((anno, uuid) => {
-    if (!BUILTIN_STRUCTURAL_TYPES_SET.has(anno.node.data.type) && !uuidsInEditor.has(uuid)) {
+    if (!isBuiltinStructuralType(anno.node.data.type) && !uuidsInEditor.has(uuid)) {
       affectedElements.push({ ...cloneDeep(anno), meta: { status: 'deleted' } });
     }
   });
@@ -646,7 +647,7 @@ async function handleSaveChanges(): Promise<void> {
 
   // Only for testing purposes
   const flattened = flattenNodeTree(textToUpdate);
-  console.log(flattened);
+  // console.log(flattened);
 
   asyncOperationRunning.value = true;
   try {
