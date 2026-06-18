@@ -99,7 +99,7 @@ const BUILTIN_STRUCTURAL_CONFIGS: AnnotationType[] = [
   {
     type: 'tableCell',
     isBlock: true,
-    contains: ['paragraph', 'heading', 'bulletList'],
+    contains: ['paragraph', 'heading', 'bulletList', 'table'],
     topLevel: false,
     priority: 30,
     properties: [],
@@ -111,7 +111,7 @@ const BUILTIN_STRUCTURAL_CONFIGS: AnnotationType[] = [
   {
     type: 'tableHeader',
     isBlock: true,
-    contains: ['paragraph', 'heading', 'bulletList'],
+    contains: ['paragraph', 'heading', 'bulletList', 'table'],
     topLevel: false,
     priority: 30,
     properties: [
@@ -139,7 +139,7 @@ const BUILTIN_STRUCTURAL_CONFIGS: AnnotationType[] = [
   {
     type: 'listItem',
     isBlock: true,
-    contains: ['paragraph', 'heading', 'bulletList'],
+    contains: ['paragraph', 'heading', 'bulletList', 'table'],
     topLevel: false,
     priority: 50,
     properties: [],
@@ -192,7 +192,6 @@ function buildMergedStructuralConfigs(guidelinesData: IGuidelines): AnnotationTy
     const existing: AnnotationType | undefined = result.find(c => c.type === targetType);
 
     if (existing) {
-      console.log('i exist: ', entry);
       // Extend built-in: append any extra properties defined in JSON
       existing.properties = [...(existing.properties ?? []), ...(entry.properties ?? [])];
       // If the entry is renaming this built-in, update the type and record the editor role.
