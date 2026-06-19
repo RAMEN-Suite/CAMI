@@ -70,7 +70,7 @@ const {
   setNewInitialState,
 } = useTiptapStore();
 
-const { BUILTIN_STRUCTURAL_TYPES_SET, getStructuralAnnotationConfig, isBuiltinStructuralType } =
+const { getStructuralAnnotationConfig, getTypeByEditorRole, isBuiltinStructuralType } =
   useGuidelinesStore();
 
 onUnmounted(() => destroyTiptap());
@@ -316,13 +316,20 @@ function getConfiguredNodeAttrs(node: DocNode, _tiptapType: string) {
   // Base: all neo4j data stored in _annotationData at load time (uuid, type, custom properties, …)
   const neo4jProperties: Record<string, any> = {};
 
+  // The Tiptap editor role (paragraph, heading, tableCell etc.) is the source of truth for the
+  // structural type. Map it through the guidelines to the project's configured type name so a
+  // renamed built-in is always saved canonically (e.g. role "paragraph" -> "p"), and nodes created
+  // in the editor (which have no `_annotationData`) never leak the raw editor role into the store.
+  const editorRole: string = node.type.name;
+  const canonicalType: string = getTypeByEditorRole(editorRole);
+  const annotationData = node.attrs._annotationData ?? {};
+
   // 1. retrieve configured attributes from node (e.g. not "data-toc-id" or anything editor related)
-  const fields: PropertyConfig[] =
-    getStructuralAnnotationConfig(node.attrs._annotationData.type)?.properties ?? [];
+  const fields: PropertyConfig[] = getStructuralAnnotationConfig(canonicalType)?.properties ?? [];
 
   fields.forEach((field: PropertyConfig) => {
-    if (field.name in node.attrs._annotationData) {
-      neo4jProperties[field.name] = node.attrs._annotationData[field.name];
+    if (field.name in annotationData) {
+      neo4jProperties[field.name] = annotationData[field.name];
     }
   });
 
@@ -332,17 +339,16 @@ function getConfiguredNodeAttrs(node: DocNode, _tiptapType: string) {
   // any tiptap operations (e.g. copy-paste that assigns a fresh uuid to a duplicated block).
   neo4jProperties.uuid = node.attrs.uuid;
 
-  // Type property: Essential for saving annotations
-  neo4jProperties.type = node.attrs._annotationData.type ?? node.type.name;
+  // Type property: Essential for saving annotations. Always the canonical configured type.
+  neo4jProperties.type = canonicalType;
 
   // tiptap-native attrs that may have been edited in the UI, override the
   // stale _annotationData values with the current tiptap attr values.
-  if (neo4jProperties.type === 'heading' && node.attrs.level !== undefined) {
+  if (editorRole === 'heading' && node.attrs.level !== undefined) {
     neo4jProperties.level = node.attrs.level;
   }
 
-  const isPartOfTable: boolean =
-    neo4jProperties.type === 'tableCell' || neo4jProperties.type === 'tableHeader';
+  const isPartOfTable: boolean = editorRole === 'tableCell' || editorRole === 'tableHeader';
 
   if (isPartOfTable && node.attrs.colspan !== undefined) {
     neo4jProperties.colspan = node.attrs.colspan;
@@ -407,7 +413,7 @@ function findChangedStructureElements(indexMap: IndexMap, plainText: string): An
 
   const initialUuids = new Set<string>(
     (initialStructuralAnnotations.value?.entries() ?? [])
-      .filter(([_, anno]) => BUILTIN_STRUCTURAL_TYPES_SET.has(anno.node.data.type))
+      .filter(([_, anno]) => isBuiltinStructuralType(anno.node.data.type))
       .map(([uuid]) => uuid),
   );
   const deletedUuids: Set<string> = initialUuids.difference(uuidsInEditor);
