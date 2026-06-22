@@ -91,22 +91,22 @@ export default class StandoffConverter {
       this.createNodeStatusObjectFromRawData(a),
     );
 
-    console.log(
-      statusObjects
-        .filter(a1 => isBuiltinStructuralType(a1.node.data.type))
-        .toSorted((a, b) => {
-          if (a.node.data.startIndex === b.node.data.startIndex) {
-            return b.node.data.endIndex - a.node.data.endIndex;
-          } else {
-            return a.node.data.startIndex - b.node.data.startIndex;
-          }
-        })
-        .map(a => {
-          const { startIndex, endIndex, type } = a.node.data;
+    // console.log(
+    //   statusObjects
+    //     .filter(a1 => isBuiltinStructuralType(a1.node.data.type))
+    //     .toSorted((a, b) => {
+    //       if (a.node.data.startIndex === b.node.data.startIndex) {
+    //         return b.node.data.endIndex - a.node.data.endIndex;
+    //       } else {
+    //         return a.node.data.startIndex - b.node.data.startIndex;
+    //       }
+    //     })
+    //     .map(a => {
+    //       const { startIndex, endIndex, type } = a.node.data;
 
-          return [startIndex, endIndex, type];
-        }),
-    );
+    //       return [startIndex, endIndex, type];
+    //     }),
+    // );
 
     for (const a of statusObjects) {
       const type: string = a.node.data.type;
@@ -157,8 +157,8 @@ export default class StandoffConverter {
    *
    * For ranges of different size the larger wraps the smaller. Co-equal ranges (e.g. a single-item list
    * where bulletList, listItem and paragraph all share [29,33]) where a symmetric
-   * `contains`-based test would make each "contain" the other are resolved deterministically: lower `priority` number wins
-   * (outer container types have lower priority, e.g. bulletList 40 < listItem 50 < paragraph 80), then the annotaton's uuid
+   * `contains`-based test would make each "contain" the other are resolved deterministically: higher `priority` number wins
+   * (outer container types have higher priority, e.g. bulletList 60 > listItem 50 > paragraph 20), then the annotation's uuid
    * as a final tiebreak so identical-range duplicates resolve to exactly one survivor instead of mutually annihilating.
    * The uuid tie break also ensures that the same document is created every time the same standoff is parsed.
    *
@@ -186,12 +186,12 @@ export default class StandoffConverter {
       return true;
     }
 
-    // Co-equal range: order by priority (lower = more outer)
+    // Co-equal range: order by priority (higher = more outer / further up the tree)
     const outerPrio: number = getPriorityForType(outer.node.data.type);
     const innerPrio: number = getPriorityForType(inner.node.data.type);
 
     if (outerPrio !== innerPrio) {
-      return outerPrio < innerPrio;
+      return outerPrio > innerPrio;
     }
 
     // Final tiebreak: uuid for a stable strict order.
@@ -208,10 +208,10 @@ export default class StandoffConverter {
    * annotation list.
    *
    * @param {string} parentType Type of the parent annotation
-   * @param {number} startIndex The start index of the parent annotation
-   * @param {number} endIndex The end index of the leaf node
+   * @param {number} startIndex The start index of the parent annotation's range
+   * @param {number} endIndex The end index of the parent annotation's range
    * @param {Anno[]} allStructural The list of all structural annotations
-   * @returns
+   * @returns {Anno[]} The immediate structural children, sorted by start index
    */
   private findDirectChildren(
     parentType: string,
@@ -240,12 +240,13 @@ export default class StandoffConverter {
    *
    * @param startIndex The start index of the text node
    * @param endIndex The end index of the text node
-   * @returns {TiptapNode[]} The built text node
+   * @returns {TiptapNode[]} A single-element array with the text node, or an empty array when the
+   *   range is empty (ProseMirror forbids empty text nodes, so they must never be emitted).
    */
-  private createTextNode(startIndex: number, endIndex: number): TiptapNode {
+  private createTextNode(startIndex: number, endIndex: number): TiptapNode[] {
     const text: string = this.standoffJson.text.slice(startIndex, endIndex + 1);
 
-    return { type: 'text', text };
+    return text ? [{ type: 'text', text }] : [];
   }
 
   /**
@@ -261,9 +262,8 @@ export default class StandoffConverter {
   private createLeafContent(startIndex: number, endIndex: number): TiptapNode[] {
     type InlineEntry = { pos: number; node: TiptapNode };
 
-    // Is a annotation in the given range?
-    function inRange(a: Anno) {
-      a.node.data.startIndex >= startIndex && a.node.data.startIndex <= endIndex;
+    function inRange(a: Anno): boolean {
+      return a.node.data.startIndex >= startIndex && a.node.data.startIndex <= endIndex;
     }
 
     // Resolve to atom nodes as configured in the custom `ZeroPointAnnotation` extension
@@ -275,8 +275,7 @@ export default class StandoffConverter {
           type: 'zeroPointAnnotation',
           attrs: {
             uuid: a.node.data.uuid,
-            _annotationData: { ...a.node.data },
-            type: a.node.data.type,
+            annotationData: a.node,
           },
         },
       }));
@@ -300,7 +299,7 @@ export default class StandoffConverter {
     );
 
     if (inlineNodes.length === 0) {
-      return [this.createTextNode(startIndex, endIndex)];
+      return this.createTextNode(startIndex, endIndex);
     }
 
     const nodes: TiptapNode[] = [];
@@ -308,7 +307,7 @@ export default class StandoffConverter {
 
     for (const { pos, node } of inlineNodes) {
       if (cursor <= pos) {
-        nodes.push(this.createTextNode(cursor, pos));
+        nodes.push(...this.createTextNode(cursor, pos));
       }
       nodes.push(node);
 
@@ -316,7 +315,7 @@ export default class StandoffConverter {
     }
 
     if (cursor <= endIndex) {
-      nodes.push(this.createTextNode(cursor, endIndex));
+      nodes.push(...this.createTextNode(cursor, endIndex));
     }
 
     return nodes;
@@ -333,7 +332,7 @@ export default class StandoffConverter {
    * @returns `true` if the range contains only whitespace, `false` otherwise
    */
   private isOnlyWhitespaces(startIndex: number, endIndex: number): boolean {
-    return this.standoffJson.text.slice(startIndex, endIndex + 1).trim().length > 0;
+    return this.standoffJson.text.slice(startIndex, endIndex + 1).trim().length === 0;
   }
 
   /**
@@ -408,7 +407,7 @@ export default class StandoffConverter {
   // while tableRow/table/bulletList do NOT (their content is restricted to cells/rows/items),
   // so orphan gap text inside them must be clamped into an adjacent child instead.
   private parentAllowsParagraph(parentType: string): boolean {
-    const containsList = this.getContainsList(parentType);
+    const containsList: string[] | null = this.getContainsList(parentType);
 
     // No declared children → treated as permissive (leaf types never reach gap-filling anyway).
     if (containsList === null) {
@@ -529,7 +528,7 @@ export default class StandoffConverter {
     }
 
     if (content.attrs?._annotationData) {
-      const data = content.attrs._annotationData;
+      const data: Record<string, any> = content.attrs._annotationData;
 
       if (mode === 'append') {
         data.endIndex = Math.max(data.endIndex ?? end, end);
@@ -748,10 +747,6 @@ export default class StandoffConverter {
     return topLevelBlocks.sort((a, b) => a.node.data.startIndex - b.node.data.startIndex);
   }
 
-  // Post-build pass: attaches custom label annotations to every built-in tree node whose
-  // range they cover. Labels are sorted outermost-first (widest range first).
-  // Full annotation data including UUID is stored so the editor can look up and edit each one.
-
   /**
    * Attaches semantic block annotations to the whole tiptap document after it was created
    * (= all built-in blocks are in place). Starting point for the recursive {@linkcode attachLabelsToNodes} function
@@ -785,8 +780,8 @@ export default class StandoffConverter {
         continue;
       }
 
-      const nodeStart: number = node.attrs?._annotationData.startIndex;
-      const nodeEnd: number = node.attrs?._annotationData.endIndex;
+      const nodeStart: number | undefined = node.attrs?._annotationData?.startIndex;
+      const nodeEnd: number | undefined = node.attrs?._annotationData?.endIndex;
 
       if (nodeStart !== undefined && nodeEnd !== undefined) {
         const labelsSortedBySize = annotations
@@ -812,7 +807,7 @@ export default class StandoffConverter {
    * Recursively collects and concatenates text content of the built document in order.
    *
    * @param {TiptapNode[]} nodes Sibling nodes of the tiptap document
-   * @param {string} acc Currently ccumulated text content
+   * @param {string} acc Currently accumulated text content
    * @returns {string} The accumulated text content
    */
   private collectDocText(nodes: TiptapNode[], acc: string): string {
@@ -822,7 +817,7 @@ export default class StandoffConverter {
       if (node.type === 'text') {
         text += node.text ?? '';
       } else if (node.content?.length) {
-        text += this.collectDocText(node.content, acc);
+        text = this.collectDocText(node.content, text);
       }
     }
 

@@ -1,0 +1,281 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "table",
+      "attrs": {
+        "uuid": "866f4e3b-0090-43d9-b8df-d75bfdc269c1",
+        "_annotationData": {
+          "text": "head1head2nested head1nested head2nested cell1nested cell2cell2",
+          "startIndex": 0,
+          "uuid": "866f4e3b-0090-43d9-b8df-d75bfdc269c1",
+          "endIndex": 62,
+          "type": "table"
+        },
+        "_semanticBlocks": []
+      },
+      "content": [
+        {
+          "type": "tableRow",
+          "attrs": {
+            "uuid": "eb20a8f3-b8f9-45f5-935e-9e509aabcd9e",
+            "_annotationData": {
+              "text": "head1head2",
+              "startIndex": 0,
+              "uuid": "eb20a8f3-b8f9-45f5-935e-9e509aabcd9e",
+              "endIndex": 9,
+              "type": "tableRow"
+            },
+            "_semanticBlocks": []
+          },
+          "content": [
+            {
+              "type": "tableHeader",
+              "attrs": {
+                "uuid": "777793f2-358a-40f7-84ef-5c089f430e14",
+                "_annotationData": {
+                  "text": "head1",
+                  "startIndex": 0,
+                  "colspan": 1,
+                  "rowspan": 1,
+                  "uuid": "777793f2-358a-40f7-84ef-5c089f430e14",
+                  "endIndex": 4,
+                  "type": "tableHeader"
+                },
+                "_semanticBlocks": [],
+                "rowspan": 1,
+                "colspan": 1,
+                "colwidth": null,
+                "align": null
+              },
+              "content": [
+                {
+                  "type": "paragraph",
+                  "attrs": {
+                    "uuid": "caf826e5-ab13-4a2a-8075-58be9520ae78",
+                    "_annotationData": {
+                      "text": "head1",
+                      "startIndex": 0,
+                      "uuid": "caf826e5-ab13-4a2a-8075-58be9520ae78",
+                      "endIndex": 4,
+                      "type": "p"
+                    },
+                    "_semanticBlocks": []
+                  },
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "head1"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "tableHeader",
+              "attrs": {
+                "uuid": "b4ad2f02-b7a5-46a4-b0bd-0cacb5001c54",
+                "_annotationData": {
+                  "text": "head2",
+                  "startIndex": 5,
+                  "colspan": 1,
+                  "rowspan": 1,
+                  "uuid": "b4ad2f02-b7a5-46a4-b0bd-0cacb5001c54",
+                  "endIndex": 9,
+                  "type": "tableHeader"
+                },
+                "_semanticBlocks": [],
+                "rowspan": 1,
+                "colspan": 1,
+                "colwidth": null,
+                "align": null
+              },
+              "content": [
+                {
+                  "type": "paragraph",
+                  "attrs": {
+                    "uuid": "7f61f2cd-edf6-482b-86b7-5788cf73baf5",
+                    "_annotationData": {
+                      "text": "head2",
+                      "startIndex": 5,
+                      "uuid": "7f61f2cd-edf6-482b-86b7-5788cf73baf5",
+                      "endIndex": 9,
+                      "type": "p"
+                    },
+                    "_semanticBlocks": []
+                  },
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "head2"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "tableRow",
+          "attrs": {
+            "uuid": "b0f6554a-99da-4cae-8c87-470058c4f2ab",
+            "_annotationData": {
+              "text": "nested head1nested head2nested cell1nested cell2cell2",
+              "startIndex": 10,
+              "uuid": "b0f6554a-99da-4cae-8c87-470058c4f2ab",
+              "endIndex": 62,
+              "type": "tableRow"
+            },
+            "_semanticBlocks": []
+          },
+          "content": [
+            {
+              "type": "tableCell",
+              "attrs": {
+                "uuid": "11fcabec-7813-43c6-95ed-e2c4ea9c6561",
+                "_annotationData": {
+                  "text": "nested head1nested head2nested cell1nested cell2",
+                  "startIndex": 10,
+                  "colspan": 1,
+                  "rowspan": 1,
+                  "uuid": "11fcabec-7813-43c6-95ed-e2c4ea9c6561",
+                  "endIndex": 57,
+                  "type": "tableCell"
+                },
+                "_semanticBlocks": [],
+                "colspan": 1,
+                "rowspan": 1,
+                "colwidth": null,
+                "align": null
+              },
+              "content": [
+                {
+                  "type": "paragraph",
+                  "attrs": {
+                    "uuid": "1a929463-24d9-4021-b207-91af218edb66",
+                    "_annotationData": {
+                      "text": "nested head1",
+                      "startIndex": 10,
+                      "uuid": "1a929463-24d9-4021-b207-91af218edb66",
+                      "endIndex": 21,
+                      "type": "p"
+                    },
+                    "_semanticBlocks": []
+                  },
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "nested head1"
+                    }
+                  ]
+                },
+                {
+                  "type": "paragraph",
+                  "attrs": {
+                    "uuid": "2a9aad6c-5b9a-4ce5-9821-53ec8e0f5d01",
+                    "_annotationData": {
+                      "text": "nested head2",
+                      "startIndex": 22,
+                      "uuid": "2a9aad6c-5b9a-4ce5-9821-53ec8e0f5d01",
+                      "endIndex": 33,
+                      "type": "p"
+                    },
+                    "_semanticBlocks": []
+                  },
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "nested head2"
+                    }
+                  ]
+                },
+                {
+                  "type": "paragraph",
+                  "attrs": {
+                    "uuid": "748ba6de-b01d-40f3-9b10-3b8d0be4f9bc",
+                    "_annotationData": {
+                      "text": "nested cell1",
+                      "startIndex": 34,
+                      "uuid": "748ba6de-b01d-40f3-9b10-3b8d0be4f9bc",
+                      "endIndex": 45,
+                      "type": "p"
+                    },
+                    "_semanticBlocks": []
+                  },
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "nested cell1"
+                    }
+                  ]
+                },
+                {
+                  "type": "paragraph",
+                  "attrs": {
+                    "uuid": "6c7ae776-1943-41b7-bb02-d52fa7170b89",
+                    "_annotationData": {
+                      "text": "nested cell2",
+                      "startIndex": 46,
+                      "uuid": "6c7ae776-1943-41b7-bb02-d52fa7170b89",
+                      "endIndex": 57,
+                      "type": "p"
+                    },
+                    "_semanticBlocks": []
+                  },
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "nested cell2"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "tableCell",
+              "attrs": {
+                "uuid": "b12f1f68-d816-4d0a-9af5-831aaae20890",
+                "_annotationData": {
+                  "text": "cell2",
+                  "startIndex": 58,
+                  "colspan": 1,
+                  "rowspan": 1,
+                  "uuid": "b12f1f68-d816-4d0a-9af5-831aaae20890",
+                  "endIndex": 62,
+                  "type": "tableCell"
+                },
+                "_semanticBlocks": [],
+                "colspan": 1,
+                "rowspan": 1,
+                "colwidth": null,
+                "align": null
+              },
+              "content": [
+                {
+                  "type": "paragraph",
+                  "attrs": {
+                    "uuid": "85c72889-1eb8-4faf-b552-cd4014d6a70b",
+                    "_annotationData": {
+                      "text": "cell2",
+                      "startIndex": 58,
+                      "uuid": "85c72889-1eb8-4faf-b552-cd4014d6a70b",
+                      "endIndex": 62,
+                      "type": "p"
+                    },
+                    "_semanticBlocks": []
+                  },
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "cell2"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
