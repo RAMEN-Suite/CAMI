@@ -192,6 +192,7 @@ function buildMergedStructuralConfigs(guidelinesData: IGuidelines): AnnotationTy
     const existing: AnnotationType | undefined = result.find(c => c.type === targetType);
 
     if (existing) {
+      console.log('i exist: ', entry);
       // Extend built-in: append any extra properties defined in JSON
       existing.properties = [...(existing.properties ?? []), ...(entry.properties ?? [])];
       // If the entry is renaming this built-in, update the type and record the editor role.
@@ -544,6 +545,30 @@ export function useGuidelinesStore() {
 
   function getPriorityForType(type: string): number {
     return mergedStructuralConfigs.value.find(c => c.type === type)?.priority ?? 0;
+  }
+
+  // Returns the Tiptap node type name (editor-internal) for a given annotation type name.
+  // Falls back to the type itself for built-ins that have not been renamed.
+  function getEditorRole(type: string): string {
+    const config = mergedStructuralConfigs.value.find(c => c.type === type);
+
+    return config?.editorRole ?? type;
+  }
+
+  // Returns the user-defined annotation type name for a given editor role.
+  // E.g. getTypeByEditorRole('paragraph') returns 'p' when the project renamed it.
+  // Falls back to the role itself if no mapping exists.
+  function getTypeByEditorRole(role: string): string {
+    const config = mergedStructuralConfigs.value.find(c => (c.editorRole ?? c.type) === role);
+    return config?.type ?? role;
+  }
+
+  // Returns true if the given annotation type (user name) maps to one of the
+  // original built-in structural types, even if it has been renamed via editorRole.
+  function isBuiltinStructuralType(type: string): boolean {
+    const role: string = getEditorRole(type);
+
+    return BUILTIN_STRUCTURAL_TYPES_SET.has(role);
   }
 
   // Returns the Tiptap node type name (editor-internal) for a given annotation type name.

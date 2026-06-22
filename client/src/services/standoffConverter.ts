@@ -225,9 +225,11 @@ export default class StandoffConverter {
       a =>
         !this.usedUuids.has(a.node.data.uuid) &&
         !StandoffConverter.EXCLUDED_FROM_BLOCK_CHILDREN.has(getEditorRole(a.node.data.type)) &&
+        !StandoffConverter.EXCLUDED_FROM_BLOCK_CHILDREN.has(getEditorRole(a.node.data.type)) &&
         a.node.data.startIndex >= startIndex &&
         a.node.data.endIndex <= endIndex &&
         (containsList === null || containsList.includes(getEditorRole(a.node.data.type))),
+      containsList === null || containsList.includes(getEditorRole(a.node.data.type)),
     );
 
     return candidates
@@ -282,6 +284,7 @@ export default class StandoffConverter {
 
     // Resolve to hard breaks
     const hardBreakEntries: InlineEntry[] = [...this.structuralAnnotations.values()]
+      .filter(a => getEditorRole(a.node.data.type) === 'hardBreak' && inRange(a))
       .filter(a => getEditorRole(a.node.data.type) === 'hardBreak' && inRange(a))
       .map(a => ({
         pos: a.node.data.startIndex,
@@ -358,6 +361,7 @@ export default class StandoffConverter {
       type: 'paragraph',
       attrs: {
         uuid,
+        _annotationData: { type: paragraphType, uuid, startIndex, endIndex },
         _annotationData: { type: paragraphType, uuid, startIndex, endIndex },
       },
       content,
