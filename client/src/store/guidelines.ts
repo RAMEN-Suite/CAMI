@@ -571,30 +571,6 @@ export function useGuidelinesStore() {
     return BUILTIN_STRUCTURAL_TYPES_SET.has(role);
   }
 
-  // Returns the Tiptap node type name (editor-internal) for a given annotation type name.
-  // Falls back to the type itself for built-ins that have not been renamed.
-  function getEditorRole(type: string): string {
-    const config = mergedStructuralConfigs.value.find(c => c.type === type);
-
-    return config?.editorRole ?? type;
-  }
-
-  // Returns the user-defined annotation type name for a given editor role.
-  // E.g. getTypeByEditorRole('paragraph') returns 'p' when the project renamed it.
-  // Falls back to the role itself if no mapping exists.
-  function getTypeByEditorRole(role: string): string {
-    const config = mergedStructuralConfigs.value.find(c => (c.editorRole ?? c.type) === role);
-    return config?.type ?? role;
-  }
-
-  // Returns true if the given annotation type (user name) maps to one of the
-  // original built-in structural types, even if it has been renamed via editorRole.
-  function isBuiltinStructuralType(type: string): boolean {
-    const role: string = getEditorRole(type);
-
-    return BUILTIN_STRUCTURAL_TYPES_SET.has(role);
-  }
-
   return {
     availableCollectionLabels,
     availableEntityLabels,
