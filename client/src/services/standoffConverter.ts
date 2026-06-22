@@ -5,6 +5,7 @@ import {
   NodeDto,
   NodeStatusObject,
   AnnotationNode,
+  AnnotationType,
 } from '../models/types';
 import { useGuidelinesStore } from '../store/guidelines';
 
@@ -81,7 +82,7 @@ export default class StandoffConverter {
 
   /**
    * Sets up the stores for the different annotation categories (structural, inline, semantic block). These stores are used for all
-   * the subsequent parsing steps and will be exported to the editor when the document is ready.
+   * the subsequent parsing steps and will be exported to the editor setup when the document is ready.
    *
    * @returns {void} - This function does not return a value. All the data are set directly into the variables.
    */
@@ -131,31 +132,39 @@ export default class StandoffConverter {
     }
   }
 
-  // Returns the `contains` list for the given type if non-empty, or null otherwise.
-  // Null means "no filter" — the node either has no declared children or is a leaf.
+  /**
+   * Returns the list of annotation types allowed as structural children of the given annotation type as
+   * configured in the given annotation type's `contains` field.
+   * `Null` means "no filter" - the node either has no declared children or is a leaf.
+   *
+   * Even though technically all annotations can have a `contains` field, this function is only used
+   * for built-in block types (e.g. `table` -> `tableRow`, `bulletList` -> `listItem`).
+   *
+   * @param {string} type The annotation type
+   * @returns {string[] | null} The list of allowed child types or `null` if list is empty or non-existent
+   */
   private getContainsList(type: string): string[] | null {
-    const config = getStructuralAnnotationConfigs().find(c => c.type === type);
-    const list = config?.contains;
+    const config: AnnotationType | undefined = getStructuralAnnotationConfigs().find(
+      c => c.type === type,
+    );
+    const list: string[] | undefined = config?.contains;
 
     return list && list.length > 0 ? list : null;
   }
 
-  // Strict, acyclic "ancestor candidate" relation: returns true when `outer` should wrap `inner`
-  // in the tree. For ranges of different size the larger wraps the smaller. For CO-EQUAL ranges
-  // (e.g. a single-item list where bulletList, listItem and paragraph all share [29,33]) a symmetric
-  // `contains`-based test would make each "contain" the other and drop all of them, so we instead
-  // break ties deterministically: lower `priority` number wins (outer container types have lower
-  // priority, e.g. bulletList 40 < listItem 50 < paragraph 80), then uuid as a final tiebreak so
-  // identical-range duplicates resolve to exactly one survivor instead of mutually annihilating.
-
   /**
-   * Co-equal ranges (e.g. a single-item list: `bulletList`/`listItem`/`paragraph` all sharing
-   * `startIndex` and `endIndex`) are resolved deterministically by `contains`, so the outermost type survives as the
-   * top-level node and the rest become its descendants instead of all being dropped.
+   * Checks if a node should contain another node in the final tree, based on ther `startIndex` and `endIndex` properties.
    *
-   * @param outer
-   * @param inner
-   * @returns
+   * For ranges of different size the larger wraps the smaller. Co-equal ranges (e.g. a single-item list
+   * where bulletList, listItem and paragraph all share [29,33]) where a symmetric
+   * `contains`-based test would make each "contain" the other are resolved deterministically: lower `priority` number wins
+   * (outer container types have lower priority, e.g. bulletList 40 < listItem 50 < paragraph 80), then the annotaton's uuid
+   * as a final tiebreak so identical-range duplicates resolve to exactly one survivor instead of mutually annihilating.
+   * The uuid tie break also ensures that the same document is created every time the same standoff is parsed.
+   *
+   * @param {Anno} outer: The Annotation whose node might contain `inner`
+   * @param {Anno} inner: The Annotation whose node might be contained by `outer`
+   * @returns {boolean}: `true` if `outer` contains `inner`, `false` otherwise
    */
   private contains(outer: Anno, inner: Anno): boolean {
     if (outer.node.data.uuid === inner.node.data.uuid) {
@@ -177,7 +186,7 @@ export default class StandoffConverter {
       return true;
     }
 
-    // Co-equal range: order by priority (lower = more outer), then uuid for a stable strict order.
+    // Co-equal range: order by priority (lower = more outer)
     const outerPrio: number = getPriorityForType(outer.node.data.type);
     const innerPrio: number = getPriorityForType(inner.node.data.type);
 
@@ -185,22 +194,34 @@ export default class StandoffConverter {
       return outerPrio < innerPrio;
     }
 
+    // Final tiebreak: uuid for a stable strict order.
     return outer.node.data.uuid < inner.node.data.uuid;
   }
 
-  // Returns the immediate structural children within [startIndex, endIndex] for the parent type.
-  // When the parent type has a `contains` list, only types in that list are candidates.
-  // This resolves co-equal built-in ranges (e.g. tableCell and paragraph both at [40,60]):
-  // tableRow.contains=['tableCell'] → only tableCell is a candidate for tableRow.
+  /**
+   * Returns the immediate structural children within given range for the parent type.
+   * When the parent type has a `contains` list, only types in that list are candidates.
+   * This resolves co-equal built-in ranges (e.g. `tableCell` and `paragraph` both at [40,60]):
+   * If `tableRow.contains` = [`'tableCell'`] -> only `tableCell` is a candidate for `tableRow`.
+   *
+   * Note that this function does not build any tree/tiptap elements; it is only a lookup function for the flattened
+   * annotation list.
+   *
+   * @param {string} parentType Type of the parent annotation
+   * @param {number} startIndex The start index of the parent annotation
+   * @param {number} endIndex The end index of the leaf node
+   * @param {Anno[]} allStructural The list of all structural annotations
+   * @returns
+   */
   private findDirectChildren(
     parentType: string,
     startIndex: number,
     endIndex: number,
     allStructural: Anno[],
   ): Anno[] {
-    const containsList = this.getContainsList(parentType);
+    const containsList: string[] | null = this.getContainsList(parentType);
 
-    const candidates = allStructural.filter(
+    const candidates: Anno[] = allStructural.filter(
       a =>
         !this.usedUuids.has(a.node.data.uuid) &&
         !StandoffConverter.EXCLUDED_FROM_BLOCK_CHILDREN.has(getEditorRole(a.node.data.type)) &&
@@ -214,29 +235,53 @@ export default class StandoffConverter {
       .sort((a, b) => a.node.data.startIndex - b.node.data.startIndex);
   }
 
-  private createTextNode(startIndex: number, endIndex: number): TiptapNode[] {
+  /**
+   * Creates a text node with the given range of standoff text.
+   *
+   * @param startIndex The start index of the text node
+   * @param endIndex The end index of the text node
+   * @returns {TiptapNode[]} The built text node
+   */
+  private createTextNode(startIndex: number, endIndex: number): TiptapNode {
     const text: string = this.standoffJson.text.slice(startIndex, endIndex + 1);
-    return text ? [{ type: 'text', text }] : [];
+
+    return { type: 'text', text };
   }
 
-  // Builds the inline content of a leaf structural node, interleaving text with
-  // zero-point atom nodes and hard breaks, all sorted by position.
+  /**
+   * Builds the inline content of a leaf structural node, interweaving text with zero-point atom nodes
+   * and hard breaks, all sorted by position, and returns the resulting array of Tiptap inline nodes.
+   *
+   * Only used when the parent allows leaf content (only`paragraph` or `heading`, not `bulletList` or `listItem`).
+   *
+   * @param {number} startIndex The start index of the leaf node
+   * @param {number} endIndex The end index of the leaf node
+   * @returns {TiptapNode[]} An array of Tiptap inline nodes (hard breaks, zero point annotations, text nodes)
+   */
   private createLeafContent(startIndex: number, endIndex: number): TiptapNode[] {
     type InlineEntry = { pos: number; node: TiptapNode };
 
-    const inRange = (a: Anno) =>
+    // Is a annotation in the given range?
+    function inRange(a: Anno) {
       a.node.data.startIndex >= startIndex && a.node.data.startIndex <= endIndex;
+    }
 
+    // Resolve to atom nodes as configured in the custom `ZeroPointAnnotation` extension
     const zeroPointEntries: InlineEntry[] = [...this.inlineAnnotations.values()]
       .filter(a => isZeroPoint(a.node) && inRange(a))
       .map(a => ({
         pos: a.node.data.startIndex,
         node: {
           type: 'zeroPointAnnotation',
-          attrs: { uuid: a.node.data.uuid, annotationData: a.node, type: a.node.data.type },
+          attrs: {
+            uuid: a.node.data.uuid,
+            _annotationData: { ...a.node.data },
+            type: a.node.data.type,
+          },
         },
       }));
 
+    // Resolve to hard breaks
     const hardBreakEntries: InlineEntry[] = [...this.structuralAnnotations.values()]
       .filter(a => getEditorRole(a.node.data.type) === 'hardBreak' && inRange(a))
       .map(a => ({
@@ -250,41 +295,66 @@ export default class StandoffConverter {
         },
       }));
 
-    const inlineNodes = [...zeroPointEntries, ...hardBreakEntries].sort((a, b) => a.pos - b.pos);
+    const inlineNodes: InlineEntry[] = [...zeroPointEntries, ...hardBreakEntries].sort(
+      (a, b) => a.pos - b.pos,
+    );
 
     if (inlineNodes.length === 0) {
-      return this.createTextNode(startIndex, endIndex);
+      return [this.createTextNode(startIndex, endIndex)];
     }
 
     const nodes: TiptapNode[] = [];
-    let cursor = startIndex;
+    let cursor: number = startIndex;
 
     for (const { pos, node } of inlineNodes) {
       if (cursor <= pos) {
-        nodes.push(...this.createTextNode(cursor, pos));
+        nodes.push(this.createTextNode(cursor, pos));
       }
       nodes.push(node);
+
       cursor = pos + 1;
     }
 
     if (cursor <= endIndex) {
-      nodes.push(...this.createTextNode(cursor, endIndex));
+      nodes.push(this.createTextNode(cursor, endIndex));
     }
 
     return nodes;
   }
 
-  private hasText(startIndex: number, endIndex: number): boolean {
+  /**
+   * Checks if the given range contains only whitespace text.
+   *
+   * Used in {@linkcode appendGapParagraphs} to determine how the gap content should be treated
+   * (create separate paragraph or merge into the previous/next node).
+   *
+   * @param {number} startIndex The start index of the range
+   * @param {number} endIndex The end index of the range
+   * @returns `true` if the range contains only whitespace, `false` otherwise
+   */
+  private isOnlyWhitespaces(startIndex: number, endIndex: number): boolean {
     return this.standoffJson.text.slice(startIndex, endIndex + 1).trim().length > 0;
   }
 
+  /**
+   * Creates a synthetic paragraph node with the given content.
+   *
+   * Used to create a paragraph node that contains the gap content
+   * for orphaned text ranges (= ranges that are not part of any structure annotation).
+   *
+   * @param {number} startIndex The start index of the gap
+   * @param {number} endIndex The end index of the gap
+   * @param {TiptapNode[]} content The content that should be passed into the paragraph node
+   * @returns {TiptapNode} The synthetic paragraph node
+   */
   private syntheticParagraph(
     startIndex: number,
     endIndex: number,
     content: TiptapNode[],
   ): TiptapNode {
     const uuid: string = crypto.randomUUID();
-    const paragraphType = getTypeByEditorRole('paragraph');
+    const paragraphType: string = getTypeByEditorRole('paragraph');
+
     return {
       type: 'paragraph',
       attrs: {
@@ -295,31 +365,42 @@ export default class StandoffConverter {
     };
   }
 
-  // Splits a gap range [gapStart, gapEnd] at label annotation boundaries so that each
-  // resulting sub-range can become its own synthetic paragraph and receive the correct labels.
-  // Without this, a single large synthetic paragraph would span the entire gap and no label
-  // annotation (which starts mid-gap) would satisfy the "label fully contains node" filter.
-  private splitGapBySemanticBlocks(
-    gapStart: number,
-    gapEnd: number,
-  ): { start: number; end: number }[] {
+  /**
+   * Splits a gap range [gapStart, gapEnd] at semantic block annotation boundaries (opener, closer etc.)
+   * so that each resulting sub-range can become its own synthetic paragraph and receive the correct labels. Needed
+   * to created the flat structure of built-in blocks that have the semantic block labels on them.
+   * Without this, a single large synthetic paragraph would span the entire gap and no semantic block annotation
+   * (which starts mid-gap) would satisfy the "semantic block fully contains node" filter.
+   *
+   * @param {number} gapStart The start index of the gap
+   * @param {number} gapEnd The end index of the gap
+   * @returns {Range[]} An array of sub-ranges for this gap
+   */
+  private splitGapBySemanticBlocks(gapStart: number, gapEnd: number): Range[] {
     const boundaries = new Set<number>([gapStart, gapEnd + 1]);
 
-    for (const la of this.semanticBlockAnnotations.values()) {
-      const s = la.node.data.startIndex;
-      const e = la.node.data.endIndex;
-      if (s <= gapEnd && e >= gapStart) {
-        if (s >= gapStart) boundaries.add(s);
-        if (e + 1 <= gapEnd + 1) boundaries.add(e + 1);
+    for (const anno of this.semanticBlockAnnotations.values()) {
+      const { startIndex, endIndex } = anno.node.data;
+
+      if (startIndex <= gapEnd && endIndex >= gapStart) {
+        if (startIndex >= gapStart) {
+          boundaries.add(startIndex);
+        }
+
+        if (endIndex + 1 <= gapEnd + 1) {
+          boundaries.add(endIndex + 1);
+        }
       }
     }
 
-    const sorted = [...boundaries].sort((a, b) => a - b);
-    const result: { start: number; end: number }[] = [];
+    const sorted: number[] = [...boundaries].sort((a, b) => a - b);
+    const ranges: Range[] = [];
+
     for (let i = 0; i < sorted.length - 1; i++) {
-      result.push({ start: sorted[i], end: sorted[i + 1] - 1 });
+      ranges.push({ start: sorted[i], end: sorted[i + 1] - 1 });
     }
-    return result;
+
+    return ranges;
   }
 
   // Whether the given (built-in) container type may hold a `paragraph` as a direct child.
@@ -338,14 +419,18 @@ export default class StandoffConverter {
   }
 
   /**
-   * Emits paragraphs for a gap into `content`, preserving EVERY character of [gapStart, gapEnd].
+   * Emits paragraphs for a gap into given `content`, preserving EVERY character of [gapStart, gapEnd].
    * The gap is split at semantic-block boundaries so each text run becomes its own paragraph and
-   * receives the correct semantic labels. Used only when the parent accepts paragraphs.
+   * receives the correct semantic labels. Used only when the parent accepts paragraphs (e.g. `bulletList` can not
+   * contain paragraphs, only `tableRows`).
    *
-   * @param content
-   * @param gapStart
-   * @param gapEnd
-   * @returns
+   * Main reason for this function is to catch orphaned text indices that are not contained by any structural annotation
+   * -> tiptap needs a paragraph to render the text.
+   *
+   * @param {TiptapNode[]} content The content to append to
+   * @param {number} gapStart The start index of the gap
+   * @param {number} gapEnd The end index of the gap
+   * @returns {void} This function does not return any value
    */
   private appendGapParagraphs(content: TiptapNode[], gapStart: number, gapEnd: number): void {
     if (gapStart > gapEnd) {
@@ -354,17 +439,18 @@ export default class StandoffConverter {
 
     const subRanges: Range[] = this.splitGapBySemanticBlocks(gapStart, gapEnd);
 
-    let leadingBuffer: Range[] = [];
+    let leadingWhitespaceBuffer: Range[] = [];
     let lastParagraph: TiptapNode | null = null;
 
     for (const { start, end } of subRanges) {
-      // TODO: Why the white-space check?
-      if (!this.hasText(start, end)) {
-        // Whitespace-only run: merge into the previous paragraph, or buffer it for the next one.
+      // If only whitespace, merge it into the adjacent node since it is likely a gap
+      // between two semantic structure blocks (`addrLine`, `addrLine`)
+      if (this.isOnlyWhitespaces(start, end)) {
+        // Append to the last paragraph if there is one. Otherwise, keep it in the leading buffer
         if (lastParagraph) {
           this.clampTextIntoNode(lastParagraph, start, end, 'append');
         } else {
-          leadingBuffer.push({ start, end });
+          leadingWhitespaceBuffer.push({ start, end });
         }
 
         continue;
@@ -377,28 +463,33 @@ export default class StandoffConverter {
       );
 
       // Flush buffered leading whitespace into the front of this paragraph (ascending order).
-      for (let i = leadingBuffer.length - 1; i >= 0; i--) {
-        this.clampTextIntoNode(paragraph, leadingBuffer[i].start, leadingBuffer[i].end, 'prepend');
+      for (let i = leadingWhitespaceBuffer.length - 1; i >= 0; i--) {
+        this.clampTextIntoNode(
+          paragraph,
+          leadingWhitespaceBuffer[i].start,
+          leadingWhitespaceBuffer[i].end,
+          'prepend',
+        );
       }
-      leadingBuffer = [];
 
       content.push(paragraph);
+
+      leadingWhitespaceBuffer = [];
       lastParagraph = paragraph;
     }
 
-    // The gap held no real text at all (e.g. inter-block whitespace).
-    if (leadingBuffer.length > 0) {
+    // buffer holds elements -> The gap held no real text at all (e.g. inter-block whitespace).
+    if (leadingWhitespaceBuffer.length > 0) {
       if (content.length > 0) {
-        // Attach to the previous sibling block already in `content`.
         const prev: TiptapNode = content[content.length - 1];
 
-        for (const ws of leadingBuffer) {
-          this.clampTextIntoNode(prev, ws.start, ws.end, 'append');
+        for (const range of leadingWhitespaceBuffer) {
+          this.clampTextIntoNode(prev, range.start, range.end, 'append');
         }
       } else {
         // Leading whitespace at the very start with no siblings: keep it in its own paragraph.
-        const first: Range = leadingBuffer[0];
-        const last: Range = leadingBuffer[leadingBuffer.length - 1];
+        const first: Range = leadingWhitespaceBuffer[0];
+        const last: Range = leadingWhitespaceBuffer[leadingWhitespaceBuffer.length - 1];
 
         content.push(
           this.syntheticParagraph(
@@ -411,12 +502,24 @@ export default class StandoffConverter {
     }
   }
 
-  // Places the text+atoms of [start, end] into a single existing block node, descending into the
-  // deepest text-accepting leaf (e.g. into a tableCell's last/first paragraph). Updates the
-  // `_annotationData` range of every node on the path so index maps stay consistent.
-  // `mode` controls whether the content is appended (end of block) or prepended (start of block).
+  /**
+   * Places the text + atoms of given range into a single existing block node (or its deepest text-accepting leaf) by appending or prepending it.
+   * Used as one solution for handling orphaned indices (the other being {@linkcode appendGapParagraphs}),
+   * where the gap is not allowed to be a paragraph node and a merge must happen instead
+   * (e.g. inside `tableRow` only `tableCell`s are possible, everything else would break the document).
+   *
+   * It works by descending into the deepest text-accepting leaf of the passed node (e.g. into a `tableCell`'s last/first paragraph)
+   * and updating the `_annotationData` range of every node on the path. Since the passed node
+   * is a already fully build tiptap node, the descending is guaranteed to succeed.
+   *
+   * @param {TiptapNode} content The node to append the text range to
+   * @param {Number} start The start index of the orphaned range
+   * @param {number} end The end index of the orphaned range
+   * @param {'append' | 'prepend'} mode Whether to append or prepend the orphaned content to the given node
+   * @returns {void} This function does not return any value (the passed node is modified in-place)
+   */
   private clampTextIntoNode(
-    node: TiptapNode,
+    content: TiptapNode,
     start: number,
     end: number,
     mode: 'append' | 'prepend' = 'append',
@@ -425,8 +528,8 @@ export default class StandoffConverter {
       return;
     }
 
-    if (node.attrs?._annotationData) {
-      const data = node.attrs._annotationData;
+    if (content.attrs?._annotationData) {
+      const data = content.attrs._annotationData;
 
       if (mode === 'append') {
         data.endIndex = Math.max(data.endIndex ?? end, end);
@@ -435,57 +538,81 @@ export default class StandoffConverter {
       }
     }
 
-    const leaf = this.createLeafContent(start, end);
+    const leaf: TiptapNode[] = this.createLeafContent(start, end);
 
     // Leaf block (paragraph/heading): the text lives here directly.
-    if (this.isLeafContainer(node.type)) {
-      node.content = node.content ?? [];
+    if (this.isLeafContainer(content.type)) {
+      content.content = content.content ?? [];
 
       if (mode === 'append') {
-        node.content.push(...leaf);
+        content.content.push(...leaf);
       } else {
-        node.content.unshift(...leaf);
+        content.content.unshift(...leaf);
       }
 
       return;
     }
 
     // Container: descend into the appropriate block child.
-    const blockChildren = (node.content ?? []).filter(
+    const blockChildren: TiptapNode[] = (content.content ?? []).filter(
       c => c.type !== 'text' && c.type !== 'hardBreak' && c.type !== 'zeroPointAnnotation',
     );
 
+    // Nothing to descend into (degenerate), meaning that there is no more valid block child.
+    // Attach directly as a last resort.
     if (blockChildren.length === 0) {
-      // Nothing to descend into (degenerate). Attach directly as a last resort.
-      node.content = node.content ?? [];
+      content.content = content.content ?? [];
 
       if (mode === 'append') {
-        node.content.push(...leaf);
+        content.content.push(...leaf);
       } else {
-        node.content.unshift(...leaf);
+        content.content.unshift(...leaf);
       }
 
       return;
     }
 
-    const target = mode === 'append' ? blockChildren[blockChildren.length - 1] : blockChildren[0];
+    // If there are valid block children, descend further down the tree
+    const target: TiptapNode =
+      mode === 'append' ? blockChildren[blockChildren.length - 1] : blockChildren[0];
 
     this.clampTextIntoNode(target, start, end, mode);
   }
 
+  /**
+   * Warning function to log out if any invalid indices required clamping. Can be replace with
+   * another error handling function later if desired.
+   *
+   * @param {number} startIndex The start index of the orphaned range
+   * @param {number} endIndex The end index of the orphaned range
+   * @param {string} parentType Type of the parent annotation
+   * @param {'previous' | 'next'} where Whether the clamp prepended or appended the range into the adjacent node
+   */
   private warnClamp(
-    start: number,
-    end: number,
+    startIndex: number,
+    endIndex: number,
     parentType: string,
     where: 'previous' | 'next',
   ): void {
     console.warn(
-      `[standoffConverter] Clamped orphan gap [${start},${end}] into the ${where} child of ` +
+      `[standoffConverter] Clamped orphan gap [${startIndex},${endIndex}] into the ${where} child of ` +
         `<${parentType}>. This text belongs to no structural child — likely incorrect source ` +
         `indices in the imported data. (Candidate for a future refactor.)`,
     );
   }
 
+  /**
+   * Main building function to create the tiptap document. Called recursively for all structural annotations, uses their standoff
+   * indices.
+   *
+   * Takes into account orphaned indices (= indices that aren't covered by any structure annotation)
+   * and ensures a valid tiptap/prosemirror document is created by creating synthetic paragraph nodes or merging orphaned
+   * text into their previous/next neighbour.
+   *
+   * @param {Anno} annotation The annotation that should be converted into a tiptap node
+   * @param {Anno[]} allStructural Annotations that need to be considered for all operations)
+   * @returns {TiptapNode} The built tiptap node
+   */
   private buildStructuralNode(annotation: Anno, allStructural: Anno[]): TiptapNode {
     const { startIndex, endIndex, type } = annotation.node.data;
     const tiptapType: string = getEditorRole(type);
@@ -557,6 +684,7 @@ export default class StandoffConverter {
       }
 
       childNodes.push(childNode);
+
       cursor = child.node.data.endIndex + 1;
     }
 
@@ -609,7 +737,7 @@ export default class StandoffConverter {
    * Used for creating the top document level from where the recursive children creation will start.
    *
    * @param allStructural - All built-in structural annotations
-   * @returns {Anno[]} Top-level built-in structural annotations, sorted by start index
+   * @returns {Anno[]} Top-level built-in structural annotations, sorted by their start index
    */
   private findTopLevelAnnotations(allStructural: Anno[]): Anno[] {
     const topLevelBlocks: Anno[] = allStructural.filter(
@@ -623,27 +751,46 @@ export default class StandoffConverter {
   // Post-build pass: attaches custom label annotations to every built-in tree node whose
   // range they cover. Labels are sorted outermost-first (widest range first).
   // Full annotation data including UUID is stored so the editor can look up and edit each one.
-  private attachLabels(nodes: TiptapNode[]): void {
-    const labelAnnos = [...this.semanticBlockAnnotations.values()];
-    if (labelAnnos.length === 0) {
+
+  /**
+   * Attaches semantic block annotations to the whole tiptap document after it was created
+   * (= all built-in blocks are in place). Starting point for the recursive {@linkcode attachLabelsToNodes} function
+   * that is called for level of the tree.
+   *
+   * @param {TiptapNode[]} nodes Sibling nodes of the tiptap document
+   * @returns {void} This function does not return any value.
+   */
+  private attachSemanticBlockLabels(nodes: TiptapNode[]): void {
+    const semanticBlockAnnotations: Anno[] = [...this.semanticBlockAnnotations.values()];
+
+    if (semanticBlockAnnotations.length === 0) {
       return;
     }
-    this.attachLabelsToNodes(nodes, labelAnnos);
+
+    this.attachLabelsToNodes(nodes, semanticBlockAnnotations);
   }
 
-  private attachLabelsToNodes(nodes: TiptapNode[], labelAnnos: Anno[]): void {
+  /**
+   * Recursively attaches information of semantic block annotations (opener, closer etc.) to document building blocks that have an
+   * intersecting range, therefore "tainting" these building blocks with a semantic meaning.
+   *
+   * Performs the operation for every node in the given list and all of its children.
+   *
+   * @param {TiptapNode[]} nodes Sibling nodes of the tiptap document
+   * @param {Anno[]} annotations All semantic block annotations
+   */
+  private attachLabelsToNodes(nodes: TiptapNode[], annotations: Anno[]): void {
     for (const node of nodes) {
       if (node.type === 'text') {
         continue;
       }
-      const s = node.attrs?._annotationData?.startIndex as number | undefined;
-      const e = node.attrs?._annotationData?.endIndex as number | undefined;
-      if (s !== undefined && e !== undefined) {
-        // Overlap (not strict containment): a label applies to a node if their ranges intersect.
-        // Robust to paragraphs whose range was extended by merged boundary whitespace, and still
-        // correct for labels spanning several blocks (each block they overlap gets the label).
-        const labels = labelAnnos
-          .filter(a => a.node.data.startIndex <= e && a.node.data.endIndex >= s)
+
+      const nodeStart: number = node.attrs?._annotationData.startIndex;
+      const nodeEnd: number = node.attrs?._annotationData.endIndex;
+
+      if (nodeStart !== undefined && nodeEnd !== undefined) {
+        const labelsSortedBySize = annotations
+          .filter(a => a.node.data.startIndex <= nodeEnd && a.node.data.endIndex >= nodeStart)
           .sort(
             (a, b) =>
               b.node.data.endIndex -
@@ -651,46 +798,63 @@ export default class StandoffConverter {
               (a.node.data.endIndex - a.node.data.startIndex),
           )
           .map(a => ({ uuid: a.node.data.uuid, type: a.node.data.type }));
-        if (labels.length > 0) {
-          node.attrs!._semanticBlocks = labels;
-        }
+
+        node.attrs!._semanticBlocks = labelsSortedBySize;
       }
+
       if (node.content?.length) {
-        this.attachLabelsToNodes(node.content, labelAnnos);
+        this.attachLabelsToNodes(node.content, annotations);
       }
     }
   }
 
-  // Concatenates every text node of the built document in document order.
-  private collectDocText(nodes: TiptapNode[], acc: { text: string }): void {
+  /**
+   * Recursively collects and concatenates text content of the built document in order.
+   *
+   * @param {TiptapNode[]} nodes Sibling nodes of the tiptap document
+   * @param {string} acc Currently ccumulated text content
+   * @returns {string} The accumulated text content
+   */
+  private collectDocText(nodes: TiptapNode[], acc: string): string {
+    let text: string = acc;
+
     for (const node of nodes) {
       if (node.type === 'text') {
-        acc.text += node.text ?? '';
+        text += node.text ?? '';
       } else if (node.content?.length) {
-        this.collectDocText(node.content, acc);
+        text += this.collectDocText(node.content, acc);
       }
     }
+
+    return text;
   }
 
-  // Dev guard for the core invariant: the document's plain text MUST equal the standoff text
-  // exactly (every character, once, in order). If it doesn't, decorations and saved indices will
-  // silently drift, so we surface the first divergence loudly.
+  /**
+   * Post-parse function that checks if the built tiptap document's text exactly equals the standoff text.
+   *
+   * If it doesn't, decorations and saved indices (silently) drift and on save the document is polluted
+   * so the drift is made explicit. Might be replaced by or enhanced with an appropriate error handling/
+   * user notifying function.
+   *
+   * @returns {void} This function does not return any value.
+   */
   private assertTextInvariant(): void {
-    const acc = { text: '' };
-    this.collectDocText(this.tiptapJson?.content ?? [], acc);
+    const docText: string = this.collectDocText(this.tiptapJson?.content ?? [], '');
 
-    if (acc.text !== this.standoffJson.text) {
-      const expected = this.standoffJson.text;
+    if (docText !== this.standoffJson.text) {
+      const expected: string = this.standoffJson.text;
+
       let i = 0;
-      while (i < expected.length && i < acc.text.length && expected[i] === acc.text[i]) {
+
+      while (i < expected.length && i < docText.length && expected[i] === docText[i]) {
         i++;
       }
 
       console.error(
-        `[standoffConverter] TEXT INVARIANT VIOLATED: document text (len ${acc.text.length}) ` +
+        `[standoffConverter] TEXT INVARIANT VIOLATED: document text (len ${docText.length}) ` +
           `does not match standoff text (len ${expected.length}). First divergence at index ${i}: ` +
           `expected ${JSON.stringify(expected.slice(i, i + 30))} ` +
-          `but got ${JSON.stringify(acc.text.slice(i, i + 30))}. ` +
+          `but got ${JSON.stringify(docText.slice(i, i + 30))}. ` +
           `Decorations and saved annotation indices will be misaligned.`,
       );
     }
@@ -704,13 +868,7 @@ export default class StandoffConverter {
 
     topLevelAnnos.forEach(a => this.usedUuids.add(a.node.data.uuid));
 
-    // console.log(
-    //   'Top level: ',
-    //   topLevelAnnos.map(n => [n.node.data.type, n.node.data.startIndex, n.node.data.endIndex]),
-    // );
-
     const docContent: TiptapNode[] = [];
-
     let cursor: number = 0;
 
     for (const node of topLevelAnnos) {
@@ -732,8 +890,7 @@ export default class StandoffConverter {
       this.appendGapParagraphs(docContent, cursor, textEnd);
     }
 
-    // Attach custom structural annotations as labels on the built-in tree nodes.
-    this.attachLabels(docContent);
+    this.attachSemanticBlockLabels(docContent);
 
     this.tiptapJson = { type: 'doc', content: docContent };
 
