@@ -1,7 +1,6 @@
 import { DeepReadonly } from 'vue';
 import { IGuidelines } from '../models/IGuidelines';
 import {
-  AnnotationOld,
   NodeDto,
   Character,
   CharacterPostData,
@@ -364,30 +363,6 @@ export default class ApiService {
     console.error(error);
 
     throw error;
-  }
-
-  public async updateAnnotations(
-    textUuid: string,
-    annotationsToSave: AnnotationOld[],
-  ): Promise<void> {
-    try {
-      const url: string = `${this.baseUrl}/texts/${textUuid}/annotations`;
-
-      const response: Response = await fetch(url, {
-        method: 'POST',
-        cache: 'no-cache',
-        credentials: 'same-origin',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        referrerPolicy: 'no-referrer',
-        body: JSON.stringify(annotationsToSave),
-      });
-
-      await this.assertResponseOk(response);
-    } catch (error: unknown) {
-      this.handleApiError(error);
-    }
   }
 
   public async updateCharacterChain(

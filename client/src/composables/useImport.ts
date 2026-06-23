@@ -5,7 +5,7 @@ import JsonParseError from '../utils/errors/parse.error';
 import ImportError from '../utils/errors/import.error';
 import MalformedAnnotationsError from '../utils/errors/malformedAnnotations.error';
 import {
-  AnnotationOld,
+  Annotation,
   AnnotationData,
   AnnotationType,
   Character,
@@ -23,8 +23,8 @@ interface DataDump {
     afterEndIndex: number;
   };
   annotations: {
-    initialAnnotations: AnnotationOld[];
-    annotations: AnnotationOld[];
+    initialAnnotations: Annotation[];
+    annotations: Annotation[];
   };
 }
 

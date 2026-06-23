@@ -157,7 +157,7 @@ export function useCreateAnnotation(
    * Creates a content annotation with the given type and subtype.
    *
    * @param {Object} params - The parameters object. Currently consists only of the type, subtype (optional) and characters to be annotated.
-   * @returns {AnnotationOld} - The created content annotation object.
+   * @returns {Annotation} - The created content annotation object.
    */
   function createTextAnnotation(params: {
     type: string;

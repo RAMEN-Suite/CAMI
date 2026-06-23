@@ -28,16 +28,6 @@ export type NodeStatusObject<
  */
 export type NodeStatus = 'added' | 'removed' | 'created' | 'deleted' | 'modified' | 'unchanged';
 
-export type AnnotationOld = {
-  characterUuids: string[];
-  data: AnnotationData;
-  endUuid: string;
-  initialData: AnnotationData;
-  isTruncated: boolean;
-  startUuid: string;
-  status: 'existing' | 'created' | 'deleted' | 'edited';
-};
-
 export type Annotation = NodeStatusObject<AnnotationNode>;
 
 export type AnnotationNode = Node<IAnnotation>;
@@ -198,33 +188,6 @@ export type NodeSearchParams = {
   sortDirection?: 'asc' | 'desc';
 };
 
-export type Command = {
-  command: CommandType;
-  data: CommandData;
-};
-
-export type CommandData = {
-  annotation?: AnnotationOld;
-  characters?: Character[];
-  leftUuid?: string | null;
-  rightUuid?: string | null;
-  uuid?: string;
-};
-
-export type CommandType =
-  | 'createAnnotation'
-  | 'deleteAnnotation'
-  | 'deleteText'
-  | 'deleteWordAfter'
-  | 'deleteWordBefore'
-  | 'expandAnnotation'
-  | 'insertText'
-  | 'redrawAnnotation'
-  | 'replaceText'
-  | 'shiftAnnotationLeft'
-  | 'shiftAnnotationRight'
-  | 'shrinkAnnotation';
-
 export type EntityNode = Node<IEntity>;
 
 export type HistoryStack = HistoryRecord[];
@@ -234,7 +197,7 @@ export type HistoryRecord = {
   timestamp: Date;
   data: {
     afterEndCharacter: Character | null;
-    annotations: AnnotationOld[];
+    annotations: Annotation[];
     beforeStartCharacter: Character | null;
     characters: Character[];
   };
