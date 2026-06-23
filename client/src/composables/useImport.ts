@@ -1,12 +1,9 @@
 import { ref, readonly, Ref, DeepReadonly } from 'vue';
-import { useAnnotationStore } from '../store/annotations';
-import { useCharactersStore } from '../store/characters';
 import { useGuidelinesStore } from '../store/guidelines';
 import { cloneDeep, createNewCharacter, getDefaultValueForProperty } from '../utils/helper/helper';
 import JsonParseError from '../utils/errors/parse.error';
 import ImportError from '../utils/errors/import.error';
 import MalformedAnnotationsError from '../utils/errors/malformedAnnotations.error';
-import IAnnotation from '../models/IAnnotation';
 import {
   AnnotationOld,
   AnnotationData,
@@ -60,15 +57,8 @@ export type UseImportReturn = {
  * @returns {UseImportReturn} An object containing the necessary state variables and functions to control the pipeline.
  */
 export function useImport(): UseImportReturn {
-  const { initialTotalAnnotations, totalAnnotations, initializeAnnotations } = useAnnotationStore();
-  const {
-    afterEndIndex,
-    beforeStartIndex,
-    initialSnippetCharacters,
-    snippetCharacters,
-    totalCharacters,
-    initializeCharacters,
-  } = useCharactersStore();
+  const totalCharacters = ref([]);
+  const totalAnnotations = ref([]);
 
   const { getAnnotationConfig, getAnnotationFields } = useGuidelinesStore();
 

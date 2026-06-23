@@ -94,35 +94,6 @@ const { api, addToastMessage } = useAppStore();
 
 const { isRedrawMode, redrawMode, toggleRedrawMode } = useEditorStore();
 const { error: textFetchError, text, initialText, fetchAndInitializeText } = useTextStore();
-// const {
-//   afterEndIndex,
-//   beforeStartIndex,
-//   error: charactersFetchError,
-//   initialAfterEndCharacter,
-//   initialBeforeStartCharacter,
-//   initialSnippetCharacters,
-//   snippetCharacters,
-//   totalCharacters,
-//   fetchAndInitializeCharacters,
-//   insertSnippetIntoChain,
-//   resetCharacters,
-//   resetInitialBoundaryCharacters,
-// } = useCharactersStore();
-// const {
-//   error: annotationFetchError,
-//   initialSnippetAnnotations,
-//   initialTotalAnnotations,
-//   snippetAnnotations,
-//   totalAnnotations,
-//   extractSnippetAnnotations,
-//   fetchAndInitializeAnnotations,
-//   insertSnippetIntoTotalAnnotations,
-//   getAnnotationsToSave,
-//   resetAnnotations,
-//   updateAnnotationsBeforeSave,
-//   updateAnnotationStatuses,
-//   updateTruncationStatus,
-// } = useAnnotationStore();
 const { shortcutMap, normalizeKeys } = useShortcutsStore();
 
 useTitle(computed(() => `Text | ${text.value?.nodeLabels.join(', ') ?? ''}`));
