@@ -1,6 +1,6 @@
 import { Extension } from '@tiptap/core';
 import { EditorState, Plugin, PluginKey, Transaction } from '@tiptap/pm/state';
-import { Decoration, DecorationSet } from '@tiptap/pm/view';
+import { Decoration, DecorationSet, EditorView } from '@tiptap/pm/view';
 import { ANNOTATION_DECORATION_KEY } from './annotationDecoration';
 import { Node } from '@tiptap/pm/model';
 
@@ -207,6 +207,30 @@ export const AnnotationHighlight = Extension.create({
           decorations(state): DecorationSet {
             return this.getState(state) ?? DecorationSet.empty;
           },
+        },
+        view() {
+          return {
+            update: (view: EditorView, prevState: EditorState) => {
+              const prevDecos: Decoration[] = ANNOTATION_HIGHLIGHT_KEY.getState(prevState).find();
+              const currDecos: Decoration[] = ANNOTATION_HIGHLIGHT_KEY.getState(view.state).find();
+
+              // Only scroll on the off->on transition (empty -> non-empty).
+              if (prevDecos.length > 0 || currDecos.length === 0) {
+                return;
+              }
+
+              const domNode: Element | null = view.dom.querySelector('.highlight');
+
+              if (!domNode) {
+                console.warn(
+                  'Could not find dom node to scroll into view. Maybe the class name has changed.',
+                );
+                return;
+              }
+
+              domNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            },
+          };
         },
       }),
     ];
