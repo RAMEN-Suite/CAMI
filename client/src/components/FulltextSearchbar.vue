@@ -33,7 +33,7 @@ const PREVIEW_CHARACTER_SIZE: number = 25;
 const { createFullTextFromCharacters, jumpToSnippetByIndex, totalCharacters } =
   useCharactersStore();
 const { extractSnippetAnnotations, updateTruncationStatus } = useAnnotationStore();
-const { hasUnsavedChanges, setNewRangeAnchorUuid, initializeHistory } = useEditorStore();
+const { hasUnsavedChanges, setNewRangeAnchorUuid } = useEditorStore();
 
 const isSearchActive = ref<boolean>(false);
 
@@ -152,8 +152,6 @@ function handleResultItemSelect(item: SearchResult): void {
   // warns him not to (since he/she has unsaved changes). Maybe find a more elegant way, but currently
   // this is the best solution
   setNewRangeAnchorUuid(totalCharacters.value[item.endIndex].data.uuid);
-
-  initializeHistory();
 
   resetSearch();
 

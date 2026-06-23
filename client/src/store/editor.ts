@@ -1,16 +1,9 @@
-import { computed, readonly, ref, unref } from 'vue';
+import { computed, readonly, ref } from 'vue';
 import { useAnnotationStore } from './annotations';
 import { useCharactersStore } from './characters';
-import { areSetsEqual, cloneDeep } from '../utils/helper/helper';
-import {
-  CommandData,
-  CommandType,
-  HistoryRecord,
-  HistoryStack,
-  RedrawModeOptions,
-} from '../models/types';
+import { areSetsEqual } from '../utils/helper/helper';
+import { CommandData, CommandType, RedrawModeOptions } from '../models/types';
 import { useTextStore } from './text';
-import { HISTORY_MAX_SIZE } from '../config/constants';
 
 const { text, initialText } = useTextStore();
 const {
@@ -20,13 +13,9 @@ const {
   deleteCharactersBetweenUuids,
   deleteWordAfterUuid,
   deleteWordBeforeUuid,
-  getAfterEndCharacter,
-  getBeforeStartCharacter,
   insertCharactersBetweenUuids,
   removeAnnotationFromCharacters,
   replaceCharactersBetweenUuids,
-  setAfterEndCharacter,
-  setBeforeStartCharacter,
 } = useCharactersStore();
 const {
   initialSnippetAnnotations,
@@ -45,9 +34,6 @@ const newRangeAnchorUuid = ref<string | null>(null);
 // This is currently only used for restoring the range after a redraw action is canceled
 const lastRangeSnapshot = ref<Range>(null);
 
-const history = ref<HistoryStack>([]);
-const redoStack = ref<HistoryRecord[]>([]);
-
 const redrawMode = ref<RedrawModeOptions | null>(null);
 const isRedrawMode = computed<boolean>(() => redrawMode.value?.direction === 'on');
 const isContentEditable = computed<boolean>(() => !isRedrawMode.value);
@@ -58,45 +44,14 @@ const isContentEditable = computed<boolean>(() => !isRedrawMode.value);
  */
 export function useEditorStore() {
   /**
-   * Initializes the editor. Currently only initializes history state.
-   * Called when the Editor component is mounted.
+   * Initializes the editor.
+   *
+   * Currently does nothing anymore since responsibilities have been given to Tiptap, but might be worth to keep it
+   * since this is the app-wide initialization logic.
    *
    * @return {void} No return value.
    */
-  function initializeEditor(): void {
-    initializeHistory();
-  }
-
-  /**
-   * Initializes the editing history by creating the first entry in the history stack from the current character snippet.
-   * Called when the Editor component is mounted and when the snippet changes on pagination (Undo behaviour is scoped to the current snippet).
-   *
-   * @return {void} No return value.
-   */
-  function initializeHistory(): void {
-    const record: HistoryRecord = createHistoryRecord();
-
-    history.value = [record];
-    redoStack.value = [];
-  }
-
-  /**
-   * Creates a new history record with the current annotations, characters and boundaries.
-   *
-   * @return {HistoryRecord} The new history record.
-   */
-  function createHistoryRecord(): HistoryRecord {
-    return {
-      timestamp: new Date(),
-      caretPosition: unref(newRangeAnchorUuid),
-      data: {
-        afterEndCharacter: cloneDeep(getAfterEndCharacter()),
-        beforeStartCharacter: cloneDeep(getBeforeStartCharacter()),
-        annotations: cloneDeep(snippetAnnotations.value),
-        characters: cloneDeep(snippetCharacters.value),
-      },
-    };
-  }
+  function initializeEditor(): void {}
 
   /**
    * Creates a snapshot of the current window selection range and clears the selection.
@@ -114,7 +69,6 @@ export function useEditorStore() {
   function execCommand(command: CommandType, data: CommandData): void {
     const { annotation, characters, leftUuid, rightUuid } = data;
 
-    // let historyRecord: HistoryRecord | null = null;
     let newCaretPosition: string | null = null;
 
     if (command === 'insertText') {
@@ -159,11 +113,6 @@ export function useEditorStore() {
     }
 
     setNewRangeAnchorUuid(newCaretPosition);
-
-    // History entry is created afterwards to enable redo directly after an undo was executed. Alternatively,
-    // on the first undo the current state would have to saved in a record and pushed to redo stack.
-    // This is just a design choice but good keep in mind
-    pushHistoryEntry();
   }
 
   /**
@@ -209,143 +158,6 @@ export function useEditorStore() {
 
     window.getSelection().removeAllRanges();
     window.getSelection().addRange(range);
-  }
-
-  /**
-   * Creates a new history record with the current annotations, characters and boundaries and adds it to the history stack.
-   * Removes the oldest entry if the stack exceeds the maximum size.
-   *
-   * @return {void} No return value.
-   */
-  function pushHistoryEntry(): void {
-    // if (Date.now() - lastEditTimestamp < EDIT_DELAY) {
-    //   lastEditTimestamp = Date.now();
-    //   return;
-    // }
-
-    // lastEditTimestamp = Date.now();
-
-    const record: HistoryRecord = createHistoryRecord();
-
-    history.value.push(record);
-
-    // Clear redo stack on any new command
-    redoStack.value = [];
-
-    // Keep stack reasonably small
-    if (history.value.length > HISTORY_MAX_SIZE) {
-      history.value.shift(); // Remove the oldest entry
-    }
-  }
-
-  /**
-   * Undoes the last action. Pops the last record from the history stack and applies the previous state.
-   * Pushes the popped record to the redo stack.
-   *
-   * @return {void} No return value.
-   */
-  function undo(): void {
-    if (history.value.length <= 1) {
-      return;
-    }
-
-    const lastRecord: HistoryRecord = history.value.pop();
-
-    if (!lastRecord) {
-      return;
-    }
-
-    const newLastRecord: HistoryRecord | null = history.value[history.value.length - 1];
-
-    if (!newLastRecord) {
-      return;
-    }
-
-    snippetCharacters.value = cloneDeep(newLastRecord.data.characters);
-    snippetAnnotations.value = cloneDeep(newLastRecord.data.annotations);
-    setBeforeStartCharacter(cloneDeep(newLastRecord.data.beforeStartCharacter));
-    setAfterEndCharacter(cloneDeep(newLastRecord.data.afterEndCharacter));
-
-    // if (command === 'insertText') { // const { command, data } = record.data;
-    //   deleteCharactersBetweenUuids(data.leftUuid, data.rightUuid);
-    // } else if (command === 'replaceText') {
-    //   replaceCharactersBetweenUuids(data.leftUuid, data.rightUuid, data.oldCharacterData);
-    // } else if (
-    //   command === 'deleteWordBefore' ||
-    //   command === 'deleteWordAfter' ||
-    //   command === 'deleteText'
-    // ) {
-    //   insertCharactersBetweenUuids(data.leftUuid, data.rightUuid, data.oldCharacterData!);
-    // } else if (command === 'createAnnotation') {
-    //   deleteAnnotation(data.annotation.data.properties.uuid);
-    // } else if (command === 'deleteAnnotation') {
-    //   addAnnotation(data.annotation!);
-    // } else if (command === 'shiftAnnotationLeft') {
-    //   shiftAnnotationRight(data.annotation);
-    // } else if (command === 'shiftAnnotationRight') {
-    //   shiftAnnotationLeft(data.annotation);
-    // } else if (command === 'expandAnnotation') {
-    //   shrinkAnnotation(data.annotation);
-    // } else if (command === 'shrinkAnnotation') {
-    //   expandAnnotation(data.annotation);
-    // }
-
-    setNewRangeAnchorUuid(newLastRecord.caretPosition);
-
-    redoStack.value.push(lastRecord);
-  }
-
-  /**
-   * Redoes the last action that was undone. Pops the last record from the redo stack and applies the state that was saved when the action was undone.
-   * Pushes the popped record to the history stack.
-   *
-   * @return {void} No return value.
-   */
-  function redo(): void {
-    if (redoStack.value.length === 0) {
-      return;
-    }
-
-    const record: HistoryRecord | undefined = redoStack.value.pop();
-
-    if (!record) {
-      return;
-    }
-
-    // const { command, data } = record.data;
-
-    // if (command === 'insertText') {
-    //   insertCharactersBetweenUuids(data.leftUuid, data.rightUuid, data.newCharacterData);
-    // } else if (command === 'replaceText') {
-    //   replaceCharactersBetweenUuids(data.leftUuid, data.rightUuid, data.newCharacterData);
-    // } else if (command === 'deleteWordBefore') {
-    //   deleteWordBeforeUuid(data.rightUuid);
-    // } else if (command === 'deleteWordAfter') {
-    //   deleteWordAfterUuid(data.leftUuid);
-    // } else if (command === 'deleteText') {
-    //   deleteCharactersBetweenUuids(data.leftUuid, data.rightUuid);
-    // } else if (command === 'createAnnotation') {
-    //   addAnnotation(data.annotation);
-    // } else if (command === 'deleteAnnotation') {
-    //   deleteAnnotation(data.annotation.data.properties.uuid);
-    // } else if (command === 'shiftAnnotationLeft') {
-    //   shiftAnnotationLeft(data.annotation);
-    // } else if (command === 'shiftAnnotationRight') {
-    //   shiftAnnotationRight(data.annotation);
-    // } else if (command === 'expandAnnotation') {
-    //   expandAnnotation(data.annotation);
-    // } else if (command === 'shrinkAnnotation') {
-    //   shrinkAnnotation(data.annotation);
-    // }
-
-    snippetCharacters.value = cloneDeep(record.data.characters);
-    snippetAnnotations.value = cloneDeep(record.data.annotations);
-    setBeforeStartCharacter(cloneDeep(record.data.beforeStartCharacter));
-    setAfterEndCharacter(cloneDeep(record.data.afterEndCharacter));
-
-    setNewRangeAnchorUuid(record.caretPosition);
-
-    history.value.push(record);
   }
 
   function hasUnsavedChanges(): boolean {
@@ -418,19 +230,7 @@ export function useEditorStore() {
 
   function resetEditor(): void {
     toggleRedrawMode({ direction: 'off', cause: 'success' });
-    resetHistory();
     setNewRangeAnchorUuid(null);
-  }
-
-  /**
-   * Resets the editing history by clearing history and redo stack. Called when the Editor component is unmounted,
-   * changes are canceled or when the snippet changes on pagination.
-   *
-   * @return {void} This function does not return anything.
-   */
-  function resetHistory(): void {
-    history.value = [];
-    redoStack.value = [];
   }
 
   /**
@@ -489,24 +289,18 @@ export function useEditorStore() {
   }
 
   return {
-    history,
     isContentEditable,
     isRedrawMode,
     redrawMode: readonly(redrawMode),
     newRangeAnchorUuid: readonly(newRangeAnchorUuid),
     keepTextOnPagination,
     lastRangeSnapshot,
-    redoStack,
     execCommand,
     hasUnsavedChanges,
     initializeEditor,
-    initializeHistory,
     placeCaret,
-    redo,
     resetEditor,
-    resetHistory,
     setNewRangeAnchorUuid,
     toggleRedrawMode,
-    undo,
   };
 }

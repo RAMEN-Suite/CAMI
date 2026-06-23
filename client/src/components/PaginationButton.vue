@@ -57,8 +57,7 @@ const {
   nextCharacters,
   previousCharacters,
 } = useCharactersStore();
-const { keepTextOnPagination, setNewRangeAnchorUuid, hasUnsavedChanges, initializeHistory } =
-  useEditorStore();
+const { keepTextOnPagination, setNewRangeAnchorUuid, hasUnsavedChanges } = useEditorStore();
 
 function handlePagination() {
   if (hasUnsavedChanges()) {
@@ -87,8 +86,6 @@ function handlePagination() {
   updateTruncationStatus();
 
   setNewRangeAnchorUuid(snippetCharacters.value[snippetCharacters.value.length - 1]?.data.uuid);
-
-  initializeHistory();
 }
 </script>
 

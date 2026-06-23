@@ -43,8 +43,6 @@ const {
   redrawMode,
   execCommand,
   placeCaret,
-  redo,
-  undo,
   toggleRedrawMode,
 } = useEditorStore();
 const { addToastMessage } = useAppStore();
@@ -514,24 +512,6 @@ function handleDeleteHardLineForward(event: InputEvent): void {
   // Handle delete hard line forward logic
 }
 
-function handleKeydown(event: KeyboardEvent): void {
-  if (!isContentEditable.value) {
-    return;
-  }
-
-  if (!event.ctrlKey || event.key.toLowerCase() !== 'z') {
-    return;
-  }
-
-  if (event.shiftKey) {
-    redo();
-    return;
-  } else {
-    undo();
-    return;
-  }
-}
-
 async function handleCopy(): Promise<void> {
   const { selection } = getSelectionData();
   const text: string = selection.toString();
@@ -616,7 +596,6 @@ function handleMouseUp(): void {
           @beforeinput="handleInput"
           @copy="handleCopy"
           @click="handleMouseUp"
-          @keydown="handleKeydown"
         >
           <span
             v-for="character in snippetCharacters"
