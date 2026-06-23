@@ -7,6 +7,7 @@ import {
   PropertyConfig,
   AnnotationNode,
   BaseNodeLabel,
+  BuiltinStructuralType,
 } from '../models/types';
 
 const { initializeFilter } = useFilterStore();
@@ -547,24 +548,52 @@ export function useGuidelinesStore() {
     return mergedStructuralConfigs.value.find(c => c.type === type)?.priority ?? 0;
   }
 
-  // Returns the Tiptap node type name (editor-internal) for a given annotation type name.
-  // Falls back to the type itself for built-ins that have not been renamed.
+  /**
+   * Returns the Tiptap node type name (editor-internal) for a given annotation type name.
+   *
+   * E.g. `getEditorRole('p')` returns "paragraph" when the project mapped its paragraph configuration to it.
+   * Falls back to the type itself for built-ins that have not been renamed.
+   *
+   * Complementary function of {@linkcode getTypeByEditorRole}.
+   *
+   * @param {string} type The custom annotation type (e.g. `list`)
+   * @returns {string} The built-in tiptap node type (e.g. `bulletList`) if mapping exists, given type if not
+   */
   function getEditorRole(type: string): string {
-    const config = mergedStructuralConfigs.value.find(c => c.type === type);
+    const config: AnnotationType | undefined = mergedStructuralConfigs.value.find(
+      c => c.type === type,
+    );
 
     return config?.editorRole ?? type;
   }
 
-  // Returns the user-defined annotation type name for a given editor role.
-  // E.g. getTypeByEditorRole('paragraph') returns 'p' when the project renamed it.
-  // Falls back to the role itself if no mapping exists.
-  function getTypeByEditorRole(role: string): string {
-    const config = mergedStructuralConfigs.value.find(c => (c.editorRole ?? c.type) === role);
+  /**
+   * Returns the user-defined annotation type name for a given editor role.
+   *
+   * E.g. `getTypeByEditorRole('paragraph')` returns "p" when the project renamed it.
+   * Falls back to the role itself if no mapping exists.
+   *
+   * Complementary function of {@linkcode getEditorRole}.
+   *
+   * @param {BuiltinStructuralType} role The built-in tiptap node type (e.g. `bulletList`)
+   * @returns {BuiltinStructuralType | string} The custom annotation type (e.g. `list`) if mapping exists, given Tiptap type if not
+   */
+  function getTypeByEditorRole(role: BuiltinStructuralType): string {
+    const config: AnnotationType | undefined = mergedStructuralConfigs.value.find(
+      c => (c.editorRole ?? c.type) === role,
+    );
+
     return config?.type ?? role;
   }
 
-  // Returns true if the given annotation type (user name) maps to one of the
-  // original built-in structural types, even if it has been renamed via editorRole.
+  /**
+   * Checks if the given annotation type maps to one of the built-in structural types when set in the configuration.
+   *
+   * E.g. if the project has renamed 'paragraph' to 'p' in the configuration, this function returns true for 'paragraph'.
+   *
+   * @param {string} type The annotation type
+   * @returns {boolean} True if the annotation type maps to one of the built-in structural types, `false` if otherwise
+   */
   function isBuiltinStructuralType(type: string): boolean {
     const role: string = getEditorRole(type);
 
