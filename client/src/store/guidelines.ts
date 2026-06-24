@@ -9,6 +9,7 @@ import {
   BaseNodeLabel,
   BuiltinStructuralType,
 } from '../models/types';
+import { BUILTIN_STRUCTURAL_CONFIGS } from '../config/constants';
 
 const { initializeFilter } = useFilterStore();
 const guidelines = ref<IGuidelines>();
@@ -21,135 +22,6 @@ const availableCollectionLabels = ref<string[]>([]);
 const availableEntityLabels = ref<string[]>([]);
 const availableTextLabels = ref<string[]>([]);
 const groupedAndSortedAnnotationTypes = ref<Record<string, AnnotationType[]>>();
-
-// Built-in structural annotation types with their tiptap hierarchy rules.
-// Projects can extend these (add properties) via annotations.types in the guidelines JSON.
-// "contains" drives the dynamic STRUCTURAL_CHILDREN map used during standoff→tiptap conversion.
-const BUILTIN_STRUCTURAL_CONFIGS: AnnotationType[] = [
-  {
-    type: 'paragraph',
-    isBlock: true,
-    contains: [],
-    topLevel: true,
-    priority: 20,
-    properties: [],
-    shortcut: [],
-    text: '',
-    category: 'structure',
-    defaultSelected: true,
-  },
-  {
-    type: 'heading',
-    isBlock: true,
-    contains: [],
-    topLevel: true,
-    priority: 30,
-    properties: [
-      {
-        name: 'level',
-        type: 'number',
-        minimum: 1,
-        maximum: 6,
-        required: true,
-        editable: true,
-        visible: true,
-      },
-    ],
-    shortcut: [],
-    text: '',
-    category: 'structure',
-    defaultSelected: true,
-  },
-  {
-    type: 'hardBreak',
-    isBlock: true,
-    contains: [],
-    topLevel: false,
-    priority: 10,
-    properties: [],
-    shortcut: [],
-    text: '',
-    category: 'structure',
-    defaultSelected: true,
-  },
-  {
-    type: 'table',
-    isBlock: true,
-    // caption/heading can be added later by extending contains via guidelines JSON
-    contains: ['tableRow'],
-    topLevel: true,
-    priority: 90,
-    properties: [],
-    shortcut: [],
-    text: '',
-    category: 'structure',
-    defaultSelected: true,
-  },
-  {
-    type: 'tableRow',
-    isBlock: true,
-    contains: ['tableHeader', 'tableCell'],
-    topLevel: false,
-    priority: 80,
-    properties: [],
-    shortcut: [],
-    text: '',
-    category: 'structure',
-    defaultSelected: true,
-  },
-  {
-    type: 'tableCell',
-    isBlock: true,
-    contains: ['paragraph', 'heading', 'bulletList', 'table'],
-    topLevel: false,
-    priority: 70,
-    properties: [],
-    shortcut: [],
-    text: '',
-    category: 'structure',
-    defaultSelected: true,
-  },
-  {
-    type: 'tableHeader',
-    isBlock: true,
-    contains: ['paragraph', 'heading', 'bulletList', 'table'],
-    topLevel: false,
-    priority: 70,
-    properties: [
-      { name: 'rowspan', type: 'number', required: true, editable: true, visible: true },
-      { name: 'colspan', type: 'number', required: true, editable: true, visible: true },
-    ],
-    shortcut: [],
-    text: '',
-    category: 'structure',
-    defaultSelected: true,
-  },
-  {
-    type: 'bulletList',
-    isBlock: true,
-    // caption/heading can be added later by extending contains via guidelines JSON
-    contains: ['listItem'],
-    topLevel: true,
-    priority: 60,
-    properties: [],
-    shortcut: [],
-    text: '',
-    category: 'structure',
-    defaultSelected: true,
-  },
-  {
-    type: 'listItem',
-    isBlock: true,
-    contains: ['paragraph', 'heading', 'bulletList', 'table'],
-    topLevel: false,
-    priority: 50,
-    properties: [],
-    shortcut: [],
-    text: '',
-    category: 'structure',
-    defaultSelected: true,
-  },
-];
 
 const BUILTIN_STRUCTURAL_TYPES_SET: ReadonlySet<string> = new Set(
   BUILTIN_STRUCTURAL_CONFIGS.map(c => c.type),
