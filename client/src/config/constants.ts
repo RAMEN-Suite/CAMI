@@ -87,7 +87,10 @@ export const BUILTIN_STRUCTURAL_CONFIGS: AnnotationType[] = [
     contains: ['paragraph', 'heading', 'bulletList', 'table'],
     topLevel: false,
     priority: 70,
-    properties: [],
+    properties: [
+      { name: 'rowspan', type: 'number', required: true, editable: true, visible: true },
+      { name: 'colspan', type: 'number', required: true, editable: true, visible: true },
+    ],
     shortcut: [],
     text: '',
     category: 'structure',

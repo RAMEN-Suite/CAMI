@@ -20,8 +20,9 @@ const {
   getStructuralAnnotationConfigs,
   isZeroPoint,
   getEditorRole,
-  getTypeByEditorRole,
+  getAnnotationType,
   getPriorityForType,
+  getEditorOwnedProperties,
   isBuiltinStructuralType,
 } = useGuidelinesStore();
 
@@ -283,7 +284,6 @@ export default class StandoffConverter {
     // Resolve to hard breaks
     const hardBreakEntries: InlineEntry[] = [...this.structuralAnnotations.values()]
       .filter(a => getEditorRole(a.node.data.type) === 'hardBreak' && inRange(a))
-      .filter(a => getEditorRole(a.node.data.type) === 'hardBreak' && inRange(a))
       .map(a => ({
         pos: a.node.data.startIndex,
         node: {
@@ -353,7 +353,7 @@ export default class StandoffConverter {
     content: TiptapNode[],
   ): TiptapNode {
     const uuid: string = crypto.randomUUID();
-    const paragraphType: string = getTypeByEditorRole('paragraph');
+    const paragraphType: string = getAnnotationType('paragraph');
 
     return {
       type: 'paragraph',
@@ -615,25 +615,21 @@ export default class StandoffConverter {
    */
   private buildStructuralNode(annotation: Anno, allStructural: Anno[]): TiptapNode {
     const { startIndex, endIndex, type } = annotation.node.data;
-    const tiptapType: string = getEditorRole(type);
+    const editorRole: string = getEditorRole(type);
 
     const attrs: Record<string, any> = {
       uuid: annotation.node.data.uuid,
       _annotationData: { ...annotation.node.data },
     };
 
-    if (tiptapType === 'heading') {
-      attrs.level = annotation.node.data.level ?? 1;
-    }
-
-    if (tiptapType === 'tableCell' || tiptapType === 'tableHeader') {
-      attrs.colspan = annotation.node.data.colspan ?? 1;
-      attrs.rowspan = annotation.node.data.rowspan ?? 1;
+    // Apply editor attributes (level/colspan/rowspan) from the node's value under its project property name
+    for (const { property, attribute } of getEditorOwnedProperties(type)) {
+      attrs[attribute] = (annotation.node.data as Record<string, any>)[property] ?? 1;
     }
 
     // Is heading or paragraph -> can only hold text
-    if (this.isLeafContainer(tiptapType)) {
-      return { type: tiptapType, attrs, content: this.createLeafContent(startIndex, endIndex) };
+    if (this.isLeafContainer(editorRole)) {
+      return { type: editorRole, attrs, content: this.createLeafContent(startIndex, endIndex) };
     }
 
     const directChildren: Anno[] = this.findDirectChildren(
@@ -708,7 +704,7 @@ export default class StandoffConverter {
       childNodes.push(this.syntheticParagraph(startIndex, endIndex, []));
     }
 
-    return { type: tiptapType, attrs, content: childNodes };
+    return { type: editorRole, attrs, content: childNodes };
   }
 
   /** Checks if annotation of given type can be a top-level document node. Reads from the class attribute that
@@ -725,11 +721,11 @@ export default class StandoffConverter {
    * Checks if the node is a leaf container, i.e. a node that cannot have any children. Reads from the class attribute that
    * holds all the leaf-container-only types (currently only `heading` and `paragraph`).
    *
-   * @param {string} tiptapType - The internal type of the Tiptap node (`heading`, `bulletList` etc.)
+   * @param {string} editorRole - The internal type of the Tiptap node (`heading`, `bulletList` etc.)
    * @returns {boolean} `true` if the node is a leaf container, `false` otherwise
    */
-  private isLeafContainer(tiptapType: string): boolean {
-    return StandoffConverter.LEAF_BLOCK_TYPES.has(tiptapType);
+  private isLeafContainer(editorRole: string): boolean {
+    return StandoffConverter.LEAF_BLOCK_TYPES.has(editorRole);
   }
 
   /**

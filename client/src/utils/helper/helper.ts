@@ -15,6 +15,9 @@ import {
 } from '../../models/types';
 import { EditorView } from '@tiptap/pm/view';
 import { Node } from '@tiptap/pm/model';
+import { useGuidelinesStore } from '../../store/guidelines';
+
+const { getAnnotationType } = useGuidelinesStore();
 
 /**
  * Recursively builds a tree of {@link ToCItem} nodes from a ProseMirror node's block children.
@@ -32,16 +35,19 @@ export function buildDocChildren(node: Node, contentStartPos: number): ToCItem[]
       return;
     }
 
+    const annotationType: string = getAnnotationType(child.type.name);
     const childPos: number = contentStartPos + offset;
 
     result.push({
       key: child.attrs.uuid ?? childPos.toString(),
-      label: child.attrs._annotationData?.type ?? child.type.name,
+      label: annotationType,
       data: {
         text: child.textContent ?? '',
         pos: childPos,
         nodeSize: child.nodeSize,
         nodeType: child.type.name,
+        type: annotationType,
+        level: child.attrs.level ?? null,
         _annotationData: child.attrs._annotationData,
         _semanticBlocks: child.attrs._semanticBlocks ?? [],
       },

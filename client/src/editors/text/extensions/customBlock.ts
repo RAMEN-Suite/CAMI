@@ -3,7 +3,7 @@ import { Node } from '@tiptap/core';
 /**
  * Generic tiptap block node for project-defined structural annotation types that are not
  * pre-configured built-ins (paragraph, heading, table, ...). The semantic neo4j type is stored
- * in attrs._annotationData.type so that neo4jType !== tiptapNodeType.
+ * in attrs._annotationData.type so that the annotation type !== the editor role.
  *
  * Container rules are enforced during standoff→tiptap conversion via the `contains` field in
  * the guidelines config; the tiptap schema itself allows any block content.

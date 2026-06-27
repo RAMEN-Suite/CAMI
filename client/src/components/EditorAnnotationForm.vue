@@ -236,7 +236,6 @@ function updateData(): void {
         />
       </Fieldset>
       <AnnotationFormAdditionalNodesSection
-        v-if="config.hasEntities === true"
         v-model="workingData.connectedNodes"
         :mode="mode"
         :annotation-config="config"
