@@ -40,6 +40,8 @@ const previewText = computed<string>(() => {
 
   return workingData.value.node.data.text?.length >= 10 ? sliced + "..." : workingData.value.node.data.text;
 });
+
+/* eslint-disable -- Will be needed when redraw modes is re-implemented */
 const redrawButtonicon = computed<string>(() => (redrawMode.value?.direction === "on" ? "pi pi-times" : "pi pi-pencil"));
 const redrawButtonTitle = computed<string>(() => (isRedrawMode.value ? "Cancel redraw operation" : "Redraw annotation"));
 
@@ -101,6 +103,8 @@ function handleRedraw(): void {
   // }
 }
 
+/* eslint-disable -- These functions will be re-implemented anyway. */
+
 function handleShiftLeft(): void {
   // execCommand('shiftAnnotationLeft', { annotation });
 }
@@ -116,6 +120,8 @@ function handleExpand(): void {
 function handleShrink(): void {
   // execCommand('shrinkAnnotation', { annotation });
 }
+
+/* eslint-enable */
 
 function handleSpyHover(direction: "on" | "off"): void {
   const renderType = config.isZeroPoint ? "zeroPoint" : "range";
@@ -137,7 +143,7 @@ function toggleFormMode(newState?: "view" | "edit"): void {
   if (newState) {
     mode.value = newState;
   } else {
-    mode.value = (newState ?? mode.value === "view") ? "edit" : "view";
+    mode.value = newState ?? mode.value === "view" ? "edit" : "view";
   }
 }
 

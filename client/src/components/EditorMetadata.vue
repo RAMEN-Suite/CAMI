@@ -1,12 +1,7 @@
 <script setup lang="ts">
 import { RouterLink } from "vue-router";
-import { useGuidelinesStore } from "../store/guidelines";
 import { useTextStore } from "../store/text";
-import { capitalize } from "../utils/helper/helper";
-import { PropertyConfig } from "../models/types";
 import Button from "primevue/button";
-import Column from "primevue/column";
-import DataTable from "primevue/datatable";
 import Fieldset from "primevue/fieldset";
 import InputText from "primevue/inputtext";
 import Panel from "primevue/panel";

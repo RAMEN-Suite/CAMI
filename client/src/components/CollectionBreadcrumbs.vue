@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import Breadcrumb from "primevue/breadcrumb";
-import { CollectionNode, NodeAncestry } from "../models/types";
+import { NodeAncestry } from "../models/types";
 import { MenuItem } from "primevue/menuitem";
 
 const props = defineProps<{
@@ -18,7 +18,7 @@ const home = ref<MenuItem>({
 const breadcrumbItems = computed<MenuItem[]>(() =>
   props.path.map((item, index) => ({
     index,
-    label: (item.node).data.label,
+    label: item.node.data.label,
     command: () => emit("itemClicked", { index, uuid: item.node.data.uuid }),
   })),
 );

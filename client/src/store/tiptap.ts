@@ -1,5 +1,5 @@
 import { ref, shallowRef, watch } from "vue";
-import { NodeDto, ApiJson, Annotation, NodeStatusObject, AnnotationNode, ToCItem } from "../models/types";
+import { NodeDto, Annotation, NodeStatusObject, AnnotationNode, ToCItem } from "../models/types";
 import { Editor } from "@tiptap/vue-3";
 import { Node } from "@tiptap/pm/model";
 import Heading from "@tiptap/extension-heading";

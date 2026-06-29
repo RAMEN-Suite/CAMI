@@ -116,9 +116,6 @@ const sidebars = ref<Record<string, SidebarConfig>>({
 });
 
 const activeResizer = ref<string>("");
-const metadataRef = ref(null);
-const labelInputRef = ref(null);
-const editorRef = ref<HTMLDivElement>(null);
 
 function cleanUpAfterSave(
   updatedText: NodeStatusObject<TextNode>,
@@ -599,6 +596,7 @@ async function handleSaveChanges(): Promise<void> {
   };
 
   // Only for testing purposes
+  // eslint-disable-next-line -- Testing purposes, might be removed later
   const flattened = flattenNodeTree(textToUpdate);
   // console.log(flattened);
 

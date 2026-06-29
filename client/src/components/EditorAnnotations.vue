@@ -115,10 +115,6 @@ function handleAnnotationClick(event: MouseEvent): void {
     return;
   }
 }
-
-function toggleViewMode(direction: "current" | "all"): void {
-  selectedView.value = direction;
-}
 </script>
 
 <template>
@@ -151,7 +147,13 @@ function toggleViewMode(direction: "current" | "all"): void {
     </div>
     <div class="tree">
       <div class="flex justify-center">
-        <Tree v-model:expanded-keys="expandedKeys" :value="nodes" selection-mode="single" :meta-key-selection="false" class="w-full">
+        <Tree
+          v-model:expanded-keys="expandedKeys"
+          :value="nodes"
+          selection-mode="single"
+          :meta-key-selection="false"
+          class="w-full"
+        >
           <template #default="slotProps">
             <div v-if="slotProps.node.type === 'category'">
               <div class="name-container ml-2 font-bold">

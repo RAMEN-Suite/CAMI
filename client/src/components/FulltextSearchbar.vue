@@ -26,8 +26,6 @@ interface TextSearchObject {
   elm: ReturnType<typeof useTemplateRef<ComponentPublicInstance>>;
 }
 
-const PREVIEW_CHARACTER_SIZE: number = 25;
-
 const { hasUnsavedChanges } = useTiptapStore();
 
 const isSearchActive = ref<boolean>(false);
@@ -46,8 +44,6 @@ function resetSearch(): void {
   setIsSearchActive(false);
 }
 
-async function searchTextMatches(searchString: string): Promise<void> {}
-
 function setIsSearchActive(mode: boolean): void {
   isSearchActive.value = mode;
 
@@ -60,37 +56,6 @@ function setIsSearchActive(mode: boolean): void {
 
     inputElm?.focus();
   });
-}
-
-/**
- * Generates an HTML string with the matched text highlighted and surrounding context preview.
- *
- * The function takes a RegExp match result and constructs an HTML snippet
- * that highlights the matched portion of the text, showing a preview of
- * characters before and after the match.
- *
- * Called for each search result of a fulltext search operation.
- *
- * @param {RegExpExecArray} match - The regex match result containing details of the match.
- * @returns {string} HTML string with the matched text highlighted and context preview.
- */
-
-function renderHtml(match: RegExpExecArray): string {
-  const textToSearch: string = match.input;
-
-  const startIndex: number = match.index;
-  const endIndex: number = startIndex + match[0].length - 1;
-
-  const prevText: string = textToSearch.slice(startIndex - PREVIEW_CHARACTER_SIZE, startIndex);
-  const nextText: string = textToSearch.slice(endIndex + 1, endIndex + 1 + PREVIEW_CHARACTER_SIZE);
-
-  const hasMoreBefore: boolean = startIndex - PREVIEW_CHARACTER_SIZE > 0;
-  const hasMoreAfter: boolean = endIndex + 1 + PREVIEW_CHARACTER_SIZE < textToSearch.length;
-
-  const ellipsesBefore: string = hasMoreBefore ? "..." : "";
-  const ellipsesAfter: string = hasMoreAfter ? "..." : "";
-
-  return `<small>${ellipsesBefore}${prevText}<b>${match[0]}</b>${nextText}${ellipsesAfter}</small>`;
 }
 
 function handleResultItemSelect(item: SearchResult): void {

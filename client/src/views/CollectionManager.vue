@@ -46,7 +46,7 @@ watch(
         updateLevelsAndFetchData(newPath);
 
         isPathValid.value = true;
-      } catch (error: unknown) {
+      } catch {
         isPathValid.value = false;
       } finally {
         isLoading.value = false;
@@ -66,7 +66,7 @@ watch(
       updateLevelsAndFetchData(newPath);
 
       isPathValid.value = true;
-    } catch (error: unknown) {
+    } catch {
       isPathValid.value = false;
     } finally {
       isLoading.value = false;

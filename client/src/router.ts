@@ -1,4 +1,4 @@
-import { RouteRecordRaw, Router, createWebHistory, createRouter } from "vue-router";
+import { Router, createWebHistory, createRouter } from "vue-router";
 import Editor from "./views/Editor.vue";
 import CollectionManager from "./views/CollectionManager.vue";
 import CollectionSingleView from "./views/CollectionSingleView.vue";

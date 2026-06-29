@@ -187,9 +187,9 @@ export function useImport(): UseImportReturn {
    */
   function initializeStores(): void {
     try {
-      initializeCharacters(dataToImport.value.characters, "import");
-      initializeAnnotations(dataToImport.value.annotations, "import");
-    } catch (e: unknown) {
+      // initializeCharacters(dataToImport.value.characters, "import");
+      // initializeAnnotations(dataToImport.value.annotations, "import");
+    } catch {
       throw new ImportError("An internal error during import occured. Pleasy try again.");
     }
   }
@@ -203,7 +203,7 @@ export function useImport(): UseImportReturn {
   function parse(): void {
     try {
       parsedJson.value = JSON.parse(rawJson.value);
-    } catch (e: unknown) {
+    } catch {
       throw new JsonParseError("The JSON format contains syntax errors. Please check and try again.");
     }
   }
@@ -289,7 +289,7 @@ export function useImport(): UseImportReturn {
           if (field.name in a) {
             newAnnotationProperties[field.name] = a[field.name];
           } else {
-            newAnnotationProperties[field.name] = (field?.required) ? getDefaultValueForProperty(field.type) : null;
+            newAnnotationProperties[field.name] = field?.required ? getDefaultValueForProperty(field.type) : null;
           }
         });
 

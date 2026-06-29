@@ -35,7 +35,7 @@ export function useAddNode(): UseAddNodeReturn {
   const errorMessages = ref<ErrorMessage[]>([]);
   const errorMessageCount = ref<number>(0);
 
-  function addErrorMessage(error: DOMException | unknown): void {
+  function addErrorMessage(): void {
     errorMessages.value.push({
       severity: "error",
       content: "An unknown error occurred.",
