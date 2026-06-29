@@ -28,7 +28,7 @@ RUN addgroup -S nodeapp && adduser -S nodeapp -G nodeapp && \
   apk add --no-cache tini=0.19.0-r3
 
 COPY --chown=nodeapp:nodeapp package.json ./
-COPY --from=builder --chown=nodeapp:nodeapp /app/dist ./dist
+COPY --from=build --chown=nodeapp:nodeapp /app/dist ./dist
 COPY --from=deps --chown=nodeapp:nodeapp /app/node_modules ./node_modules
 COPY NOTICES.md .
 
@@ -39,4 +39,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD wget -qO- http://127.0.0.1:${PORT}/api/health || exit 1
 
 ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["node", "dist/src/main"]
+CMD ["node", "dist/start.js"]
