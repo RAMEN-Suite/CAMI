@@ -1,24 +1,24 @@
 <script setup lang="ts">
-import { computed, ref, useTemplateRef } from 'vue';
-import { Annotation, ToCItem } from '../models/types';
-import { MenuItem, MenuItemCommandEvent } from 'primevue/menuitem';
-import { Menu } from 'primevue';
-import Button from 'primevue/button';
-import ConfirmPopup from 'primevue/confirmpopup';
-import { useAppStore } from '../store/app';
-import { useConfirm } from 'primevue/useconfirm';
-import { useDialog } from 'primevue';
-import Popover from 'primevue/popover';
-import Tag from 'primevue/tag';
-import { useTiptapStore } from '../store/tiptap';
-import SemanticBlockDetailsModal from './SemanticBlockDetailsModal.vue';
+import { computed, ref, useTemplateRef } from "vue";
+import { Annotation, ToCItem } from "../models/types";
+import { MenuItem, MenuItemCommandEvent } from "primevue/menuitem";
+import { Menu } from "primevue";
+import Button from "primevue/button";
+import ConfirmPopup from "primevue/confirmpopup";
+import { useAppStore } from "../store/app";
+import { useConfirm } from "primevue/useconfirm";
+import { useDialog } from "primevue";
+import Popover from "primevue/popover";
+import Tag from "primevue/tag";
+import { useTiptapStore } from "../store/tiptap";
+import SemanticBlockDetailsModal from "./SemanticBlockDetailsModal.vue";
 
 const props = defineProps<{
   item: ToCItem;
 }>();
 
 const emit = defineEmits<{
-  (e: 'itemClick', node: ToCItem): void;
+  (e: "itemClick", node: ToCItem): void;
 }>();
 
 const { addToastMessage, createModalInstance, destroyModalInstance } = useAppStore();
@@ -28,27 +28,27 @@ const dialog = useDialog();
 
 const currentSemanticBlockData = ref<{ uuid: string; type: string } | null>(null);
 
-const semanticBlockTag = useTemplateRef('pill-menu');
+const semanticBlockTag = useTemplateRef("pill-menu");
 
 const structureBlockMenuItems = ref<MenuItem>([
   {
     items: [
       {
-        label: 'Edit',
-        icon: 'pi pi-pencil',
+        label: "Edit",
+        icon: "pi pi-pencil",
         command: handleMenuItemClick,
       },
       {
-        label: 'Delete',
-        icon: 'pi pi-trash',
+        label: "Delete",
+        icon: "pi pi-trash",
         command: handleMenuItemClick,
       },
       {
-        label: 'Insert node',
+        label: "Insert node",
         command: handleMenuItemClick,
       },
       {
-        label: 'Change node',
+        label: "Change node",
         command: handleMenuItemClick,
       },
     ],
@@ -59,13 +59,13 @@ const semanticBlockMenuItems = computed<MenuItem[]>(() => [
   {
     items: [
       {
-        label: 'Details',
-        icon: 'pi pi-info-circle',
+        label: "Details",
+        icon: "pi pi-info-circle",
         command: handleDetailsClick,
       },
       {
-        label: 'Delete',
-        icon: 'pi pi-trash',
+        label: "Delete",
+        icon: "pi pi-trash",
         command: handleDeleteClick,
       },
     ],
@@ -74,14 +74,14 @@ const semanticBlockMenuItems = computed<MenuItem[]>(() => [
 
 function handleMenuItemClick(e: MenuItemCommandEvent) {
   addToastMessage({
-    severity: 'info',
+    severity: "info",
     summary: `${e.item.label} clicked`,
     life: 2000,
   });
 }
 
 function handleNodeClick() {
-  emit('itemClick', props.item);
+  emit("itemClick", props.item);
 }
 
 function handleSemanticBlockToggle(block: { uuid: string; type: string }, event: MouseEvent): void {
@@ -95,9 +95,7 @@ function handleDetailsClick(): void {
     return;
   }
 
-  const annotation: Annotation | undefined = structuralAnnotations.value?.get(
-    currentSemanticBlockData.value.uuid,
-  );
+  const annotation: Annotation | undefined = structuralAnnotations.value?.get(currentSemanticBlockData.value.uuid);
 
   if (!annotation) {
     return;
@@ -111,7 +109,7 @@ function handleDetailsClick(): void {
         closeOnEscape: true,
         dismissableMask: true,
         header: `${annotation.node.data.subType ?? annotation.node.data.type} — Details`,
-        style: { width: '28rem' },
+        style: { width: "28rem" },
       },
       data: { annotation },
       onClose: destroyModalInstance,
@@ -129,17 +127,17 @@ function handleDeleteClick(e: MenuItemCommandEvent): void {
   confirm.require({
     target: e.originalEvent.currentTarget as HTMLElement,
     message: `Do you want to remove "${type}"" from the selection?`,
-    icon: 'pi pi-exclamation-triangle',
+    icon: "pi pi-exclamation-triangle",
     rejectProps: {
-      label: 'Cancel',
-      severity: 'secondary',
+      label: "Cancel",
+      severity: "secondary",
       outlined: true,
-      title: 'Cancel',
+      title: "Cancel",
     },
     acceptProps: {
-      label: 'Delete',
-      severity: 'danger',
-      title: 'Delete semantic block',
+      label: "Delete",
+      severity: "danger",
+      title: "Delete semantic block",
     },
     accept: () => {
       tiptap.value?.commands.removeSemanticBlock(uuid);
@@ -163,16 +161,16 @@ function toggleSemanticBlockDataPopover(index: number, event: MouseEvent): void 
   }
 }
 
-const infoIcon = useTemplateRef('block-info-popover');
-const semanticBlockPills = useTemplateRef('semantic-block-popover');
+const infoIcon = useTemplateRef("block-info-popover");
+const semanticBlockPills = useTemplateRef("semantic-block-popover");
 
 const displayedLabel = computed<string>(() => {
   const item: ToCItem = props.item;
 
-  if (item.data.nodeType === 'heading') {
+  if (item.data.nodeType === "heading") {
     return `h-${item.data._annotationData.level}`;
-  } else if (item.data.nodeType === 'paragraph') {
-    return 'p';
+  } else if (item.data.nodeType === "paragraph") {
+    return "p";
   } else {
     return item.data._annotationData.type;
   }
@@ -181,10 +179,7 @@ const displayedLabel = computed<string>(() => {
 
 <template>
   <div class="flex align-items-center">
-    <div
-      class="type-container ml-1 flex align-items-center gap-2 flex-grow-1"
-      @click="handleNodeClick"
-    >
+    <div class="type-container ml-1 flex align-items-center gap-2 flex-grow-1" @click="handleNodeClick">
       <span> {{ displayedLabel }} </span>
       <!-- <small :title="props.item.data.text" class="font-italic">
         {{ displayedText }}
@@ -214,20 +209,12 @@ const displayedLabel = computed<string>(() => {
       ></Button>
     </div>
   </div>
-  <Menu
-    ref="menu"
-    id="overlay_menu"
-    :model="structureBlockMenuItems"
-    :popup="true"
-    dismissable
-    closeOnEscape
-  />
+  <Menu ref="menu" id="overlay_menu" :model="structureBlockMenuItems" :popup="true" dismissable closeOnEscape />
   <Menu ref="pill-menu" :model="semanticBlockMenuItems" :popup="true" dismissable closeOnEscape />
   <ConfirmPopup />
   <Popover ref="block-info-popover" dismissable closeOnEscape>
     <pre
       >{{ JSON.stringify(props.item.data, null, 2) }}
-  </pre
-    >
+  </pre>
   </Popover>
 </template>

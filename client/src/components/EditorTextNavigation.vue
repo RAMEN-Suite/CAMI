@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import EditorOrientationBar from './EditorOrientationBar.vue';
-import PaginationButton from './PaginationButton.vue';
+import EditorOrientationBar from "./EditorOrientationBar.vue";
+import PaginationButton from "./PaginationButton.vue";
 </script>
 
 <template>

@@ -1,6 +1,6 @@
-import { IAnnotation } from '../models/IAnnotation';
-import { AnnotationNode, NodeDto } from '../models/types';
-import { useGuidelinesStore } from '../store/guidelines';
+import { IAnnotation } from "../models/IAnnotation";
+import { AnnotationNode, NodeDto } from "../models/types";
+import { useGuidelinesStore } from "../store/guidelines";
 // import {
 //   AnnotationSegment,
 //   ListItemSegment,
@@ -48,11 +48,11 @@ export class StructureParser {
     private readonly text: string,
     annotations: NodeDto<AnnotationNode>[],
   ) {
-    this.structuralAnnotationTypes = new Set(getStructuralAnnotationConfigs().map(c => c.type));
+    this.structuralAnnotationTypes = new Set(getStructuralAnnotationConfigs().map((c) => c.type));
 
     this.structures = annotations
       .filter((a: NodeDto<AnnotationNode>) => this.structuralAnnotationTypes.has(a.node.data.type))
-      .map(a => a.node.data);
+      .map((a) => a.node.data);
 
     this.structures.sort(this.compare);
 
@@ -66,7 +66,7 @@ export class StructureParser {
 
     this.sortTree(this.tree);
 
-    console.log('Structure tree:', this.tree);
+    console.log("Structure tree:", this.tree);
   }
 
   // public parse(
@@ -210,25 +210,16 @@ export class StructureParser {
   }
 
   private getNodesIn(interval: TextInterval): StructureNode[] {
-    return this.tree.filter((node: StructureNode): boolean =>
-      this.contains(interval, node.annotation),
-    );
+    return this.tree.filter((node: StructureNode): boolean => this.contains(interval, node.annotation));
   }
 
-  private getParent(
-    nodes: StructureNode[],
-    annotation: StructuredAnnotation,
-  ): StructureNode | undefined {
-    const node: StructureNode | undefined = nodes.find((c: StructureNode): boolean =>
-      this.contains(c.annotation, annotation),
-    );
-    return node ? this.getParent(node.children, annotation) ?? node : undefined;
+  private getParent(nodes: StructureNode[], annotation: StructuredAnnotation): StructureNode | undefined {
+    const node: StructureNode | undefined = nodes.find((c: StructureNode): boolean => this.contains(c.annotation, annotation));
+    return node ? (this.getParent(node.children, annotation) ?? node) : undefined;
   }
 
   private sortTree(nodes: StructureNode[]): void {
-    nodes.sort((a: StructureNode, b: StructureNode): number =>
-      this.compare(a.annotation, b.annotation),
-    );
+    nodes.sort((a: StructureNode, b: StructureNode): number => this.compare(a.annotation, b.annotation));
     for (const node of nodes) this.sortTree(node.children);
   }
 

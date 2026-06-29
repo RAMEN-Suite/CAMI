@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import { AnnotationNode, NodeStatus, NodeStatusObject } from '../models/types';
-import Button from 'primevue/button';
-import { Popover } from 'primevue';
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
-import NodeTag from './NodeTag.vue';
-import { capitalize, useTemplateRef } from 'vue';
-import { filterDefaultLabels } from '../utils/helper/helper';
-import AnnotationTypeIcon from './AnnotationTypeIcon.vue';
+import { AnnotationNode, NodeStatus, NodeStatusObject } from "../models/types";
+import Button from "primevue/button";
+import { Popover } from "primevue";
+import DataTable from "primevue/datatable";
+import Column from "primevue/column";
+import NodeTag from "./NodeTag.vue";
+import { capitalize, useTemplateRef } from "vue";
+import { filterDefaultLabels } from "../utils/helper/helper";
+import AnnotationTypeIcon from "./AnnotationTypeIcon.vue";
 
 const props = defineProps<{
-  mode: 'view';
+  mode: "view";
 }>();
 
 const node = defineModel<NodeStatusObject<AnnotationNode>>();
 
-const infoIcon = useTemplateRef('info-icon');
+const infoIcon = useTemplateRef("info-icon");
 
 const filteredLabels: string[] = filterDefaultLabels(node.value!.node.nodeLabels);
 
@@ -24,7 +24,7 @@ const tableData = Object.entries(node.value!.node.data).map(([property, value]) 
 });
 
 function handleRemoveNode(): void {
-  setNodeStatus('removed');
+  setNodeStatus("removed");
 }
 
 function setNodeStatus(status: NodeStatus): void {
@@ -40,12 +40,7 @@ function togglePopover(event: MouseEvent): void {
   <div class="node-card-container">
     <div class="button-pane flex justify-content-between">
       <div class="node-labels-pane flex">
-        <NodeTag
-          class="test mr-1"
-          v-for="label in filteredLabels"
-          :content="label"
-          type="Annotation"
-        />
+        <NodeTag class="test mr-1" v-for="label in filteredLabels" :content="label" type="Annotation" />
         <div class="icon-container">
           <AnnotationTypeIcon :annotationType="node!.node.data.subType ?? node!.node.data.type" />
         </div>
@@ -96,12 +91,12 @@ function togglePopover(event: MouseEvent): void {
       >
         <Column field="property" header="Property">
           <template #body="{ data }">
-            <span>{{ capitalize(data['property']) }}</span>
+            <span>{{ capitalize(data["property"]) }}</span>
           </template>
         </Column>
         <Column field="value" header="Value">
           <template #body="{ data }">
-            <span style="white-space: normal">{{ data['value'] }}</span>
+            <span style="white-space: normal">{{ data["value"] }}</span>
           </template>
         </Column>
       </DataTable>

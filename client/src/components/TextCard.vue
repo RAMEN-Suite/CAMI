@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import NodeCardHeader from './NodeCardHeader.vue';
-import { TextNode, NodeStatusObject, NodeStatus } from '../models/types';
+import { computed } from "vue";
+import NodeCardHeader from "./NodeCardHeader.vue";
+import { TextNode, NodeStatusObject, NodeStatus } from "../models/types";
 
 const props = defineProps<{
-  mode: 'edit' | 'view';
+  mode: "edit" | "view";
 }>();
 
 const emit = defineEmits<{
-  (e: 'remove-node'): void;
+  (e: "remove-node"): void;
 }>();
 
 const node = defineModel<NodeStatusObject<TextNode>>();
@@ -16,9 +16,7 @@ const node = defineModel<NodeStatusObject<TextNode>>();
 const PREVIEW_LENGTH: number = 100;
 
 const displayedText = computed<string>(
-  () =>
-    node.value!.node.data.text.slice(0, PREVIEW_LENGTH) +
-    (node.value!.node.data.text.length > PREVIEW_LENGTH ? '...' : ''),
+  () => node.value!.node.data.text.slice(0, PREVIEW_LENGTH) + (node.value!.node.data.text.length > PREVIEW_LENGTH ? "..." : ""),
 );
 
 /**
@@ -29,18 +27,18 @@ const displayedText = computed<string>(
  * @returns {void} This function does not return any value.
  */
 function handleClickContainer(event: PointerEvent): void {
-  if ((event.target as HTMLElement).closest('button')) {
+  if ((event.target as HTMLElement).closest("button")) {
     return;
   }
 
-  window.open(`/editor/${node.value!.node.data.uuid}`, '_blank', 'noopener noreferrer');
+  window.open(`/editor/${node.value!.node.data.uuid}`, "_blank", "noopener noreferrer");
 }
 
 function handleRemoveNode(): void {
-  if (node.value!.meta.status === 'added') {
-    emit('remove-node');
+  if (node.value!.meta.status === "added") {
+    emit("remove-node");
   } else {
-    setNodeStatus('removed');
+    setNodeStatus("removed");
   }
 }
 

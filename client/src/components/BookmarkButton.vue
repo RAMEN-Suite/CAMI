@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { useTemplateRef } from 'vue';
-import Button from 'primevue/button';
-import BookmarkPopover from './BookmarkPopover.vue';
+import { useTemplateRef } from "vue";
+import Button from "primevue/button";
+import BookmarkPopover from "./BookmarkPopover.vue";
 
-const popover = useTemplateRef<InstanceType<typeof BookmarkPopover>>('popover');
+const popover = useTemplateRef<InstanceType<typeof BookmarkPopover>>("popover");
 
 /**
  * Toggle the visibility of the bookmark popover.
@@ -19,13 +19,7 @@ function togglePopoverVisibility(event: PointerEvent): void {
 </script>
 
 <template>
-  <Button
-    type="button"
-    severity="secondary"
-    icon="pi pi-bookmark-fill"
-    size="small"
-    @click="togglePopoverVisibility"
-  />
+  <Button type="button" severity="secondary" icon="pi pi-bookmark-fill" size="small" @click="togglePopoverVisibility" />
 
   <BookmarkPopover ref="popover" />
 </template>

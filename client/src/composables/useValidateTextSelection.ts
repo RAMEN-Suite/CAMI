@@ -1,6 +1,6 @@
-import { Selection } from '@tiptap/pm/state';
-import { AnnotationType } from '../models/types';
-import AnnotationRangeError from '../utils/errors/annotationRange.error';
+import { Selection } from "@tiptap/pm/state";
+import { AnnotationType } from "../models/types";
+import AnnotationRangeError from "../utils/errors/annotationRange.error";
 
 /**
  * Return type for the `useValidateTextSelection` composable.
@@ -27,19 +27,17 @@ export function useValidateTextSelection(): UseValidateTextSelectionReturnType {
    */
   function isValid(selection: Selection | undefined, config: AnnotationType): boolean {
     if (!selection) {
-      throw new AnnotationRangeError('No valid text selected.');
+      throw new AnnotationRangeError("No valid text selected.");
     }
 
     const isCaret: boolean = selection.empty;
 
     if (isCaret && !config.isZeroPoint) {
-      throw new AnnotationRangeError('Select some text to annotate.');
+      throw new AnnotationRangeError("Select some text to annotate.");
     }
 
     if (!isCaret && config.isZeroPoint) {
-      throw new AnnotationRangeError(
-        'To create zero-point annotations, place the caret between two characters',
-      );
+      throw new AnnotationRangeError("To create zero-point annotations, place the caret between two characters");
     }
 
     if (isCaret && config.isZeroPoint) {
@@ -47,9 +45,7 @@ export function useValidateTextSelection(): UseValidateTextSelectionReturnType {
       const caretIsAtEnd: boolean = selection.$from.nodeAfter === null;
 
       if (caretIsAtBeginning || caretIsAtEnd) {
-        throw new AnnotationRangeError(
-          'To create zero-point annotations, place the caret between two characters',
-        );
+        throw new AnnotationRangeError("To create zero-point annotations, place the caret between two characters");
       }
     }
 

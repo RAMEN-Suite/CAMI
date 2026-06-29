@@ -6,14 +6,14 @@
  * @return {string} The corresponding Cypher statement.
  */
 export function collectionSortField(sortField: string): string {
-  if (sortField === 'collections') {
-    return 'collectionCount';
-  } else if (sortField === 'texts') {
-    return 'textCount';
-  } else if (sortField === 'annotations') {
-    return 'annotationCount';
+  if (sortField === "collections") {
+    return "collectionCount";
+  } else if (sortField === "texts") {
+    return "textCount";
+  } else if (sortField === "annotations") {
+    return "annotationCount";
   } else {
-    return 'c.' + sortField;
+    return "c." + sortField;
   }
 }
 
@@ -64,11 +64,11 @@ export function ancestryPaths(nodeAlias: string): string {
  * @param {string} direction - The direction of the sort. Can be 'asc', 'desc', 'ASC', 'DESC', or any other string.
  * @returns {'<'|'>'} The Cypher operator for sorting in ascending or descending order.
  */
-export function sortDirection(direction: 'asc' | 'desc' | 'ASC' | 'DESC' | string): '<' | '>' {
-  if (direction === 'desc') {
-    return '<';
+export function sortDirection(direction: "asc" | "desc" | "ASC" | "DESC" | string): "<" | ">" {
+  if (direction === "desc") {
+    return "<";
   } else {
     // This will catch all other cases without making problems since ascending is the default
-    return '>';
+    return ">";
   }
 }

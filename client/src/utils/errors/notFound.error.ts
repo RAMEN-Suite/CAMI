@@ -1,4 +1,4 @@
-import ApiError from './api.error';
+import ApiError from "./api.error";
 
 /**
  * Represents an error for resources that could not be found in the database.

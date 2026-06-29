@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, useTemplateRef } from 'vue';
-import Fieldset from 'primevue/fieldset';
-import EntityCard from './EntityCard.vue';
-import CollectionCard from './CollectionCard.vue';
-import TextCard from './TextCard.vue';
+import { ref, useTemplateRef } from "vue";
+import Fieldset from "primevue/fieldset";
+import EntityCard from "./EntityCard.vue";
+import CollectionCard from "./CollectionCard.vue";
+import TextCard from "./TextCard.vue";
 import {
   AnnotationNode,
   AnnotationType,
@@ -12,24 +12,19 @@ import {
   EntityNode,
   NodeStatusObject,
   TextNode,
-} from '../models/types';
-import {
-  isAnnotationNode,
-  isCollectionNode,
-  isContentNode,
-  isEntityNode,
-} from '../utils/helper/helper';
-import AnnotationCard from './AnnotationCard.vue';
-import Button from 'primevue/button';
-import Menu from 'primevue/menu';
-import AddNodeModal from './AddNodeModal.vue';
-import { useAppStore } from '../store/app';
-import { useDialog } from 'primevue/usedialog';
+} from "../models/types";
+import { isAnnotationNode, isCollectionNode, isContentNode, isEntityNode } from "../utils/helper/helper";
+import AnnotationCard from "./AnnotationCard.vue";
+import Button from "primevue/button";
+import Menu from "primevue/menu";
+import AddNodeModal from "./AddNodeModal.vue";
+import { useAppStore } from "../store/app";
+import { useDialog } from "primevue/usedialog";
 
 const nodes = defineModel<NodeStatusObject[]>();
 
 const props = defineProps<{
-  mode: 'edit' | 'view';
+  mode: "edit" | "view";
   annotationConfig: AnnotationType;
 }>();
 
@@ -38,7 +33,7 @@ const dialog: ReturnType<typeof useDialog> = useDialog();
 
 const sectionIsCollapsed = ref<boolean>(false);
 
-const menu = useTemplateRef('menu');
+const menu = useTemplateRef("menu");
 
 function startAddingNode(nodeLabel: BaseNodeLabel): void {
   console.log(`Start adding a new ${nodeLabel} node`);
@@ -49,16 +44,16 @@ function startAddingNode(nodeLabel: BaseNodeLabel): void {
         modal: true,
         closable: true,
         closeOnEscape: false,
-        style: { width: '40rem', height: '30rem' },
+        style: { width: "40rem", height: "30rem" },
         closeButtonProps: {
-          severity: 'secondary',
-          title: 'Cancel',
-          style: { width: '30px', height: '30px' },
+          severity: "secondary",
+          title: "Cancel",
+          style: { width: "30px", height: "30px" },
           rounded: true,
         },
         header: `Add a ${nodeLabel} node`,
         pt: {
-          headerActions: { style: 'margin-left: auto' },
+          headerActions: { style: "margin-left: auto" },
         },
       },
       data: {
@@ -76,7 +71,7 @@ function startAddingNode(nodeLabel: BaseNodeLabel): void {
 }
 
 function addNode(node: NodeStatusObject) {
-  console.log('Node added: ', node);
+  console.log("Node added: ", node);
 
   nodes.value!.push(node);
 }
@@ -89,7 +84,7 @@ function addNode(node: NodeStatusObject) {
  * @param {NodeStatusObject<CollectionNode | EntityNode | TextNode>} node - The node to be removed.
  */
 function handleRemoveNode(node: NodeStatusObject<CollectionNode | EntityNode | TextNode>): void {
-  nodes.value = nodes.value!.filter(n => n.node.data.uuid !== node.node.data.uuid);
+  nodes.value = nodes.value!.filter((n) => n.node.data.uuid !== node.node.data.uuid);
 }
 
 /**
@@ -97,24 +92,24 @@ function handleRemoveNode(node: NodeStatusObject<CollectionNode | EntityNode | T
  * current session. Used for centralizing styling of these nodees (do not show, show "removed" flag etc.).
  */
 function isNotDeleted(node: NodeStatusObject): boolean {
-  return node.meta.status !== 'deleted' && node.meta.status !== 'removed';
+  return node.meta.status !== "deleted" && node.meta.status !== "removed";
 }
 
 const nodeOptions = ref([
   {
-    label: 'Possible Nodes',
+    label: "Possible Nodes",
     items: [
       {
-        label: 'Collection',
-        command: () => startAddingNode('Collection'),
+        label: "Collection",
+        command: () => startAddingNode("Collection"),
       },
       {
-        label: 'Entity',
-        command: () => startAddingNode('Entity'),
+        label: "Entity",
+        command: () => startAddingNode("Entity"),
       },
       {
-        label: 'Content',
-        command: () => startAddingNode('Content'),
+        label: "Content",
+        command: () => startAddingNode("Content"),
       },
     ],
   },

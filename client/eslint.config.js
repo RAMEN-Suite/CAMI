@@ -6,7 +6,7 @@ import prettier from "@vue/eslint-config-prettier/skip-formatting";
 
 export default defineConfigWithVueTs(
   {
-    ignores: ["dist/**", "coverage/**", "node_modules/**",  "**/*.js", "build/**"],
+    ignores: ["dist/**", "coverage/**", "node_modules/**", "**/*.js", "build/**"],
   },
   js.configs.recommended,
   pluginVue.configs["flat/recommended"],

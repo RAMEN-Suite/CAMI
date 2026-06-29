@@ -1,24 +1,19 @@
 <script setup lang="ts">
-import { ComputedRef, computed, onUnmounted, ref, toValue, watch } from 'vue';
-import {
-  RouteLocationNormalizedLoaded,
-  useRoute,
-  onBeforeRouteUpdate,
-  onBeforeRouteLeave,
-} from 'vue-router';
-import { EditorContent } from '@tiptap/vue-3';
-import { useEventListener, useTitle } from '@vueuse/core';
-import EditorAnnotationPanel from '../components/EditorAnnotationPanel.vue';
-import EditorSidebar from '../components/EditorSidebar.vue';
-import EditorHeader from '../components/EditorHeader.vue';
-import EditorActionButtonsPane from '../components/EditorActionButtonsPane.vue';
-import EditorAnnotations from '../components/EditorAnnotations.vue';
-import EditorError from '../components/EditorError.vue';
-import EditorFilter from '../components/EditorFilter.vue';
-import EditorResizer from '../components/EditorResizer.vue';
-import EditorMetadata from '../components/EditorMetadata.vue';
-import LoadingSpinner from '../components/LoadingSpinner.vue';
-import Message from 'primevue/message';
+import { ComputedRef, computed, onUnmounted, ref, toValue, watch } from "vue";
+import { RouteLocationNormalizedLoaded, useRoute, onBeforeRouteUpdate, onBeforeRouteLeave } from "vue-router";
+import { EditorContent } from "@tiptap/vue-3";
+import { useEventListener, useTitle } from "@vueuse/core";
+import EditorAnnotationPanel from "../components/EditorAnnotationPanel.vue";
+import EditorSidebar from "../components/EditorSidebar.vue";
+import EditorHeader from "../components/EditorHeader.vue";
+import EditorActionButtonsPane from "../components/EditorActionButtonsPane.vue";
+import EditorAnnotations from "../components/EditorAnnotations.vue";
+import EditorError from "../components/EditorError.vue";
+import EditorFilter from "../components/EditorFilter.vue";
+import EditorResizer from "../components/EditorResizer.vue";
+import EditorMetadata from "../components/EditorMetadata.vue";
+import LoadingSpinner from "../components/LoadingSpinner.vue";
+import Message from "primevue/message";
 import {
   NodeDto,
   IndexMap,
@@ -35,20 +30,20 @@ import {
   TextUpdateDto,
   NodeStatus,
   BuiltinStructuralType,
-} from '../models/types.ts';
-import { useEditorStore } from '../store/editor.ts';
-import { useShortcutsStore } from '../store/shortcuts.ts';
-import { useTextStore } from '../store/text.ts';
-import { useAppStore } from '../store/app.ts';
-import PageOverlay from '../components/PageOverlay.vue';
-import { useTiptapStore } from '../store/tiptap.ts';
-import EditorAnnotationButtonPane from '../components/EditorAnnotationButtonPane.vue';
-import { Node as DocNode } from '@tiptap/pm/model';
-import { cloneDeep } from '../utils/helper/helper.ts';
-import { useCreateIndexMaps } from '../composables/useCreateIndexMaps.ts';
-import { useGuidelinesStore } from '../store/guidelines.ts';
-import { IAnnotation } from '../models/IAnnotation.ts';
-import EditorToC from '../components/EditorToC.vue';
+} from "../models/types.ts";
+import { useEditorStore } from "../store/editor.ts";
+import { useShortcutsStore } from "../store/shortcuts.ts";
+import { useTextStore } from "../store/text.ts";
+import { useAppStore } from "../store/app.ts";
+import PageOverlay from "../components/PageOverlay.vue";
+import { useTiptapStore } from "../store/tiptap.ts";
+import EditorAnnotationButtonPane from "../components/EditorAnnotationButtonPane.vue";
+import { Node as DocNode } from "@tiptap/pm/model";
+import { cloneDeep } from "../utils/helper/helper.ts";
+import { useCreateIndexMaps } from "../composables/useCreateIndexMaps.ts";
+import { useGuidelinesStore } from "../store/guidelines.ts";
+import { IAnnotation } from "../models/IAnnotation.ts";
+import EditorToC from "../components/EditorToC.vue";
 
 interface SidebarConfig {
   isCollapsed: boolean;
@@ -71,22 +66,18 @@ const {
   setNewInitialState,
 } = useTiptapStore();
 
-const {
-  getStructuralAnnotationConfig,
-  getAnnotationType,
-  getEditorOwnedProperties,
-  isBuiltinStructuralType,
-} = useGuidelinesStore();
+const { getStructuralAnnotationConfig, getAnnotationType, getEditorOwnedProperties, isBuiltinStructuralType } =
+  useGuidelinesStore();
 
 onUnmounted(() => destroyTiptap());
 
 onBeforeRouteUpdate(() => preventUserFromRouteLeaving());
 onBeforeRouteLeave(() => preventUserFromRouteLeaving());
 
-useEventListener('mouseup', handleMouseUp);
-useEventListener('mousedown', handleMouseDown);
-useEventListener('beforeunload', handleBeforeUnload);
-useEventListener('keydown', handleKeyDown);
+useEventListener("mouseup", handleMouseUp);
+useEventListener("mousedown", handleMouseDown);
+useEventListener("beforeunload", handleBeforeUnload);
+useEventListener("keydown", handleKeyDown);
 
 // Initial page load
 const isLoading = ref<boolean>(true);
@@ -101,15 +92,13 @@ const { isRedrawMode, redrawMode, toggleRedrawMode } = useEditorStore();
 const { error: textFetchError, text, initialText, fetchAndInitializeText } = useTextStore();
 const { shortcutMap, normalizeKeys } = useShortcutsStore();
 
-useTitle(computed(() => `Text | ${text.value?.nodeLabels.join(', ') ?? ''}`));
+useTitle(computed(() => `Text | ${text.value?.nodeLabels.join(", ") ?? ""}`));
 
 const resizerWidth = 5;
 
 const mainWidth: ComputedRef<number> = computed(() => {
   const leftSidebarWidth: number = sidebars.value.left.isCollapsed ? 0 : sidebars.value.left.width;
-  const rightSidebarWidth: number = sidebars.value.right.isCollapsed
-    ? 0
-    : sidebars.value.right.width;
+  const rightSidebarWidth: number = sidebars.value.right.isCollapsed ? 0 : sidebars.value.right.width;
   return window.innerWidth - leftSidebarWidth - rightSidebarWidth - resizerWidth * 2;
 });
 
@@ -126,7 +115,7 @@ const sidebars = ref<Record<string, SidebarConfig>>({
   },
 });
 
-const activeResizer = ref<string>('');
+const activeResizer = ref<string>("");
 const metadataRef = ref(null);
 const labelInputRef = ref(null);
 const editorRef = ref<HTMLDivElement>(null);
@@ -144,8 +133,8 @@ function cleanUpAfterSave(
 }
 
 function cleanUpAnnotations(updatedAnnotations: NodeStatusObject[]): void {
-  updatedAnnotations.forEach(a => {
-    if (a.meta.status === 'deleted') {
+  updatedAnnotations.forEach((a) => {
+    if (a.meta.status === "deleted") {
       // Can be removed from the map safely
       annotations.value?.delete(a.node.data.uuid);
     } else {
@@ -165,7 +154,7 @@ function cleanUpStructureElements(structureElements: NodeStatusObject[]): void {
   structureElements.forEach((elm: NodeStatusObject) => {
     const uuid: string = elm.node.data.uuid;
 
-    if (elm.meta.status === 'deleted') {
+    if (elm.meta.status === "deleted") {
       // Can be removed from the map safely
       initialStructuralAnnotations.value?.delete(uuid);
     } else {
@@ -198,7 +187,7 @@ function cleanUpStructureElements(structureElements: NodeStatusObject[]): void {
  * @param {DocNode} node - Tiptap node to be checked
  */
 function isStructureElement(node: DocNode): boolean {
-  if (node.type.isBlock || node.type.name === 'hardBreak') {
+  if (node.type.isBlock || node.type.name === "hardBreak") {
     return true;
   }
 
@@ -209,11 +198,11 @@ function getEmptyNodes(): DocNode[] {
   const emptyNodes: DocNode[] = [];
 
   tiptap.value!.state.doc.descendants((node: DocNode) => {
-    if (node.type.name === 'zeroPointAnnotation' || node.type.name === 'hardBreak') {
+    if (node.type.name === "zeroPointAnnotation" || node.type.name === "hardBreak") {
       return false;
     }
 
-    if (!node.isText && node.textContent === '') {
+    if (!node.isText && node.textContent === "") {
       emptyNodes.push(node);
       return false;
     }
@@ -242,9 +231,7 @@ function findChangedAnnotations(indexMap: IndexMap, plainText: string): Annotati
     const hasNewStart: boolean = !initialEntry || initialEntry.node.data.startIndex !== startIndex;
     const hasNewEnd: boolean = !initialEntry || initialEntry.node.data.endIndex !== endIndex;
     const hasChangedText: boolean = !initialEntry || initialEntry.node.data.text !== textSlice;
-    const isEditedOrDeleted: boolean = ['created', 'deleted', 'modified'].includes(
-      currentEntry.meta.status,
-    );
+    const isEditedOrDeleted: boolean = ["created", "deleted", "modified"].includes(currentEntry.meta.status);
 
     if (hasNewStart || hasNewEnd || hasChangedText || isEditedOrDeleted) {
       // Needs to be cloned object to keep editor data clean. Otherwise, a failed operation would make problems
@@ -252,11 +239,11 @@ function findChangedAnnotations(indexMap: IndexMap, plainText: string): Annotati
       const cloned: Annotation = cloneDeep(currentEntry);
 
       // Apply indices to cloned object (for existing or new annotations)
-      if (hasNewStart || currentEntry.meta.status === 'created') {
+      if (hasNewStart || currentEntry.meta.status === "created") {
         cloned.node.data.startIndex = value.startIndex;
       }
 
-      if (hasNewEnd || currentEntry.meta.status === 'created') {
+      if (hasNewEnd || currentEntry.meta.status === "created") {
         cloned.node.data.endIndex = value.endIndex;
       }
 
@@ -264,8 +251,8 @@ function findChangedAnnotations(indexMap: IndexMap, plainText: string): Annotati
       cloned.node.data.text = textSlice;
 
       // Update status explicitly for changed indices. Otherwised changed/added/deleted annotations keep their status
-      if (currentEntry.meta.status !== 'created' && (hasNewStart || hasNewEnd)) {
-        cloned.meta.status = 'modified';
+      if (currentEntry.meta.status !== "created" && (hasNewStart || hasNewEnd)) {
+        cloned.meta.status = "modified";
       }
 
       affectedAnnos.push(cloned);
@@ -277,10 +264,10 @@ function findChangedAnnotations(indexMap: IndexMap, plainText: string): Annotati
   const initialUuids = new Set<string>([...(initialAnnotations.value?.keys() ?? [])]);
   const deletedUuids = initialUuids.difference(uuidsInEditor);
 
-  deletedUuids.forEach(uuid => {
+  deletedUuids.forEach((uuid) => {
     const annoEntry: Annotation = initialAnnotations.value?.get(uuid)!;
 
-    const cloned: Annotation = { ...cloneDeep(annoEntry), meta: { status: 'deleted' } };
+    const cloned: Annotation = { ...cloneDeep(annoEntry), meta: { status: "deleted" } };
 
     affectedAnnos.push(cloned);
   });
@@ -313,7 +300,7 @@ function assembleStructuralAnnotationData(node: DocNode): Record<string, any> {
   const fields: PropertyConfig[] = getStructuralAnnotationConfig(annotationType)?.properties ?? [];
 
   fields.forEach((field: PropertyConfig) => {
-    if (editorOwned.some(map => map.property === field.name)) {
+    if (editorOwned.some((map) => map.property === field.name)) {
       return;
     }
 
@@ -342,7 +329,7 @@ function findChangedStructureElements(indexMap: IndexMap, plainText: string): An
 
   const docNodes = new Map<string, DocNode>();
 
-  tiptap.value?.state.doc.descendants(node => {
+  tiptap.value?.state.doc.descendants((node) => {
     if (isStructureElement(node)) {
       docNodes.set(node.attrs.uuid, node);
     }
@@ -363,7 +350,7 @@ function findChangedStructureElements(indexMap: IndexMap, plainText: string): An
     const textSlice: string = plainText.slice(startIndex, endIndex + 1);
 
     // TODO: Always "modified" for now since it is likely anyway (changed text). Fix later maybe
-    const status: NodeStatus = initialEntry ? 'modified' : 'created';
+    const status: NodeStatus = initialEntry ? "modified" : "created";
 
     // Create annotation object (needed)
     const annotation: Annotation = {
@@ -374,7 +361,7 @@ function findChangedStructureElements(indexMap: IndexMap, plainText: string): An
           endIndex,
           text: textSlice,
         } as IAnnotation,
-        nodeLabels: ['Annotation'],
+        nodeLabels: ["Annotation"],
       },
       connectedNodes: [],
       meta: {
@@ -397,10 +384,10 @@ function findChangedStructureElements(indexMap: IndexMap, plainText: string): An
   );
   const deletedUuids: Set<string> = initialUuids.difference(uuidsInEditor);
 
-  deletedUuids.forEach(uuid => {
+  deletedUuids.forEach((uuid) => {
     const annoEntry: Annotation = initialStructuralAnnotations.value?.get(uuid)!;
 
-    const cloned: Annotation = { ...cloneDeep(annoEntry), meta: { status: 'deleted' } };
+    const cloned: Annotation = { ...cloneDeep(annoEntry), meta: { status: "deleted" } };
 
     affectedElements.push(cloned);
   });
@@ -419,9 +406,7 @@ function findChangedSemanticBlocks(indexMap: IndexMap, plainText: string): Annot
       return;
     }
 
-    const status: NodeStatus = initialStructuralAnnotations.value?.has(uuid)
-      ? 'modified'
-      : 'created';
+    const status: NodeStatus = initialStructuralAnnotations.value?.has(uuid) ? "modified" : "created";
 
     affectedElements.push({
       node: {
@@ -431,7 +416,7 @@ function findChangedSemanticBlocks(indexMap: IndexMap, plainText: string): Annot
           endIndex,
           text: plainText.slice(startIndex, endIndex + 1),
         } as IAnnotation,
-        nodeLabels: ['Annotation'],
+        nodeLabels: ["Annotation"],
       },
       connectedNodes: [...storeEntry.connectedNodes],
       meta: {
@@ -445,7 +430,7 @@ function findChangedSemanticBlocks(indexMap: IndexMap, plainText: string): Annot
 
   initialStructuralAnnotations.value!.forEach((anno, uuid) => {
     if (!isBuiltinStructuralType(anno.node.data.type) && !uuidsInEditor.has(uuid)) {
-      affectedElements.push({ ...cloneDeep(anno), meta: { status: 'deleted' } });
+      affectedElements.push({ ...cloneDeep(anno), meta: { status: "deleted" } });
     }
   });
 
@@ -455,13 +440,8 @@ function findChangedSemanticBlocks(indexMap: IndexMap, plainText: string): Annot
 function getAffectedAnnotations(): { annotations: Annotation[]; structureElements: Annotation[] } {
   const plainText: string = tiptap.value!.state.doc.textContent;
 
-  const {
-    decorationIndexMap,
-    structureBlockIndexMap,
-    semanticBlockIndexMap,
-    zeroPointIndexMap,
-    hardBreakIndexMap,
-  } = useCreateIndexMaps().buildIndexMaps();
+  const { decorationIndexMap, structureBlockIndexMap, semanticBlockIndexMap, zeroPointIndexMap, hardBreakIndexMap } =
+    useCreateIndexMaps().buildIndexMaps();
 
   // Zero point and range annotation are stored in the same store and can therefore share the same index map
   const changedAnnotations = findChangedAnnotations(
@@ -476,10 +456,7 @@ function getAffectedAnnotations(): { annotations: Annotation[]; structureElement
   );
 
   // Semantic blocks (closer, address, div) are tracked via _semanticBlocks on block nodes
-  const affectedLabelAnnotations = findChangedSemanticBlocks(
-    semanticBlockIndexMap as IndexMap,
-    plainText,
-  );
+  const affectedLabelAnnotations = findChangedSemanticBlocks(semanticBlockIndexMap as IndexMap, plainText);
 
   return {
     annotations: changedAnnotations,
@@ -501,26 +478,26 @@ function inferRelationship(parent: Node<BaseNodeData>, child: Node<BaseNodeData>
   const c: string[] = child.nodeLabels;
 
   // Annotation → Annotation: sub-annotation (e.g. commentary text)
-  if (p.includes('Annotation') && c.includes('Annotation')) {
-    return { type: 'HAS_ANNOTATION', startUuid: parentUuid, endUuid: childUuid };
+  if (p.includes("Annotation") && c.includes("Annotation")) {
+    return { type: "HAS_ANNOTATION", startUuid: parentUuid, endUuid: childUuid };
   }
 
   // Annotation → Entity | Collection | Text: referenced nodes
-  if (p.includes('Annotation')) {
-    return { type: 'REFERS_TO', startUuid: parentUuid, endUuid: childUuid };
+  if (p.includes("Annotation")) {
+    return { type: "REFERS_TO", startUuid: parentUuid, endUuid: childUuid };
   }
 
   // Text | Collection → Annotation
-  if (c.includes('Annotation')) {
-    return { type: 'HAS_ANNOTATION', startUuid: parentUuid, endUuid: childUuid };
+  if (c.includes("Annotation")) {
+    return { type: "HAS_ANNOTATION", startUuid: parentUuid, endUuid: childUuid };
   }
 
   // Collection → Text | Collection → Collection: edge runs (Text|Collection)-[:PART_OF]->(Collection)
-  if (p.includes('Collection') && (c.includes('Content') || c.includes('Collection'))) {
-    return { type: 'PART_OF', startUuid: childUuid, endUuid: parentUuid };
+  if (p.includes("Collection") && (c.includes("Content") || c.includes("Collection"))) {
+    return { type: "PART_OF", startUuid: childUuid, endUuid: parentUuid };
   }
 
-  throw new Error(`Cannot infer relationship between [${p.join(', ')}] and [${c.join(', ')}]`);
+  throw new Error(`Cannot infer relationship between [${p.join(", ")}] and [${c.join(", ")}]`);
 }
 
 type UpdateObject = {
@@ -532,32 +509,28 @@ type UpdateObject = {
 };
 
 /** Temporary, used in backend */
-function insertNodeIntoObject(
-  parent: NodeStatusObject | null,
-  node: NodeStatusObject,
-  obj: UpdateObject,
-): UpdateObject {
-  node.connectedNodes.forEach(child => insertNodeIntoObject(node, child, obj));
+function insertNodeIntoObject(parent: NodeStatusObject | null, node: NodeStatusObject, obj: UpdateObject): UpdateObject {
+  node.connectedNodes.forEach((child) => insertNodeIntoObject(node, child, obj));
 
-  if (node.meta.status === 'deleted') {
+  if (node.meta.status === "deleted") {
     obj.delete.push(node.node);
   }
 
-  if (node.meta.status === 'created') {
+  if (node.meta.status === "created") {
     obj.create.push(node.node);
   }
 
-  if (node.meta.status === 'modified') {
+  if (node.meta.status === "modified") {
     obj.update.push(node.node);
   }
 
   // Added/created with existing parent
-  if (parent && (node.meta.status === 'created' || node.meta.status === 'added')) {
+  if (parent && (node.meta.status === "created" || node.meta.status === "added")) {
     obj.attach.push(inferRelationship(parent.node, node.node));
   }
 
   // Removed, but parent was deleted anyway
-  if (parent && node.meta.status === 'removed' && parent.meta.status !== 'deleted') {
+  if (parent && node.meta.status === "removed" && parent.meta.status !== "deleted") {
     obj.remove.push(inferRelationship(parent.node, node.node));
   }
 
@@ -593,14 +566,12 @@ async function handleSaveChanges(): Promise<void> {
   const nodesWithoutChildrenOrText = getEmptyNodes();
 
   if (nodesWithoutChildrenOrText.length > 0) {
-    console.warn('Some nodes have no text: ', nodesWithoutChildrenOrText);
+    console.warn("Some nodes have no text: ", nodesWithoutChildrenOrText);
 
     addToastMessage({
-      severity: 'warn',
-      summary: 'Empty block',
-      detail:
-        'Some nodes do not contain text or children. Please delete them or add text: ' +
-        nodesWithoutChildrenOrText,
+      severity: "warn",
+      summary: "Empty block",
+      detail: "Some nodes do not contain text or children. Please delete them or add text: " + nodesWithoutChildrenOrText,
       life: 3000,
     });
 
@@ -620,7 +591,7 @@ async function handleSaveChanges(): Promise<void> {
       },
       nodeLabels: [...text.value.nodeLabels],
     },
-    meta: { status: 'modified' },
+    meta: { status: "modified" },
     connectedNodes: [],
   };
 
@@ -642,19 +613,19 @@ async function handleSaveChanges(): Promise<void> {
 
     cleanUpAfterSave(newTextNode, affectedAnnotations);
 
-    showMessage('success');
+    showMessage("success");
   } catch (error: unknown) {
-    showMessage('error', error as Error);
-    console.error('Error updating text:', error);
+    showMessage("error", error as Error);
+    console.error("Error updating text:", error);
   } finally {
     asyncOperationRunning.value = false;
   }
 }
 
 function traverseNodeTreeAndSetToCreated(node: NodeStatusObject) {
-  node.meta.status = 'unchanged';
+  node.meta.status = "unchanged";
 
-  node.connectedNodes.forEach(child => traverseNodeTreeAndSetToCreated(child));
+  node.connectedNodes.forEach((child) => traverseNodeTreeAndSetToCreated(child));
 }
 
 async function handleCancelChanges(): Promise<void> {
@@ -663,44 +634,43 @@ async function handleCancelChanges(): Promise<void> {
   resetToInitialState();
 }
 
-function toggleSidebar(position: 'left' | 'right', wasCollapsed: boolean): void {
+function toggleSidebar(position: "left" | "right", wasCollapsed: boolean): void {
   const sidebar = sidebars.value[position];
   sidebar.isCollapsed = !wasCollapsed;
 }
 
 function handleResize(event: MouseEvent): void {
   const sidebar: SidebarConfig = sidebars.value[activeResizer.value];
-  sidebar.width =
-    activeResizer.value === 'left' ? event.clientX : window.innerWidth - event.clientX;
+  sidebar.width = activeResizer.value === "left" ? event.clientX : window.innerWidth - event.clientX;
 }
 
 function handleMouseDown(event: MouseEvent): void {
-  if (!(event.target as Element).classList.contains('resizer')) {
+  if (!(event.target as Element).classList.contains("resizer")) {
     return;
   }
 
-  const side: string = (event.target as Element).getAttribute('resizer-id');
+  const side: string = (event.target as Element).getAttribute("resizer-id");
   activeResizer.value = side;
-  window.addEventListener('mousemove', handleResize);
+  window.addEventListener("mousemove", handleResize);
 }
 
 function handleKeyDown(event: KeyboardEvent): void {
   const keys: string[] = [];
 
   if (event.ctrlKey) {
-    keys.push('ctrl');
+    keys.push("ctrl");
   }
 
   if (event.shiftKey) {
-    keys.push('shift');
+    keys.push("shift");
   }
 
   if (event.altKey) {
-    keys.push('alt');
+    keys.push("alt");
   }
 
   if (event.metaKey) {
-    keys.push('meta');
+    keys.push("meta");
   }
 
   keys.push(event.key.toLowerCase());
@@ -708,8 +678,8 @@ function handleKeyDown(event: KeyboardEvent): void {
   const keyCombo: string = normalizeKeys(keys);
 
   // Quick hack to remove backdrop from redraw mode
-  if (keys.length === 1 && keys[0] === 'escape') {
-    toggleRedrawMode({ direction: 'off', cause: 'cancel' });
+  if (keys.length === 1 && keys[0] === "escape") {
+    toggleRedrawMode({ direction: "off", cause: "cancel" });
   }
 
   // Check if the shortcut combo exists, execute callback function
@@ -725,19 +695,19 @@ function handleKeyDown(event: KeyboardEvent): void {
 }
 
 function handleMouseUp(): void {
-  activeResizer.value = '';
-  window.removeEventListener('mousemove', handleResize);
+  activeResizer.value = "";
+  window.removeEventListener("mousemove", handleResize);
 }
 
 function handleBeforeUnload(event: BeforeUnloadEvent): void {
   preventUserFromPageLeaving(event);
 }
 
-function showMessage(result: 'success' | 'error', error?: Error) {
+function showMessage(result: "success" | "error", error?: Error) {
   addToastMessage({
     severity: result,
-    summary: result === 'success' ? 'Changes saved successfully' : 'Error saving changes',
-    detail: error?.message ?? '',
+    summary: result === "success" ? "Changes saved successfully" : "Error saving changes",
+    detail: error?.message ?? "",
     life: 2000,
   });
 }
@@ -805,7 +775,7 @@ function preventUserFromPageLeaving(event: BeforeUnloadEvent): string {
 
   event.preventDefault();
 
-  const confirmationMessage = 'Do you really want to leave? You have unsaved changes.';
+  const confirmationMessage = "Do you really want to leave? You have unsaved changes.";
   event.returnValue = confirmationMessage;
 
   return confirmationMessage;
@@ -821,7 +791,7 @@ function preventUserFromRouteLeaving(): boolean {
   }
 
   // TODO: Use PrimeVue confirmation dialog instead of browser default?
-  const answer: boolean = window.confirm('Do you really want to leave? you have unsaved changes');
+  const answer: boolean = window.confirm("Do you really want to leave? you have unsaved changes");
 
   // cancel the navigation and stay on the same page
   if (!answer) {
@@ -853,7 +823,7 @@ watch(
     //   return;
     // }
 
-    const fetchedAnnotations: NodeDto[] = await api.getAnnotations('text', textUuid.value);
+    const fetchedAnnotations: NodeDto[] = await api.getAnnotations("text", textUuid.value);
     // if (annotationFetchError.value) {
     //   isLoading.value = false;
     //   return;
@@ -888,18 +858,14 @@ watch(
           <p><strong>Edit annotated text</strong></p>
           <p>Select the new text that should belong to this annotation.</p>
           <p>
-            To cancel the operation, click the <i class="pi pi-times-circle"></i> button in the
-            annotation panel on the right or press <kbd>Esc</kbd>.
+            To cancel the operation, click the <i class="pi pi-times-circle"></i> button in the annotation panel on the right or
+            press <kbd>Esc</kbd>.
           </p>
         </Message>
       </div>
     </PageOverlay>
 
-    <EditorSidebar
-      position="left"
-      :isCollapsed="sidebars['left'].isCollapsed === true"
-      :width="sidebars['left'].width"
-    >
+    <EditorSidebar position="left" :isCollapsed="sidebars['left'].isCollapsed === true" :width="sidebars['left'].width">
       <EditorMetadata />
       <EditorToC />
       <EditorAnnotations />
@@ -911,10 +877,7 @@ watch(
       :sidebarIsCollapsed="sidebars['left'].isCollapsed === true"
       @toggle-sidebar="toggleSidebar"
     />
-    <section
-      class="main flex flex-column flex-grow-1 px-3 pb-0 pt-3"
-      :style="{ width: mainWidth + 'px' }"
-    >
+    <section class="main flex flex-column flex-grow-1 px-3 pb-0 pt-3" :style="{ width: mainWidth + 'px' }">
       <EditorHeader ref="labelInputRef" />
       <EditorAnnotationButtonPane />
       <editor-content id="editor" :editor="tiptap" spellcheck="false" />
@@ -933,11 +896,7 @@ watch(
       :sidebarIsCollapsed="sidebars['right'].isCollapsed === true"
       @toggle-sidebar="toggleSidebar"
     />
-    <EditorSidebar
-      position="right"
-      :isCollapsed="sidebars['right'].isCollapsed === true"
-      :width="sidebars['right'].width"
-    >
+    <EditorSidebar position="right" :isCollapsed="sidebars['right'].isCollapsed === true" :width="sidebars['right'].width">
       <EditorFilter />
       <EditorAnnotationPanel />
     </EditorSidebar>

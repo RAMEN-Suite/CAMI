@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { computed, nextTick, Ref, ref, useTemplateRef } from 'vue';
-import { useGuidelinesStore } from '../store/guidelines';
-import { camelCaseToTitleCase } from '../utils/helper/helper';
-import AutoComplete from 'primevue/autocomplete';
-import Button from 'primevue/button';
-import Fieldset from 'primevue/fieldset';
-import { AnnotationConfigEntity, AnnotationType, EntityNode } from '../models/types';
-import { useAppStore } from '../store/app';
-import EntityItem from './EntityCard.vue';
+import { computed, nextTick, Ref, ref, useTemplateRef } from "vue";
+import { useGuidelinesStore } from "../store/guidelines";
+import { camelCaseToTitleCase } from "../utils/helper/helper";
+import AutoComplete from "primevue/autocomplete";
+import Button from "primevue/button";
+import Fieldset from "primevue/fieldset";
+import { AnnotationConfigEntity, AnnotationType, EntityNode } from "../models/types";
+import { useAppStore } from "../store/app";
+import EntityItem from "./EntityCard.vue";
 
 /**
  *  Enriches entities item with an html key that contains the highlighted parts of the node label
@@ -22,7 +22,7 @@ interface EntitiesSearchObject {
     fetchedItems: EntityEntry[] | string[];
     nodeLabel: string;
     currentItem: EntityEntry | null;
-    mode: 'edit' | 'view';
+    mode: "edit" | "view";
     elm: Ref<any>;
   };
 }
@@ -30,7 +30,7 @@ interface EntitiesSearchObject {
 const entities = defineModel<EntityNode[]>();
 
 const props = defineProps<{
-  mode?: 'edit' | 'view';
+  mode?: "edit" | "view";
   defaultSearchValue?: string;
   initialEntities: EntityNode[];
   annotationConfig: AnnotationType;
@@ -48,11 +48,9 @@ const visibleEntityCategories = computed<string[]>(() => {
   const allowedNodeLabels: string[] | null = props.annotationConfig.entityNodes ?? null;
 
   if (allowedNodeLabels) {
-    return entityConfigs
-      .filter(config => allowedNodeLabels.includes(config.nodeLabel))
-      .map(config => config.category);
+    return entityConfigs.filter((config) => allowedNodeLabels.includes(config.nodeLabel)).map((config) => config.category);
   } else {
-    return entityConfigs.map(config => config.category);
+    return entityConfigs.map((config) => config.category);
   }
 });
 
@@ -61,7 +59,7 @@ const categorizedEntities = computed<Record<string, EntityNode[]>>(() => {
   const obj: Record<string, EntityNode[]> = {};
 
   entityConfigs.forEach((config: AnnotationConfigEntity) => {
-    obj[config.category] = entities.value.filter(e => e.nodeLabels.includes(config.nodeLabel));
+    obj[config.category] = entities.value.filter((e) => e.nodeLabels.includes(config.nodeLabel));
   });
 
   return obj;
@@ -71,11 +69,10 @@ const entitiesAreCollapsed = ref<boolean>(false);
 const entitiesSearchObject = ref<EntitiesSearchObject>(
   entityConfigs.reduce((object: EntitiesSearchObject, config: AnnotationConfigEntity) => {
     object[config.category] = {
-      nodeLabel: guidelines.value.annotations.entities.find(r => r.category === config.category)
-        .nodeLabel,
+      nodeLabel: guidelines.value.annotations.entities.find((r) => r.category === config.category).nodeLabel,
       fetchedItems: [],
       currentItem: null,
-      mode: 'view',
+      mode: "view",
       elm: useTemplateRef(`input-${config.category}`),
     };
 
@@ -104,10 +101,10 @@ function addEntityItem(item: EntityEntry): void {
  * @param {string} category - The category for which the mode should be changed.
  * @param {'view' | 'edit'} mode - The new mode.
  */
-function changeEntitiesSelectionMode(category: string, mode: 'view' | 'edit'): void {
+function changeEntitiesSelectionMode(category: string, mode: "view" | "edit"): void {
   entitiesSearchObject.value[category].mode = mode;
 
-  if (mode === 'view') {
+  if (mode === "view") {
     entitiesSearchObject.value[category].currentItem = null;
 
     return;
@@ -125,7 +122,7 @@ function changeEntitiesSelectionMode(category: string, mode: 'view' | 'edit'): v
       return;
     }
 
-    const inputElement: HTMLInputElement = elm.$el?.querySelector('input');
+    const inputElement: HTMLInputElement = elm.$el?.querySelector("input");
 
     inputElement?.focus();
   });
@@ -149,8 +146,7 @@ function getHtmlTitleForButton(currentUserInput: string): string {
  * @param {string} category - The category to which the new item should be added
  */
 function handleCreateNewEntity(newLabel: string, category: string): void {
-  const nodeLabel: string | null =
-    guidelines.value.annotations.entities.find(r => r.category === category)?.nodeLabel ?? null;
+  const nodeLabel: string | null = guidelines.value.annotations.entities.find((r) => r.category === category)?.nodeLabel ?? null;
 
   const item: EntityEntry = {
     nodeLabels: nodeLabel ? [nodeLabel] : [],
@@ -172,7 +168,7 @@ function handleCreateNewEntity(newLabel: string, category: string): void {
  */
 function handleEntityItemSelect(item: EntityEntry, category: string): void {
   addEntityItem(item);
-  changeEntitiesSelectionMode(category, 'view');
+  changeEntitiesSelectionMode(category, "view");
 }
 
 /**
@@ -181,7 +177,7 @@ function handleEntityItemSelect(item: EntityEntry, category: string): void {
  * @param {EntityNode} entity - The entity item to be removed.
  */
 function handleRemoveEntity(entity: EntityNode): void {
-  entities.value = entities.value.filter(entry => entry.data.uuid !== entity.data.uuid);
+  entities.value = entities.value.filter((entry) => entry.data.uuid !== entity.data.uuid);
 }
 
 /**
@@ -194,8 +190,8 @@ function handleRemoveEntity(entity: EntityNode): void {
  * @returns {string} The text with all occurrences of the search string highlighted.
  */
 function renderHTML(text: string, searchStr: string): string {
-  if (searchStr !== '') {
-    const regex: RegExp = new RegExp(`(${searchStr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  if (searchStr !== "") {
+    const regex: RegExp = new RegExp(`(${searchStr.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
 
     return text.replace(regex, '<span style="background-color: yellow">$1</span>');
   }
@@ -218,9 +214,7 @@ async function searchEntitiesOptions(searchString: string, category: string): Pr
   // Show only entries that are not already part of the annotation
   const existingUuids: string[] = entities.value.map((entry: EntityEntry) => entry.data.uuid);
 
-  const withoutDuplicates: EntityNode[] = fetchedEntities.filter(
-    (entry: EntityNode) => !existingUuids.includes(entry.data.uuid),
-  );
+  const withoutDuplicates: EntityNode[] = fetchedEntities.filter((entry: EntityNode) => !existingUuids.includes(entry.data.uuid));
 
   // Store HTML directly in prop to prevent unnecessary, primevue-enforced re-renders during hover
   const withHtml: EntityEntry[] = withoutDuplicates.map((entry: EntityNode) => ({
@@ -251,11 +245,7 @@ async function searchEntitiesOptions(searchString: string, category: string): Pr
         v-for="entry in categorizedEntities[category]"
         :key="entry.data.uuid"
         :node="entry"
-        :status="
-          props.initialEntities.map(e => e.data.uuid).includes(entry.data.uuid)
-            ? 'existing'
-            : 'temporary'
-        "
+        :status="props.initialEntities.map((e) => e.data.uuid).includes(entry.data.uuid) ? 'existing' : 'temporary'"
         @remove-entity="handleRemoveEntity(entry)"
       />
       <Button
@@ -289,9 +279,7 @@ async function searchEntitiesOptions(searchString: string, category: string): Pr
         @option-select="handleEntityItemSelect($event.value, category)"
       >
         <template #header v-if="entitiesSearchObject[category].fetchedItems.length > 0">
-          <div class="font-medium px-3 py-2">
-            {{ entitiesSearchObject[category].fetchedItems.length }} Results
-          </div>
+          <div class="font-medium px-3 py-2">{{ entitiesSearchObject[category].fetchedItems.length }} Results</div>
         </template>
         <template #option="slotProps">
           <span v-html="slotProps.option.html" :title="slotProps.option.label"></span>
@@ -308,9 +296,7 @@ async function searchEntitiesOptions(searchString: string, category: string): Pr
               label="Create new entity"
               severity="secondary"
               :title="getHtmlTitleForButton(entitiesSearchObject[category].elm[0].inputValue)"
-              @click="
-                handleCreateNewEntity(entitiesSearchObject[category].elm[0].inputValue, category)
-              "
+              @click="handleCreateNewEntity(entitiesSearchObject[category].elm[0].inputValue, category)"
             />
           </div>
         </template>

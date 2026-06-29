@@ -1,27 +1,20 @@
 <script setup lang="ts">
-import { InputText, Button, useDialog } from 'primevue';
-import { useCollectionManagerStore } from '../store/collectionManager';
-import CollectionItem from './CollectionItem.vue';
-import { useRouter } from 'vue-router';
-import { MenuItem } from 'primevue/menuitem';
+import { InputText, Button, useDialog } from "primevue";
+import { useCollectionManagerStore } from "../store/collectionManager";
+import CollectionItem from "./CollectionItem.vue";
+import { useRouter } from "vue-router";
+import { MenuItem } from "primevue/menuitem";
 
-import {
-  CollectionNode,
-  NodeSearchParams,
-  ColumnEntry,
-  PaginationData,
-  PaginationResult,
-  NodeDto,
-} from '../models/types';
-import { useGuidelinesStore } from '../store/guidelines';
-import MultiSelect from 'primevue/multiselect';
-import Menu from 'primevue/menu';
-import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
-import OverlayBadge from 'primevue/overlaybadge';
-import { useSearchParams } from '../composables/useSearchParams';
-import { useAppStore } from '../store/app';
-import { useEventListener, useInfiniteScroll } from '@vueuse/core';
-import CreateCollectionModal from './CreateCollectionModal.vue';
+import { CollectionNode, NodeSearchParams, ColumnEntry, PaginationData, PaginationResult, NodeDto } from "../models/types";
+import { useGuidelinesStore } from "../store/guidelines";
+import MultiSelect from "primevue/multiselect";
+import Menu from "primevue/menu";
+import { computed, onMounted, ref, useTemplateRef, watch } from "vue";
+import OverlayBadge from "primevue/overlaybadge";
+import { useSearchParams } from "../composables/useSearchParams";
+import { useAppStore } from "../store/app";
+import { useEventListener, useInfiniteScroll } from "@vueuse/core";
+import CreateCollectionModal from "./CreateCollectionModal.vue";
 
 const props = defineProps<{
   index: number;
@@ -34,18 +27,17 @@ const { api, addToastMessage, createModalInstance, destroyModalInstance } = useA
 const dialog: ReturnType<typeof useDialog> = useDialog();
 
 const { getAvailableCollectionLabels } = useGuidelinesStore();
-const { activeCollection, canNavigate, levels, createNewUrlPath, setMode } =
-  useCollectionManagerStore();
-const { searchParams, updateSearchParams } = useSearchParams({ scope: 'Collection', rowCount: 25 });
+const { activeCollection, canNavigate, levels, createNewUrlPath, setMode } = useCollectionManagerStore();
+const { searchParams, updateSearchParams } = useSearchParams({ scope: "Collection", rowCount: 25 });
 
-const addMenu = useTemplateRef('add-menu');
+const addMenu = useTemplateRef("add-menu");
 
 const addMenuItems: MenuItem[] = [
-  { label: 'New', icon: 'pi pi-file-plus', command: () => openCreateCollectionModal('new') },
+  { label: "New", icon: "pi pi-file-plus", command: () => openCreateCollectionModal("new") },
   {
-    label: 'Existing',
-    icon: 'pi pi-search',
-    command: () => openCreateCollectionModal('existing'),
+    label: "Existing",
+    icon: "pi pi-search",
+    command: () => openCreateCollectionModal("existing"),
     visible: props.index !== 0,
   },
 ];
@@ -54,21 +46,19 @@ const availableCollectionLabels = getAvailableCollectionLabels();
 
 const columnPagination = ref<PaginationData>(null);
 
-const column = useTemplateRef<HTMLDivElement>('column');
-const scrollPane = useTemplateRef<HTMLDivElement>('scroll-pane');
-const resizer = useTemplateRef<HTMLDivElement>('resizer');
+const column = useTemplateRef<HTMLDivElement>("column");
+const scrollPane = useTemplateRef<HTMLDivElement>("scroll-pane");
+const resizer = useTemplateRef<HTMLDivElement>("resizer");
 
-const areAllLabelsSelected = computed<boolean>(
-  () => searchParams.value.nodeLabels.length === availableCollectionLabels.length,
-);
+const areAllLabelsSelected = computed<boolean>(() => searchParams.value.nodeLabels.length === availableCollectionLabels.length);
 
 const initialDataAreFetched = ref<boolean>(false);
 // The useInfiniteScroll composable has its own loading state management, but it does not work
 // well with the initial data fetching logic. Therefore, an component wide loading state is used.
 const isLoading = ref<boolean>(false);
 
-useEventListener(resizer, 'mousedown', startResize);
-useEventListener(window, 'mouseup', endResize);
+useEventListener(resizer, "mousedown", startResize);
+useEventListener(window, "mouseup", endResize);
 
 // TODO: Use reset method as soon vueUse package version is updated
 useInfiniteScroll(scrollPane, fetchMoreData, {
@@ -107,20 +97,20 @@ onMounted(() => {
 
 function addData(data: NodeDto<CollectionNode>[]) {
   levels.value[props.index].collections.push(
-    ...data.map(c => {
+    ...data.map((c) => {
       return {
         data: {
           node: c.node,
           connectedNodes: [],
         },
-        status: 'existing',
+        status: "existing",
       } as ColumnEntry;
     }),
   );
 }
 
 function endResize() {
-  window.removeEventListener('mousemove', handleResize);
+  window.removeEventListener("mousemove", handleResize);
 }
 
 async function fetchData(): Promise<PaginationResult<NodeDto<CollectionNode>[]>> {
@@ -157,18 +147,18 @@ async function fetchMoreData(): Promise<void> {
   setIsLoading(false);
 }
 
-function openCreateCollectionModal(mode: 'new' | 'existing') {
+function openCreateCollectionModal(mode: "new" | "existing") {
   if (!canNavigate.value) {
     showUnsavedChangesWarning();
     return;
   }
 
   const parentCollection: CollectionNode | null =
-    props.index > 0 ? levels.value[props.index - 1]?.activeCollection?.node ?? null : null;
+    props.index > 0 ? (levels.value[props.index - 1]?.activeCollection?.node ?? null) : null;
 
   //TODO: this is a hack, should be removed
-  if (parentCollection && !parentCollection.nodeLabels.includes('Collection')) {
-    parentCollection.nodeLabels.push('Collection');
+  if (parentCollection && !parentCollection.nodeLabels.includes("Collection")) {
+    parentCollection.nodeLabels.push("Collection");
   }
 
   createModalInstance(
@@ -176,8 +166,8 @@ function openCreateCollectionModal(mode: 'new' | 'existing') {
       props: {
         modal: true,
         closable: false,
-        header: mode === 'new' ? 'Create new Collection' : 'Add existing Collection',
-        style: { width: '420px' },
+        header: mode === "new" ? "Create new Collection" : "Add existing Collection",
+        style: { width: "420px" },
       },
       data: { mode, parentCollection },
       emits: {
@@ -190,7 +180,7 @@ function openCreateCollectionModal(mode: 'new' | 'existing') {
           // Create new item and add it to beginning of list (should be visible directly)
           const columnItem: ColumnEntry = {
             data: createdCollection,
-            status: 'existing',
+            status: "existing",
           };
 
           levels.value[props.index].collections.unshift(columnItem);
@@ -201,13 +191,13 @@ function openCreateCollectionModal(mode: 'new' | 'existing') {
           });
 
           addToastMessage({
-            severity: 'success',
-            summary: 'Operation successful',
-            detail: '',
+            severity: "success",
+            summary: "Operation successful",
+            detail: "",
             life: 2000,
           });
 
-          setMode('view');
+          setMode("view");
 
           // Close modal
           destroyModalInstance();
@@ -225,7 +215,7 @@ function toggleAddMenu(event: Event) {
 function handleChangeSortOrderClick() {
   resetPagination();
   updateSearchParams({
-    sortDirection: searchParams.value.sortDirection === 'asc' ? 'desc' : 'asc',
+    sortDirection: searchParams.value.sortDirection === "asc" ? "desc" : "asc",
   });
 }
 
@@ -242,8 +232,7 @@ async function handleItemSelected(uuid: string): Promise<void> {
     return;
   }
 
-  const isAlreadyActiveInEditPane: boolean =
-    uuid === activeCollection.value?.collection.node.data.uuid;
+  const isAlreadyActiveInEditPane: boolean = uuid === activeCollection.value?.collection.node.data.uuid;
 
   // Nothing happens, return
   if (isAlreadyActiveInEditPane) {
@@ -310,18 +299,16 @@ function removeDuplicatesAfterFetching(data: NodeDto<CollectionNode>[]): NodeDto
     levels.value[props.index].collections.map((c: ColumnEntry) => c.data.node.data.uuid),
   );
 
-  const filteredData: NodeDto<CollectionNode>[] = data.filter(
-    c => !existingUuids.has(c.node.data.uuid),
-  );
+  const filteredData: NodeDto<CollectionNode>[] = data.filter((c) => !existingUuids.has(c.node.data.uuid));
 
   return filteredData;
 }
 
 function replaceData(data: NodeDto<CollectionNode>[]) {
-  levels.value[props.index].collections = data.map(c => {
+  levels.value[props.index].collections = data.map((c) => {
     return {
       data: c,
-      status: 'existing',
+      status: "existing",
     };
   });
 }
@@ -336,9 +323,9 @@ function setPagination(newPagination: PaginationData) {
 
 function showUnsavedChangesWarning() {
   addToastMessage({
-    severity: 'warn',
-    summary: 'You have unsaved changes.',
-    detail: 'Please save or discard your changes before selecting other collections.',
+    severity: "warn",
+    summary: "You have unsaved changes.",
+    detail: "Please save or discard your changes before selecting other collections.",
     life: 3000,
   });
 }
@@ -348,7 +335,7 @@ function updateUrlPath(uuid: string, index: number): void {
 }
 
 function scrollToColumn() {
-  column.value!.scrollIntoView({ behavior: 'smooth' });
+  column.value!.scrollIntoView({ behavior: "smooth" });
 }
 
 function setIsLoading(state: boolean) {
@@ -356,7 +343,7 @@ function setIsLoading(state: boolean) {
 }
 
 function startResize() {
-  window.addEventListener('mousemove', handleResize);
+  window.addEventListener("mousemove", handleResize);
 }
 </script>
 
@@ -400,13 +387,7 @@ function startResize() {
           </OverlayBadge>
         </template>
       </MultiSelect>
-      <Button
-        size="small"
-        severity="secondary"
-        icon="pi pi-refresh"
-        title="Refresh data"
-        @click="handleRefreshClick"
-      />
+      <Button size="small" severity="secondary" icon="pi pi-refresh" title="Refresh data" @click="handleRefreshClick" />
       <Button
         size="small"
         severity="secondary"
@@ -420,16 +401,10 @@ function startResize() {
         v-for="collection of levels[props.index].collections"
         :key="collection.data.node.data.uuid"
         :collection="collection"
-        :isActive="
-          levels[props.index].activeCollection?.node.data.uuid === collection.data.node.data.uuid
-        "
+        :isActive="levels[props.index].activeCollection?.node.data.uuid === collection.data.node.data.uuid"
         @item-selected="handleItemSelected"
       ></CollectionItem>
-      <div
-        class="text-center"
-        v-if="isLoading && levels[props.index].collections.length > 0"
-        title="More data are loading..."
-      >
+      <div class="text-center" v-if="isLoading && levels[props.index].collections.length > 0" title="More data are loading...">
         <span class="pi pi-spin pi-spinner"></span>
       </div>
     </div>

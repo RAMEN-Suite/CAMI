@@ -1,23 +1,21 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { ColumnEntry } from '../models/types';
-import NodeTag from './NodeTag.vue';
-import { filterDefaultLabels } from '../utils/helper/helper';
+import { computed } from "vue";
+import { ColumnEntry } from "../models/types";
+import NodeTag from "./NodeTag.vue";
+import { filterDefaultLabels } from "../utils/helper/helper";
 
-const emit = defineEmits(['itemSelected']);
+const emit = defineEmits(["itemSelected"]);
 
 const props = defineProps<{
   collection: ColumnEntry;
   isActive: boolean;
 }>();
 
-const nodeLabels = computed<string[]>(() =>
-  filterDefaultLabels(props.collection.data.node.nodeLabels),
-);
+const nodeLabels = computed<string[]>(() => filterDefaultLabels(props.collection.data.node.nodeLabels));
 
 function handleItemClick(): void {
   // Emit the event with the collection data
-  emit('itemSelected', props.collection.data.node.data.uuid);
+  emit("itemSelected", props.collection.data.node.data.uuid);
 }
 </script>
 

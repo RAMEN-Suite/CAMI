@@ -1,4 +1,4 @@
-import ApiError from './api.error.js';
+import ApiError from "./api.error.js";
 
 /**
  * Represents an error for external service failures (currently, when fetching guidelines or styles fails).

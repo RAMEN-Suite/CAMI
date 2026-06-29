@@ -1,4 +1,4 @@
-import AppError from './app.error';
+import AppError from "./app.error";
 
 /**
  * Represents an error that occurs when the user tries to select an invalid collection as the new target
@@ -12,7 +12,7 @@ export default class InvalidCollectionTargetError extends AppError {
    * @type {'error'}
    * @readonly
    */
-  severity: 'warn';
+  severity: "warn";
 
   /**
    * Creates an instance of InvalidCollectionTargetError.
@@ -20,6 +20,6 @@ export default class InvalidCollectionTargetError extends AppError {
    */
   constructor(message: string) {
     super(message);
-    this.severity = 'warn';
+    this.severity = "warn";
   }
 }

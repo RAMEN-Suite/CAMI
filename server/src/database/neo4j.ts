@@ -1,6 +1,6 @@
-import neo4j, { Driver, Neo4jError, QueryResult, ServerInfo, Session } from 'neo4j-driver';
-import DatabaseConnectionError from '../errors/databaseConnection.error.js';
-import InternalServerError from '../errors/server.error.js';
+import neo4j, { Driver, Neo4jError, QueryResult, ServerInfo, Session } from "neo4j-driver";
+import DatabaseConnectionError from "../errors/databaseConnection.error.js";
+import InternalServerError from "../errors/server.error.js";
 
 export default class Neo4jDriver {
   public static instance: Driver;
@@ -55,14 +55,14 @@ export default class Neo4jDriver {
   private static handleNeo4jError(err: unknown): void {
     // Fallback error throwing
     if (!(err instanceof Neo4jError)) {
-      throw new InternalServerError('An error occurred while connecting to the database.');
+      throw new InternalServerError("An error occurred while connecting to the database.");
     }
 
     // More errors could be added, but this is enough for now
-    if (err.code === 'ServiceUnavailable') {
-      throw new DatabaseConnectionError('Unable to connect to the database.');
+    if (err.code === "ServiceUnavailable") {
+      throw new DatabaseConnectionError("Unable to connect to the database.");
     } else {
-      throw new InternalServerError('An error occurred while connecting to the database.');
+      throw new InternalServerError("An error occurred while connecting to the database.");
     }
   }
 
@@ -76,11 +76,11 @@ export default class Neo4jDriver {
   public static async runQuery(query: string, ...params: any[]): Promise<any> {
     try {
       const session: Session = this.instance.session({
-        database: process.env.DATABASE_NAME ?? 'neo4j',
+        database: process.env.DATABASE_NAME ?? "neo4j",
       });
 
       // TODO: This should ideally be split up in "exectuteWrite" and "executeRead"
-      const result: QueryResult = await session.executeWrite(tx => {
+      const result: QueryResult = await session.executeWrite((tx) => {
         return tx.run(query, ...params);
       });
 

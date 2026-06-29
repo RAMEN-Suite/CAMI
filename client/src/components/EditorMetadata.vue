@@ -1,38 +1,38 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router';
-import { useGuidelinesStore } from '../store/guidelines';
-import { useTextStore } from '../store/text';
-import { capitalize } from '../utils/helper/helper';
-import { PropertyConfig } from '../models/types';
-import Button from 'primevue/button';
-import Column from 'primevue/column';
-import DataTable from 'primevue/datatable';
-import Fieldset from 'primevue/fieldset';
-import InputText from 'primevue/inputtext';
-import Panel from 'primevue/panel';
-import NodeTag from './NodeTag.vue';
-import { useBookmarks } from '../composables/useBookmarks';
-import { MenuItem } from 'primevue/menuitem';
-import Breadcrumb from 'primevue/breadcrumb';
-import { computed, ref } from 'vue';
+import { RouterLink } from "vue-router";
+import { useGuidelinesStore } from "../store/guidelines";
+import { useTextStore } from "../store/text";
+import { capitalize } from "../utils/helper/helper";
+import { PropertyConfig } from "../models/types";
+import Button from "primevue/button";
+import Column from "primevue/column";
+import DataTable from "primevue/datatable";
+import Fieldset from "primevue/fieldset";
+import InputText from "primevue/inputtext";
+import Panel from "primevue/panel";
+import NodeTag from "./NodeTag.vue";
+import { useBookmarks } from "../composables/useBookmarks";
+import { MenuItem } from "primevue/menuitem";
+import Breadcrumb from "primevue/breadcrumb";
+import { computed, ref } from "vue";
 
 const { text, correspondingCollection } = useTextStore();
 
 const { bookmarks, toggleBookmark } = useBookmarks();
 
 const breadcrumbRoot = ref<MenuItem>({
-  role: 'Collection',
+  role: "Collection",
   label: correspondingCollection.value?.data.label,
   uuid: correspondingCollection.value?.data.uuid,
 });
-const breadcrumbItems = ref<MenuItem[]>([{ role: 'Content', labels: text.value.nodeLabels }]);
+const breadcrumbItems = ref<MenuItem[]>([{ role: "Content", labels: text.value.nodeLabels }]);
 
 const isBookmarked = computed<boolean>(() => {
-  return bookmarks.value.some(b => b.data.data.uuid === text.value.data.uuid);
+  return bookmarks.value.some((b) => b.data.data.uuid === text.value.data.uuid);
 });
 
 function handleBookmarkAction() {
-  toggleBookmark({ data: text.value, type: 'text' });
+  toggleBookmark({ data: text.value, type: "text" });
 }
 
 async function handleCopy(): Promise<void> {
@@ -58,14 +58,7 @@ async function handleCopy(): Promise<void> {
     </template>
     <div class="mb-3">
       <div class="flex align-items-center gap-3">
-        <InputText
-          id="uuid"
-          :disabled="true"
-          :value="text.data.uuid"
-          class="flex-auto w-full"
-          size="small"
-          spellcheck="false"
-        />
+        <InputText id="uuid" :disabled="true" :value="text.data.uuid" class="flex-auto w-full" size="small" spellcheck="false" />
         <Button
           icon="pi pi-copy"
           severity="secondary"
@@ -103,11 +96,7 @@ async function handleCopy(): Promise<void> {
         <Breadcrumb :home="breadcrumbRoot" :model="breadcrumbItems">
           <template #item="{ item }">
             <div v-if="item.role === 'Collection'">
-              <RouterLink
-                :to="`/collections/${item.uuid}`"
-                severity="contrast"
-                :title="`Collection: ${item.label}`"
-              >
+              <RouterLink :to="`/collections/${item.uuid}`" severity="contrast" :title="`Collection: ${item.label}`">
                 {{ item.label }}
               </RouterLink>
             </div>
@@ -119,9 +108,7 @@ async function handleCopy(): Promise<void> {
                 type="Text"
                 class="mr-1 mb-1"
               />
-              <span v-else class="font-italic" title="This Text has no labels yet"
-                >No Text labels yet</span
-              >
+              <span v-else class="font-italic" title="This Text has no labels yet">No Text labels yet</span>
             </div>
           </template>
         </Breadcrumb>

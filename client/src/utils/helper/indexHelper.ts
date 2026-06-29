@@ -1,4 +1,4 @@
-import { Node } from '@tiptap/pm/model';
+import { Node } from "@tiptap/pm/model";
 
 export function indexToPosition(doc: Node, index: number): number {
   let pos: number = 0;

@@ -1,13 +1,5 @@
-import {
-  ApiJson,
-  TiptapNode,
-  TiptapJson,
-  NodeDto,
-  NodeStatusObject,
-  AnnotationNode,
-  AnnotationType,
-} from '../models/types';
-import { useGuidelinesStore } from '../store/guidelines';
+import { ApiJson, TiptapNode, TiptapJson, NodeDto, NodeStatusObject, AnnotationNode, AnnotationType } from "../models/types";
+import { useGuidelinesStore } from "../store/guidelines";
 
 type Anno = NodeStatusObject<AnnotationNode>;
 
@@ -41,15 +33,15 @@ export default class StandoffConverter {
   private usedUuids: Set<string> = new Set();
 
   /** Leaf block types: always produce inline content, never recurse into structural children.*/
-  private static readonly LEAF_BLOCK_TYPES = new Set(['paragraph', 'heading']);
+  private static readonly LEAF_BLOCK_TYPES = new Set(["paragraph", "heading"]);
 
   // Types that are always handled inline and must never appear as block children.
-  private static readonly EXCLUDED_FROM_BLOCK_CHILDREN = new Set(['hardBreak']);
+  private static readonly EXCLUDED_FROM_BLOCK_CHILDREN = new Set(["hardBreak"]);
 
   constructor(newStandoffJson: ApiJson) {
-    console.log('standoff json: ', newStandoffJson);
+    console.log("standoff json: ", newStandoffJson);
     this.standoffJson = newStandoffJson;
-    this.structuralAnnotationTypes = new Set(getStructuralAnnotationConfigs().map(c => c.type));
+    this.structuralAnnotationTypes = new Set(getStructuralAnnotationConfigs().map((c) => c.type));
 
     this.convertStandoffToTipTap();
   }
@@ -61,10 +53,7 @@ export default class StandoffConverter {
   } {
     // Merge built-in structural + label annotations so the annotation panel can display and
     // edit all structural annotations regardless of whether they form tree nodes or labels.
-    const allStructural = new Map<string, Anno>([
-      ...this.structuralAnnotations,
-      ...this.semanticBlockAnnotations,
-    ]);
+    const allStructural = new Map<string, Anno>([...this.structuralAnnotations, ...this.semanticBlockAnnotations]);
 
     return {
       annotations: this.inlineAnnotations,
@@ -76,8 +65,8 @@ export default class StandoffConverter {
   private createNodeStatusObjectFromRawData(rawNode: NodeDto): Anno {
     return {
       node: rawNode.node as AnnotationNode,
-      connectedNodes: rawNode.connectedNodes.map(n => this.createNodeStatusObjectFromRawData(n)),
-      meta: { status: 'unchanged' },
+      connectedNodes: rawNode.connectedNodes.map((n) => this.createNodeStatusObjectFromRawData(n)),
+      meta: { status: "unchanged" },
     };
   }
 
@@ -88,9 +77,7 @@ export default class StandoffConverter {
    * @returns {void} - This function does not return a value. All the data are set directly into the variables.
    */
   private createAnnotationUuidMaps(): void {
-    const statusObjects: Anno[] = this.standoffJson.annotations.map(a =>
-      this.createNodeStatusObjectFromRawData(a),
-    );
+    const statusObjects: Anno[] = this.standoffJson.annotations.map((a) => this.createNodeStatusObjectFromRawData(a));
 
     // console.log(
     //   statusObjects
@@ -145,9 +132,7 @@ export default class StandoffConverter {
    * @returns {string[] | null} The list of allowed child types or `null` if list is empty or non-existent
    */
   private getContainsList(type: string): string[] | null {
-    const config: AnnotationType | undefined = getStructuralAnnotationConfigs().find(
-      c => c.type === type,
-    );
+    const config: AnnotationType | undefined = getStructuralAnnotationConfigs().find((c) => c.type === type);
     const list: string[] | undefined = config?.contains;
 
     return list && list.length > 0 ? list : null;
@@ -214,16 +199,11 @@ export default class StandoffConverter {
    * @param {Anno[]} allStructural The list of all structural annotations
    * @returns {Anno[]} The immediate structural children, sorted by start index
    */
-  private findDirectChildren(
-    parentType: string,
-    startIndex: number,
-    endIndex: number,
-    allStructural: Anno[],
-  ): Anno[] {
+  private findDirectChildren(parentType: string, startIndex: number, endIndex: number, allStructural: Anno[]): Anno[] {
     const containsList: string[] | null = this.getContainsList(parentType);
 
     const candidates: Anno[] = allStructural.filter(
-      a =>
+      (a) =>
         !this.usedUuids.has(a.node.data.uuid) &&
         !StandoffConverter.EXCLUDED_FROM_BLOCK_CHILDREN.has(getEditorRole(a.node.data.type)) &&
         a.node.data.startIndex >= startIndex &&
@@ -232,7 +212,7 @@ export default class StandoffConverter {
     );
 
     return candidates
-      .filter(child => !candidates.some(b => this.contains(b, child)))
+      .filter((child) => !candidates.some((b) => this.contains(b, child)))
       .sort((a, b) => a.node.data.startIndex - b.node.data.startIndex);
   }
 
@@ -247,7 +227,7 @@ export default class StandoffConverter {
   private createTextNode(startIndex: number, endIndex: number): TiptapNode[] {
     const text: string = this.standoffJson.text.slice(startIndex, endIndex + 1);
 
-    return text ? [{ type: 'text', text }] : [];
+    return text ? [{ type: "text", text }] : [];
   }
 
   /**
@@ -269,11 +249,11 @@ export default class StandoffConverter {
 
     // Resolve to atom nodes as configured in the custom `ZeroPointAnnotation` extension
     const zeroPointEntries: InlineEntry[] = [...this.inlineAnnotations.values()]
-      .filter(a => isZeroPoint(a.node) && inRange(a))
-      .map(a => ({
+      .filter((a) => isZeroPoint(a.node) && inRange(a))
+      .map((a) => ({
         pos: a.node.data.startIndex,
         node: {
-          type: 'zeroPointAnnotation',
+          type: "zeroPointAnnotation",
           attrs: {
             uuid: a.node.data.uuid,
             annotationData: a.node,
@@ -283,11 +263,11 @@ export default class StandoffConverter {
 
     // Resolve to hard breaks
     const hardBreakEntries: InlineEntry[] = [...this.structuralAnnotations.values()]
-      .filter(a => getEditorRole(a.node.data.type) === 'hardBreak' && inRange(a))
-      .map(a => ({
+      .filter((a) => getEditorRole(a.node.data.type) === "hardBreak" && inRange(a))
+      .map((a) => ({
         pos: a.node.data.startIndex,
         node: {
-          type: 'hardBreak',
+          type: "hardBreak",
           attrs: {
             uuid: a.node.data.uuid,
             _annotationData: { ...a.node.data },
@@ -295,9 +275,7 @@ export default class StandoffConverter {
         },
       }));
 
-    const inlineNodes: InlineEntry[] = [...zeroPointEntries, ...hardBreakEntries].sort(
-      (a, b) => a.pos - b.pos,
-    );
+    const inlineNodes: InlineEntry[] = [...zeroPointEntries, ...hardBreakEntries].sort((a, b) => a.pos - b.pos);
 
     if (inlineNodes.length === 0) {
       return this.createTextNode(startIndex, endIndex);
@@ -347,16 +325,12 @@ export default class StandoffConverter {
    * @param {TiptapNode[]} content The content that should be passed into the paragraph node
    * @returns {TiptapNode} The synthetic paragraph node
    */
-  private syntheticParagraph(
-    startIndex: number,
-    endIndex: number,
-    content: TiptapNode[],
-  ): TiptapNode {
+  private syntheticParagraph(startIndex: number, endIndex: number, content: TiptapNode[]): TiptapNode {
     const uuid: string = crypto.randomUUID();
-    const paragraphType: string = getAnnotationType('paragraph');
+    const paragraphType: string = getAnnotationType("paragraph");
 
     return {
-      type: 'paragraph',
+      type: "paragraph",
       attrs: {
         uuid,
         _annotationData: { type: paragraphType, uuid, startIndex, endIndex },
@@ -415,7 +389,7 @@ export default class StandoffConverter {
       return true;
     }
 
-    return containsList.includes('paragraph');
+    return containsList.includes("paragraph");
   }
 
   /**
@@ -448,7 +422,7 @@ export default class StandoffConverter {
       if (this.isOnlyWhitespaces(start, end)) {
         // Append to the last paragraph if there is one. Otherwise, keep it in the leading buffer
         if (lastParagraph) {
-          this.clampTextIntoNode(lastParagraph, start, end, 'append');
+          this.clampTextIntoNode(lastParagraph, start, end, "append");
         } else {
           leadingWhitespaceBuffer.push({ start, end });
         }
@@ -456,20 +430,11 @@ export default class StandoffConverter {
         continue;
       }
 
-      const paragraph: TiptapNode = this.syntheticParagraph(
-        start,
-        end,
-        this.createLeafContent(start, end),
-      );
+      const paragraph: TiptapNode = this.syntheticParagraph(start, end, this.createLeafContent(start, end));
 
       // Flush buffered leading whitespace into the front of this paragraph (ascending order).
       for (let i = leadingWhitespaceBuffer.length - 1; i >= 0; i--) {
-        this.clampTextIntoNode(
-          paragraph,
-          leadingWhitespaceBuffer[i].start,
-          leadingWhitespaceBuffer[i].end,
-          'prepend',
-        );
+        this.clampTextIntoNode(paragraph, leadingWhitespaceBuffer[i].start, leadingWhitespaceBuffer[i].end, "prepend");
       }
 
       content.push(paragraph);
@@ -484,20 +449,14 @@ export default class StandoffConverter {
         const prev: TiptapNode = content[content.length - 1];
 
         for (const range of leadingWhitespaceBuffer) {
-          this.clampTextIntoNode(prev, range.start, range.end, 'append');
+          this.clampTextIntoNode(prev, range.start, range.end, "append");
         }
       } else {
         // Leading whitespace at the very start with no siblings: keep it in its own paragraph.
         const first: Range = leadingWhitespaceBuffer[0];
         const last: Range = leadingWhitespaceBuffer[leadingWhitespaceBuffer.length - 1];
 
-        content.push(
-          this.syntheticParagraph(
-            first.start,
-            last.end,
-            this.createLeafContent(first.start, last.end),
-          ),
-        );
+        content.push(this.syntheticParagraph(first.start, last.end, this.createLeafContent(first.start, last.end)));
       }
     }
   }
@@ -518,12 +477,7 @@ export default class StandoffConverter {
    * @param {'append' | 'prepend'} mode Whether to append or prepend the orphaned content to the given node
    * @returns {void} This function does not return any value (the passed node is modified in-place)
    */
-  private clampTextIntoNode(
-    content: TiptapNode,
-    start: number,
-    end: number,
-    mode: 'append' | 'prepend' = 'append',
-  ): void {
+  private clampTextIntoNode(content: TiptapNode, start: number, end: number, mode: "append" | "prepend" = "append"): void {
     if (start > end) {
       return;
     }
@@ -531,7 +485,7 @@ export default class StandoffConverter {
     if (content.attrs?._annotationData) {
       const data: Record<string, any> = content.attrs._annotationData;
 
-      if (mode === 'append') {
+      if (mode === "append") {
         data.endIndex = Math.max(data.endIndex ?? end, end);
       } else {
         data.startIndex = Math.min(data.startIndex ?? start, start);
@@ -544,7 +498,7 @@ export default class StandoffConverter {
     if (this.isLeafContainer(content.type)) {
       content.content = content.content ?? [];
 
-      if (mode === 'append') {
+      if (mode === "append") {
         content.content.push(...leaf);
       } else {
         content.content.unshift(...leaf);
@@ -555,7 +509,7 @@ export default class StandoffConverter {
 
     // Container: descend into the appropriate block child.
     const blockChildren: TiptapNode[] = (content.content ?? []).filter(
-      c => c.type !== 'text' && c.type !== 'hardBreak' && c.type !== 'zeroPointAnnotation',
+      (c) => c.type !== "text" && c.type !== "hardBreak" && c.type !== "zeroPointAnnotation",
     );
 
     // Nothing to descend into (degenerate), meaning that there is no more valid block child.
@@ -563,7 +517,7 @@ export default class StandoffConverter {
     if (blockChildren.length === 0) {
       content.content = content.content ?? [];
 
-      if (mode === 'append') {
+      if (mode === "append") {
         content.content.push(...leaf);
       } else {
         content.content.unshift(...leaf);
@@ -573,8 +527,7 @@ export default class StandoffConverter {
     }
 
     // If there are valid block children, descend further down the tree
-    const target: TiptapNode =
-      mode === 'append' ? blockChildren[blockChildren.length - 1] : blockChildren[0];
+    const target: TiptapNode = mode === "append" ? blockChildren[blockChildren.length - 1] : blockChildren[0];
 
     this.clampTextIntoNode(target, start, end, mode);
   }
@@ -588,12 +541,7 @@ export default class StandoffConverter {
    * @param {string} parentType Type of the parent annotation
    * @param {'previous' | 'next'} where Whether the clamp prepended or appended the range into the adjacent node
    */
-  private warnClamp(
-    startIndex: number,
-    endIndex: number,
-    parentType: string,
-    where: 'previous' | 'next',
-  ): void {
+  private warnClamp(startIndex: number, endIndex: number, parentType: string, where: "previous" | "next"): void {
     console.warn(
       `[standoffConverter] Clamped orphan gap [${startIndex},${endIndex}] into the ${where} child of ` +
         `<${parentType}>. This text belongs to no structural child — likely incorrect source ` +
@@ -632,14 +580,9 @@ export default class StandoffConverter {
       return { type: editorRole, attrs, content: this.createLeafContent(startIndex, endIndex) };
     }
 
-    const directChildren: Anno[] = this.findDirectChildren(
-      type,
-      startIndex,
-      endIndex,
-      allStructural,
-    );
+    const directChildren: Anno[] = this.findDirectChildren(type, startIndex, endIndex, allStructural);
 
-    directChildren.forEach(c => this.usedUuids.add(c.node.data.uuid));
+    directChildren.forEach((c) => this.usedUuids.add(c.node.data.uuid));
 
     // Does this container accept paragraphs directly? If not (tableRow, table, bulletList), gap
     // text cannot become a synthetic paragraph and must be clamped into an adjacent child.
@@ -658,8 +601,8 @@ export default class StandoffConverter {
         if (allowsParagraph) {
           this.appendGapParagraphs(childNodes, cursor, gapEnd);
         } else if (childNodes.length > 0) {
-          this.clampTextIntoNode(childNodes[childNodes.length - 1], cursor, gapEnd, 'append');
-          this.warnClamp(cursor, gapEnd, type, 'previous');
+          this.clampTextIntoNode(childNodes[childNodes.length - 1], cursor, gapEnd, "append");
+          this.warnClamp(cursor, gapEnd, type, "previous");
         } else {
           // No previous sibling to clamp into — defer until the next child is built.
           pendingLeadingGap = { start: cursor, end: gapEnd };
@@ -669,13 +612,8 @@ export default class StandoffConverter {
       const childNode: TiptapNode = this.buildStructuralNode(child, allStructural);
 
       if (pendingLeadingGap) {
-        this.clampTextIntoNode(
-          childNode,
-          pendingLeadingGap.start,
-          pendingLeadingGap.end,
-          'prepend',
-        );
-        this.warnClamp(pendingLeadingGap.start, pendingLeadingGap.end, type, 'next');
+        this.clampTextIntoNode(childNode, pendingLeadingGap.start, pendingLeadingGap.end, "prepend");
+        this.warnClamp(pendingLeadingGap.start, pendingLeadingGap.end, type, "next");
         pendingLeadingGap = null;
       }
 
@@ -688,14 +626,12 @@ export default class StandoffConverter {
       if (allowsParagraph) {
         this.appendGapParagraphs(childNodes, cursor, endIndex);
       } else if (childNodes.length > 0) {
-        this.clampTextIntoNode(childNodes[childNodes.length - 1], cursor, endIndex, 'append');
-        this.warnClamp(cursor, endIndex, type, 'previous');
+        this.clampTextIntoNode(childNodes[childNodes.length - 1], cursor, endIndex, "append");
+        this.warnClamp(cursor, endIndex, type, "previous");
       } else {
         // Degenerate container with text but no children: keep the text rather than drop it.
-        this.warnClamp(cursor, endIndex, type, 'next');
-        childNodes.push(
-          this.syntheticParagraph(cursor, endIndex, this.createLeafContent(cursor, endIndex)),
-        );
+        this.warnClamp(cursor, endIndex, type, "next");
+        childNodes.push(this.syntheticParagraph(cursor, endIndex, this.createLeafContent(cursor, endIndex)));
       }
     }
 
@@ -737,8 +673,7 @@ export default class StandoffConverter {
    */
   private findTopLevelAnnotations(allStructural: Anno[]): Anno[] {
     const topLevelBlocks: Anno[] = allStructural.filter(
-      a =>
-        this.isAllowedAtTopLevel(a.node.data.type) && !allStructural.some(b => this.contains(b, a)),
+      (a) => this.isAllowedAtTopLevel(a.node.data.type) && !allStructural.some((b) => this.contains(b, a)),
     );
 
     return topLevelBlocks.sort((a, b) => a.node.data.startIndex - b.node.data.startIndex);
@@ -773,7 +708,7 @@ export default class StandoffConverter {
    */
   private attachLabelsToNodes(nodes: TiptapNode[], annotations: Anno[]): void {
     for (const node of nodes) {
-      if (node.type === 'text') {
+      if (node.type === "text") {
         continue;
       }
 
@@ -782,14 +717,9 @@ export default class StandoffConverter {
 
       if (nodeStart !== undefined && nodeEnd !== undefined) {
         const labelsSortedBySize = annotations
-          .filter(a => a.node.data.startIndex <= nodeEnd && a.node.data.endIndex >= nodeStart)
-          .sort(
-            (a, b) =>
-              b.node.data.endIndex -
-              b.node.data.startIndex -
-              (a.node.data.endIndex - a.node.data.startIndex),
-          )
-          .map(a => ({ uuid: a.node.data.uuid, type: a.node.data.type }));
+          .filter((a) => a.node.data.startIndex <= nodeEnd && a.node.data.endIndex >= nodeStart)
+          .sort((a, b) => b.node.data.endIndex - b.node.data.startIndex - (a.node.data.endIndex - a.node.data.startIndex))
+          .map((a) => ({ uuid: a.node.data.uuid, type: a.node.data.type }));
 
         node.attrs!._semanticBlocks = labelsSortedBySize;
       }
@@ -811,8 +741,8 @@ export default class StandoffConverter {
     let text: string = acc;
 
     for (const node of nodes) {
-      if (node.type === 'text') {
-        text += node.text ?? '';
+      if (node.type === "text") {
+        text += node.text ?? "";
       } else if (node.content?.length) {
         text = this.collectDocText(node.content, text);
       }
@@ -831,7 +761,7 @@ export default class StandoffConverter {
    * @returns {void} This function does not return any value.
    */
   private assertTextInvariant(): void {
-    const docText: string = this.collectDocText(this.tiptapJson?.content ?? [], '');
+    const docText: string = this.collectDocText(this.tiptapJson?.content ?? [], "");
 
     if (docText !== this.standoffJson.text) {
       const expected: string = this.standoffJson.text;
@@ -858,7 +788,7 @@ export default class StandoffConverter {
     const allStructural: Anno[] = [...this.structuralAnnotations.values()];
     const topLevelAnnos: Anno[] = this.findTopLevelAnnotations(allStructural);
 
-    topLevelAnnos.forEach(a => this.usedUuids.add(a.node.data.uuid));
+    topLevelAnnos.forEach((a) => this.usedUuids.add(a.node.data.uuid));
 
     const docContent: TiptapNode[] = [];
     let cursor: number = 0;
@@ -884,7 +814,7 @@ export default class StandoffConverter {
 
     this.attachSemanticBlockLabels(docContent);
 
-    this.tiptapJson = { type: 'doc', content: docContent };
+    this.tiptapJson = { type: "doc", content: docContent };
 
     this.assertTextInvariant();
   }

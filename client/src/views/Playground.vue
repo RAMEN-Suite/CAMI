@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { EditorContent } from '@tiptap/vue-3';
-import { onMounted, onUnmounted } from 'vue';
-import EditorAnnotationButtonPane from '../components/EditorAnnotationButtonPane.vue';
-import EditorToC from '../components/EditorToC.vue';
-import { Annotation, NodeStatusObject } from '../models/types';
-import EditorAnnotationForm from '../components/EditorAnnotationForm.vue';
-import Button from 'primevue/button';
-import { useTiptapStore } from '../store/tiptap';
-import { useDialog } from 'primevue';
-import AddNodeModal from '../components/AddNodeModal.vue';
-import { useAppStore } from '../store/app';
+import { EditorContent } from "@tiptap/vue-3";
+import { onMounted, onUnmounted } from "vue";
+import EditorAnnotationButtonPane from "../components/EditorAnnotationButtonPane.vue";
+import EditorToC from "../components/EditorToC.vue";
+import { Annotation, NodeStatusObject } from "../models/types";
+import EditorAnnotationForm from "../components/EditorAnnotationForm.vue";
+import Button from "primevue/button";
+import { useTiptapStore } from "../store/tiptap";
+import { useDialog } from "primevue";
+import AddNodeModal from "../components/AddNodeModal.vue";
+import { useAppStore } from "../store/app";
 
 const { createModalInstance, destroyModalInstance } = useAppStore();
 const { tiptap, initializeTiptap, destroyTiptap, annotations } = useTiptapStore();
@@ -25,25 +25,25 @@ onMounted(() => {
         modal: true,
         closable: true,
         closeOnEscape: false,
-        style: { width: '40rem' },
+        style: { width: "40rem" },
         header: `Add a Text node`,
 
         closeButtonProps: {
-          severity: 'secondary',
-          title: 'Cancel',
-          style: { width: '30px', height: '30px' },
+          severity: "secondary",
+          title: "Cancel",
+          style: { width: "30px", height: "30px" },
           rounded: true,
         },
         pt: {
-          headerActions: { style: 'margin-left: auto' },
+          headerActions: { style: "margin-left: auto" },
         },
       },
       data: {
-        baseNodeLabel: 'Text',
+        baseNodeLabel: "Text",
       },
       emits: {
         onSubmit: (node: NodeStatusObject) => {
-          console.log('Node added: ', node);
+          console.log("Node added: ", node);
           destroyModalInstance();
         },
       },
@@ -59,7 +59,7 @@ function handleClick() {
   });
 }
 
-function toggleTextHightlighting(annotation: Annotation, direction: 'on' | 'off'): void {
+function toggleTextHightlighting(annotation: Annotation, direction: "on" | "off"): void {
   const annotatedSpans: NodeListOf<HTMLSpanElement> = document.querySelectorAll(
     `#editor span[data-anno-uuid="${annotation.node.data.uuid}"]`,
   );
@@ -71,7 +71,7 @@ function toggleTextHightlighting(annotation: Annotation, direction: 'on' | 'off'
   // scrollIntoViewIfNeeded(annotatedSpans[0]);
 
   annotatedSpans.forEach((span: HTMLSpanElement) => {
-    direction === 'on' ? span.classList.add('highlight') : span.classList.remove('highlight');
+    direction === "on" ? span.classList.add("highlight") : span.classList.remove("highlight");
   });
 }
 </script>
@@ -99,16 +99,10 @@ function toggleTextHightlighting(annotation: Annotation, direction: 'on' | 'off'
       >
         H3
       </button>
-      <button
-        @click="tiptap?.chain().focus().setParagraph().run()"
-        :class="{ 'is-active': tiptap?.isActive('paragraph') }"
-      >
+      <button @click="tiptap?.chain().focus().setParagraph().run()" :class="{ 'is-active': tiptap?.isActive('paragraph') }">
         Paragraph
       </button>
-      <button
-        @click="tiptap?.chain().focus().insertTable().run()"
-        :class="{ 'is-active': tiptap?.isActive('table') }"
-      >
+      <button @click="tiptap?.chain().focus().insertTable().run()" :class="{ 'is-active': tiptap?.isActive('table') }">
         ⋮⋮⋮ Table
       </button>
 
@@ -304,7 +298,7 @@ function toggleTextHightlighting(annotation: Annotation, direction: 'on' | 'off'
     font-weight: normal;
     opacity: 1;
     /* Curved arrow */
-    content: '\2937';
+    content: "\2937";
     white-space: pre;
     user-select: none;
   }
@@ -316,7 +310,7 @@ function toggleTextHightlighting(annotation: Annotation, direction: 'on' | 'off'
     font-weight: normal;
     opacity: 1;
     /* Curved arrow, newline */
-    content: '\2936 \A';
+    content: "\2936 \A";
     white-space: pre;
     user-select: none;
   }

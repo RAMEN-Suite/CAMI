@@ -1,12 +1,6 @@
-import { DeepReadonly, readonly, ref } from 'vue';
-import { useAppStore } from '../store/app';
-import {
-  CollectionNode,
-  NodeSearchParams,
-  CursorData,
-  PaginationData,
-  PaginationResult,
-} from '../models/types';
+import { DeepReadonly, readonly, ref } from "vue";
+import { useAppStore } from "../store/app";
+import { CollectionNode, NodeSearchParams, CursorData, PaginationData, PaginationResult } from "../models/types";
 
 const { api } = useAppStore();
 
@@ -30,16 +24,13 @@ export function useCollections() {
     isFetching.value = true;
 
     try {
-      const result: PaginationResult<CollectionNode[]> = await api.getChildCollections(
-        parentUuid,
-        params,
-      );
+      const result: PaginationResult<CollectionNode[]> = await api.getChildCollections(parentUuid, params);
 
       collections.value = result.data;
       pagination.value = result.pagination;
     } catch (e: unknown) {
       error.value = e as Error;
-      console.error('Error fetching collections:', e);
+      console.error("Error fetching collections:", e);
     } finally {
       isFetching.value = false;
     }

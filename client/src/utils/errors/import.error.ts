@@ -1,4 +1,4 @@
-import AppError from './app.error';
+import AppError from "./app.error";
 
 /**
  * Represents an error when importing json into the editor.
@@ -11,10 +11,10 @@ export default class ImportError extends AppError {
    * @type {'error'}
    * @readonly
    */
-  severity: 'error';
+  severity: "error";
 
   constructor(message: string) {
     super(message);
-    this.severity = 'error';
+    this.severity = "error";
   }
 }

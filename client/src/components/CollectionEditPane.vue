@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed, ComputedRef, ref, useTemplateRef, watch } from 'vue';
-import Button from 'primevue/button';
-import ButtonGroup from 'primevue/buttongroup';
-import ToggleButton from 'primevue/togglebutton';
-import { useCollectionManagerStore } from '../store/collectionManager';
-import NodeTag from './NodeTag.vue';
-import { useGuidelinesStore } from '../store/guidelines';
+import { computed, ComputedRef, ref, useTemplateRef, watch } from "vue";
+import Button from "primevue/button";
+import ButtonGroup from "primevue/buttongroup";
+import ToggleButton from "primevue/togglebutton";
+import { useCollectionManagerStore } from "../store/collectionManager";
+import NodeTag from "./NodeTag.vue";
+import { useGuidelinesStore } from "../store/guidelines";
 import {
   AnnotationData,
   AnnotationType,
@@ -19,8 +19,8 @@ import {
   NodeDto,
   CollectionAccessStatusObject,
   NodeStatusObject,
-} from '../models/types';
-import Tag from 'primevue/tag';
+} from "../models/types";
+import Tag from "primevue/tag";
 import {
   capitalize,
   cloneDeep,
@@ -28,36 +28,36 @@ import {
   createNodeStatusObjectFromRawData,
   getDefaultValueForProperty,
   createTextNode,
-} from '../utils/helper/helper';
-import MultiSelect from 'primevue/multiselect';
-import DataInputComponent from './DataInputComponent.vue';
-import DataInputGroup from './DataInputGroup.vue';
-import { useConfirm, useDialog } from 'primevue';
-import ConfirmPopup from 'primevue/confirmpopup';
-import AnnotationTypeIcon from './AnnotationTypeIcon.vue';
-import Panel from 'primevue/panel';
-import Fieldset from 'primevue/fieldset';
-import FormPropertiesSection from './FormPropertiesSection.vue';
-import TextContainer from './TextContainer.vue';
-import { useAppStore } from '../store/app';
-import { useRouter } from 'vue-router';
-import CollectionDeleteModal from './CollectionDeleteModal.vue';
-import ProgressSpinner from 'primevue/progressspinner';
-import AppError from '../utils/errors/app.error';
-import ValidationError from '../utils/errors/validation.error';
-import { useBookmarks } from '../composables/useBookmarks';
-import AnnotationButton from './AnnotationButton.vue';
-import { useCreateAnnotation } from '../composables/useCreateAnnotation';
-import AnnotationFormAdditionalNodesSection from './AnnotationFormAdditionalNodesSection.vue';
-import NodeStatusBadge from './NodeStatusBadge.vue';
+} from "../utils/helper/helper";
+import MultiSelect from "primevue/multiselect";
+import DataInputComponent from "./DataInputComponent.vue";
+import DataInputGroup from "./DataInputGroup.vue";
+import { useConfirm, useDialog } from "primevue";
+import ConfirmPopup from "primevue/confirmpopup";
+import AnnotationTypeIcon from "./AnnotationTypeIcon.vue";
+import Panel from "primevue/panel";
+import Fieldset from "primevue/fieldset";
+import FormPropertiesSection from "./FormPropertiesSection.vue";
+import TextContainer from "./TextContainer.vue";
+import { useAppStore } from "../store/app";
+import { useRouter } from "vue-router";
+import CollectionDeleteModal from "./CollectionDeleteModal.vue";
+import ProgressSpinner from "primevue/progressspinner";
+import AppError from "../utils/errors/app.error";
+import ValidationError from "../utils/errors/validation.error";
+import { useBookmarks } from "../composables/useBookmarks";
+import AnnotationButton from "./AnnotationButton.vue";
+import { useCreateAnnotation } from "../composables/useCreateAnnotation";
+import AnnotationFormAdditionalNodesSection from "./AnnotationFormAdditionalNodesSection.vue";
+import NodeStatusBadge from "./NodeStatusBadge.vue";
 
-type TabView = 'annotations' | 'details' | 'texts';
+type TabView = "annotations" | "details" | "texts";
 
 const router = useRouter();
 const { api, addToastMessage, createModalInstance, destroyModalInstance } = useAppStore();
 
 const dialog: ReturnType<typeof useDialog> = useDialog();
-const form = useTemplateRef<HTMLFormElement>('form');
+const form = useTemplateRef<HTMLFormElement>("form");
 
 const {
   guidelines,
@@ -84,7 +84,7 @@ const {
 } = useCollectionManagerStore();
 
 const { bookmarks, toggleBookmark } = useBookmarks();
-const { createCollectionAnnotation: createAnnotation } = useCreateAnnotation('Collection');
+const { createCollectionAnnotation: createAnnotation } = useCreateAnnotation("Collection");
 
 const confirm = useConfirm();
 
@@ -95,31 +95,27 @@ const temporaryTexts = ref<NodeStatusObject<TextNode>[]>([]);
 
 // Responsible for setting inputs (non-)editable. The global mode
 // determines the state of the page.
-const formMode = computed<'view' | 'edit'>(() => {
-  if (globalMode.value === 'create' || globalMode.value === 'edit') {
-    return 'edit';
+const formMode = computed<"view" | "edit">(() => {
+  if (globalMode.value === "create" || globalMode.value === "edit") {
+    return "edit";
   } else {
-    return 'view';
+    return "view";
   }
 });
 const asyncOperationRunning = ref<boolean>(false);
 const propertiesAreCollapsed = ref<boolean>(false);
 
 const isBookmarked = computed<boolean>(() => {
-  return bookmarks.value.some(
-    b => b.data.data.uuid === temporaryWorkData.value?.collection.node.data.uuid,
-  );
+  return bookmarks.value.some((b) => b.data.data.uuid === temporaryWorkData.value?.collection.node.data.uuid);
 });
 
-const selectedView = ref<TabView>('details');
-const isTextsSelected = computed<boolean>(() => selectedView.value === 'texts');
-const isDetailsSelected = computed<boolean>(() => selectedView.value === 'details');
-const isAnnotationsSelected = computed<boolean>(() => selectedView.value === 'annotations');
+const selectedView = ref<TabView>("details");
+const isTextsSelected = computed<boolean>(() => selectedView.value === "texts");
+const isDetailsSelected = computed<boolean>(() => selectedView.value === "details");
+const isAnnotationsSelected = computed<boolean>(() => selectedView.value === "annotations");
 
 const collectionFields: ComputedRef<PropertyConfig[]> = computed(() => {
-  return guidelines.value
-    ? getCollectionConfigFields(temporaryWorkData.value.collection.node.nodeLabels)
-    : [];
+  return guidelines.value ? getCollectionConfigFields(temporaryWorkData.value.collection.node.nodeLabels) : [];
 });
 
 const availableCollectionLabels = computed(getAvailableCollectionLabels);
@@ -136,7 +132,7 @@ watch(
     temporaryTexts.value = [];
 
     // In this case, the collection data is editable directly, meaning that the data need to be enriched
-    if (globalMode.value === 'create') {
+    if (globalMode.value === "create") {
       enrichCollectionData();
     }
   },
@@ -161,24 +157,19 @@ function checkValidity(): boolean {
   }
 
   // Collections must have and additional node label (if options exist)
-  if (
-    availableCollectionLabels.value.length > 0 &&
-    temporaryWorkData.value.collection.node.nodeLabels.length === 0
-  ) {
-    throw new ValidationError('A Collection MUST have an additional node label.');
+  if (availableCollectionLabels.value.length > 0 && temporaryWorkData.value.collection.node.nodeLabels.length === 0) {
+    throw new ValidationError("A Collection MUST have an additional node label.");
   }
 
   // Label property must always be a meaningful string
   const labelProp: string = temporaryWorkData.value.collection.node.data.label;
 
-  if (labelProp === '') {
+  if (labelProp === "") {
     throw new ValidationError('The "label" property must not be empty.');
   }
 
-  if (labelProp.trim() === '') {
-    throw new ValidationError(
-      'The "label" property must not consist of only whitespace characters.',
-    );
+  if (labelProp.trim() === "") {
+    throw new ValidationError('The "label" property must not consist of only whitespace characters.');
   }
 
   return true;
@@ -189,9 +180,7 @@ function clearTemporaryTexts(): void {
 }
 
 function deleteAnnotation(uuid: string): void {
-  temporaryWorkData.value.annotations = temporaryWorkData.value.annotations.filter(
-    a => a.node.data.uuid !== uuid,
-  );
+  temporaryWorkData.value.annotations = temporaryWorkData.value.annotations.filter((a) => a.node.data.uuid !== uuid);
 }
 
 /**
@@ -205,7 +194,7 @@ function deleteAnnotation(uuid: string): void {
 function enrichCollectionData(): void {
   const allPossibleFields: PropertyConfig[] = getAllCollectionConfigFields();
 
-  allPossibleFields.forEach(field => {
+  allPossibleFields.forEach((field) => {
     if (!(field.name in temporaryWorkData.value.collection.node.data)) {
       temporaryWorkData.value.collection.node.data[field.name] =
         field?.required === true ? getDefaultValueForProperty(field.type) : null;
@@ -223,11 +212,9 @@ function handleAnnotationButtonClick(data: { type: string; subType?: string | nu
 }
 
 function handleAddText(newText: NodeStatusObject<TextNode>) {
-  newText.node.data.text = newText.node.data.text.replace(/(\r\n|\n|\r)/g, ' ');
+  newText.node.data.text = newText.node.data.text.replace(/(\r\n|\n|\r)/g, " ");
 
-  temporaryTexts.value = temporaryTexts.value.filter(
-    t => t.node.data.uuid !== newText.node.data.uuid,
-  );
+  temporaryTexts.value = temporaryTexts.value.filter((t) => t.node.data.uuid !== newText.node.data.uuid);
 
   temporaryWorkData.value.texts.push(newText);
 }
@@ -237,24 +224,24 @@ async function handleAddTextClick(): Promise<void> {
     createNodeDtoFromNode(createTextNode()),
   ) as NodeStatusObject<TextNode>;
 
-  if (!newText.node.nodeLabels.includes('Content')) {
-    newText.node.nodeLabels.push('Content');
+  if (!newText.node.nodeLabels.includes("Content")) {
+    newText.node.nodeLabels.push("Content");
   }
 
-  newText.meta.status = 'created';
+  newText.meta.status = "created";
 
   temporaryTexts.value.push(newText);
 }
 
 function handleClickEditButton(): void {
   enrichCollectionData();
-  setMode('edit');
+  setMode("edit");
 }
 
 async function handleDiscardChanges(): Promise<void> {
   temporaryWorkData.value = cloneDeep(initialTemporaryWorkData.value);
 
-  if (globalMode.value === 'create') {
+  if (globalMode.value === "create") {
     restorePath();
     updateLevelsAndFetchData(pathToActiveCollection.value);
   }
@@ -262,51 +249,46 @@ async function handleDiscardChanges(): Promise<void> {
   removeTemporaryCollectionItems();
   clearTemporaryTexts();
 
-  setMode('view');
+  setMode("view");
 }
 
 function handleDeleteAnnotation(event: MouseEvent, uuid: string): void {
   confirm.require({
     target: event.currentTarget as HTMLButtonElement,
-    message: 'Do you want to delete this annotation?',
-    icon: 'pi pi-exclamation-triangle',
+    message: "Do you want to delete this annotation?",
+    icon: "pi pi-exclamation-triangle",
     rejectProps: {
-      label: 'Cancel',
-      severity: 'secondary',
+      label: "Cancel",
+      severity: "secondary",
       outlined: true,
-      title: 'Cancel',
+      title: "Cancel",
     },
     acceptProps: {
-      label: 'Delete',
-      severity: 'danger',
-      title: 'Delete annotation',
+      label: "Delete",
+      severity: "danger",
+      title: "Delete annotation",
     },
     accept: () => deleteAnnotation(uuid),
     reject: () => {},
   });
 }
 
-function handleRemoveText(text: NodeDto<TextNode>, status: 'existing' | 'temporary'): void {
-  if (status === 'existing') {
-    const textToRemove = temporaryWorkData.value.texts.find(
-      t => t.node.data.uuid === text.node.data.uuid,
-    );
+function handleRemoveText(text: NodeDto<TextNode>, status: "existing" | "temporary"): void {
+  if (status === "existing") {
+    const textToRemove = temporaryWorkData.value.texts.find((t) => t.node.data.uuid === text.node.data.uuid);
 
     if (!textToRemove) {
       console.error(`Text with UUID ${text.node.data.uuid} not found in existing texts.`);
     }
 
-    textToRemove.meta.status = 'removed';
+    textToRemove.meta.status = "removed";
   } else {
-    temporaryTexts.value = temporaryTexts.value.filter(
-      t => t.node.data.uuid !== text.node.data.uuid,
-    );
+    temporaryTexts.value = temporaryTexts.value.filter((t) => t.node.data.uuid !== text.node.data.uuid);
   }
 }
 
 async function createCollection(): Promise<CollectionNode> {
-  const parentCollection: CollectionNode | null =
-    pathToActiveCollection.value[pathToActiveCollection.value.length - 2] ?? null;
+  const parentCollection: CollectionNode | null = pathToActiveCollection.value[pathToActiveCollection.value.length - 2] ?? null;
 
   const creationData: CollectionCreationData = {
     ...temporaryWorkData.value,
@@ -320,10 +302,7 @@ async function createCollection(): Promise<CollectionNode> {
     initialData: initialTemporaryWorkData.value,
   };
 
-  const updated: CollectionNode = await api.updateCollection(
-    temporaryWorkData.value.collection.node.data.uuid,
-    updateData,
-  );
+  const updated: CollectionNode = await api.updateCollection(temporaryWorkData.value.collection.node.data.uuid, updateData);
 
   return updated;
 }
@@ -335,7 +314,7 @@ function transferDataToListItem(uuid: string, index: number, data: NodeDto<Colle
   if (collectionObject) {
     collectionObject.data.node.data = data.node.data;
     collectionObject.data.node.nodeLabels = data.node.nodeLabels;
-    collectionObject.status = 'existing';
+    collectionObject.status = "existing";
   }
 }
 
@@ -348,23 +327,23 @@ async function handleApplyChanges(): Promise<void> {
     }
   } catch (error: unknown) {
     addToastMessage({
-      severity: 'warn',
+      severity: "warn",
       summary: (error as AppError).name,
-      detail: (error as AppError)?.message ?? '',
+      detail: (error as AppError)?.message ?? "",
       life: 3000,
     });
 
     return;
   }
 
-  const operationType: 'create' | 'update' = globalMode.value === 'create' ? 'create' : 'update';
+  const operationType: "create" | "update" = globalMode.value === "create" ? "create" : "update";
 
   // TODO: Enable
-  if (operationType === 'create') {
+  if (operationType === "create") {
     addToastMessage({
-      severity: 'info',
-      summary: 'Not implemented',
-      detail: 'Creating new Collections is not yet enabled.',
+      severity: "info",
+      summary: "Not implemented",
+      detail: "Creating new Collections is not yet enabled.",
       life: 3000,
     });
     return;
@@ -390,22 +369,22 @@ async function handleApplyChanges(): Promise<void> {
     clearTemporaryTexts();
 
     // Update route when new collection was created (created collection must be in focus and children displayed)
-    if (operationType === 'create') {
+    if (operationType === "create") {
       router.push({ query: { path: createNewUrlPath(result.data.uuid, pathIndex) } });
     }
 
-    showMessage('success');
-    setMode('view');
+    showMessage("success");
+    setMode("view");
   } catch (error: unknown) {
-    showMessage('error', error as Error);
-    console.error('Error updating collection:', error);
+    showMessage("error", error as Error);
+    console.error("Error updating collection:", error);
   } finally {
     asyncOperationRunning.value = false;
   }
 }
 
 function handleBookmarkAction(): void {
-  toggleBookmark({ data: temporaryWorkData.value.collection.node, type: 'collection' });
+  toggleBookmark({ data: temporaryWorkData.value.collection.node, type: "collection" });
 }
 
 async function handleDeleteColletion() {
@@ -415,10 +394,10 @@ async function handleDeleteColletion() {
         modal: true,
         closable: false,
         closeOnEscape: false,
-        style: { width: '25rem' },
+        style: { width: "25rem" },
       },
       data: {
-        action: 'delete',
+        action: "delete",
         collection: temporaryWorkData.value,
       },
       emits: {
@@ -430,7 +409,7 @@ async function handleDeleteColletion() {
 }
 
 function handleSuccessfullDeletion() {
-  showMessage('success');
+  showMessage("success");
   destroyModalInstance();
   updateView();
 }
@@ -442,15 +421,15 @@ function updateView() {
   const pathIndex: number = pathToActiveCollection.value.length - 1;
   const newUuids: string[] = currentUuids.slice(0, pathIndex);
 
-  router.push({ query: { path: newUuids.join(',') } });
+  router.push({ query: { path: newUuids.join(",") } });
 
   // Remove collection from level explicitly. This is not handled by the watcher since the watcher
   // either refetches completely or keeps the last level.
   levels.value[newUuids.length].collections = levels.value[newUuids.length].collections.filter(
-    c => c.data.node.data.uuid !== temporaryWorkData.value.collection.node.data.uuid,
+    (c) => c.data.node.data.uuid !== temporaryWorkData.value.collection.node.data.uuid,
   );
 
-  setMode('view');
+  setMode("view");
 }
 
 /**
@@ -464,13 +443,13 @@ function updateView() {
  */
 function removeUnnecessaryDataBeforeSave(): void {
   // Get configured field names that are allowed to be saved
-  const configuredFieldNames: string[] = getCollectionConfigFields(
-    temporaryWorkData.value.collection.node.nodeLabels,
-  ).map(f => f.name);
+  const configuredFieldNames: string[] = getCollectionConfigFields(temporaryWorkData.value.collection.node.nodeLabels).map(
+    (f) => f.name,
+  );
 
   // Remove data entries that are not configured
-  Object.keys(temporaryWorkData.value.collection.node.data).forEach(key => {
-    if (!configuredFieldNames.includes(key) && key !== 'uuid') {
+  Object.keys(temporaryWorkData.value.collection.node.data).forEach((key) => {
+    if (!configuredFieldNames.includes(key) && key !== "uuid") {
       delete temporaryWorkData.value.collection.node.data[key];
     }
   });
@@ -483,9 +462,9 @@ function wrapDataInSingleStructure(data: CollectionAccessStatusObject) {
   // status handling could be more fine granular, but this here makes things
   // easier (Collections won't have hundreds/thousands of annotations, query is
   // still performant)
-  const freshCollection: NodeStatusObject = { ...collection, meta: { status: 'modified' } };
-  const freshAnnotations: NodeStatusObject[] = annotations.map(a => {
-    const newStatus = a.meta.status === 'unchanged' ? 'modified' : a.meta.status;
+  const freshCollection: NodeStatusObject = { ...collection, meta: { status: "modified" } };
+  const freshAnnotations: NodeStatusObject[] = annotations.map((a) => {
+    const newStatus = a.meta.status === "unchanged" ? "modified" : a.meta.status;
 
     return {
       ...a,
@@ -511,19 +490,16 @@ async function updateCollection(): Promise<NodeDto<CollectionNode>> {
   //   initialData: initialTemporaryWorkData.value,
   // };
 
-  const json = await api.updateCollection(
-    temporaryWorkData.value.collection.node.data.uuid,
-    updateObj,
-  );
+  const json = await api.updateCollection(temporaryWorkData.value.collection.node.data.uuid, updateObj);
 
   return json;
 }
 
-function showMessage(result: 'success' | 'error', error?: Error) {
+function showMessage(result: "success" | "error", error?: Error) {
   addToastMessage({
     severity: result,
-    summary: result === 'success' ? 'Changes saved successfully' : 'Error saving changes',
-    detail: error?.message ?? '',
+    summary: result === "success" ? "Changes saved successfully" : "Error saving changes",
+    detail: error?.message ?? "",
     life: 2000,
   });
 }
@@ -555,13 +531,7 @@ function toggleViewMode(direction: TabView): void {
         />
       </div>
       <div class="status-section h-2rem relative text-right">
-        <Tag
-          v-if="globalMode === 'create'"
-          severity="success"
-          value="New"
-          icon="pi pi-sparkles"
-          rounded
-        ></Tag>
+        <Tag v-if="globalMode === 'create'" severity="success" value="New" icon="pi pi-sparkles" rounded></Tag>
       </div>
 
       <div class="label-section">
@@ -614,10 +584,7 @@ function toggleViewMode(direction: TabView): void {
               v-model="temporaryWorkData.collection.node.nodeLabels"
               :options="availableCollectionLabels"
               display="chip"
-              :invalid="
-                availableCollectionLabels.length > 0 &&
-                temporaryWorkData.collection.node.nodeLabels.length === 0
-              "
+              :invalid="availableCollectionLabels.length > 0 && temporaryWorkData.collection.node.nodeLabels.length === 0"
               title="Select node labels"
               placeholder="Select labels"
               :filter="false"
@@ -644,9 +611,7 @@ function toggleViewMode(direction: TabView): void {
           <form ref="form">
             <div class="input-container" v-for="field in collectionFields">
               <div class="flex align-items-center gap-3 mb-3">
-                <label :for="field.name" class="w-10rem font-semibold"
-                  >{{ capitalize(field.name) }}
-                </label>
+                <label :for="field.name" class="w-10rem font-semibold">{{ capitalize(field.name) }} </label>
                 <DataInputGroup
                   v-if="field.type === 'array'"
                   v-model="temporaryWorkData.collection.node.data[field.name]"
@@ -671,20 +636,12 @@ function toggleViewMode(direction: TabView): void {
               :type="type.type"
               :key="type.type"
               :disabled="(formMode as 'view' | 'edit') === 'view'"
-              :config="
-                getCollectionAnnotationConfig(
-                  temporaryWorkData.collection.node.nodeLabels,
-                  type.type,
-                )
-              "
+              :config="getCollectionAnnotationConfig(temporaryWorkData.collection.node.nodeLabels, type.type)"
               @clicked="handleAnnotationButtonClick($event)"
             />
           </div>
 
-          <div
-            v-if="formMode === 'view' && temporaryWorkData.annotations.length === 0"
-            class="pt-4 font-italic"
-          >
+          <div v-if="formMode === 'view' && temporaryWorkData.annotations.length === 0" class="pt-4 font-italic">
             This collection has no annotations yet.
           </div>
 
@@ -728,12 +685,7 @@ function toggleViewMode(direction: TabView): void {
               </template>
               <FormPropertiesSection
                 v-model="annotation.node.data"
-                :fields="
-                  getCollectionAnnotationFields(
-                    temporaryWorkData.collection.node.nodeLabels,
-                    annotation.node.data.type,
-                  )
-                "
+                :fields="getCollectionAnnotationFields(temporaryWorkData.collection.node.nodeLabels, annotation.node.data.type)"
                 :mode="formMode"
               />
             </Fieldset>
@@ -741,10 +693,7 @@ function toggleViewMode(direction: TabView): void {
               v-model="annotation.connectedNodes"
               :mode="formMode"
               :annotation-config="
-                getCollectionAnnotationConfig(
-                  temporaryWorkData.collection.node.nodeLabels,
-                  annotation.node.data.type,
-                )
+                getCollectionAnnotationConfig(temporaryWorkData.collection.node.nodeLabels, annotation.node.data.type)
               "
             />
             <div class="action-buttons flex justify-content-center">
@@ -762,10 +711,7 @@ function toggleViewMode(direction: TabView): void {
           </Panel>
         </div>
         <div v-show="isTextsSelected" class="texts-pane">
-          <div
-            v-if="formMode === 'view' && temporaryWorkData.texts.length === 0"
-            class="pt-4 font-italic"
-          >
+          <div v-if="formMode === 'view' && temporaryWorkData.texts.length === 0" class="pt-4 font-italic">
             This collection has no texts yet.
           </div>
           <TextContainer
@@ -834,10 +780,7 @@ function toggleViewMode(direction: TabView): void {
     </div>
   </div>
 
-  <div
-    v-if="isFetchingCollectionDetails"
-    class="w-full h-full flex justify-content-center align-items-center"
-  >
+  <div v-if="isFetchingCollectionDetails" class="w-full h-full flex justify-content-center align-items-center">
     <ProgressSpinner
       class="loading-spinner"
       style="width: 80px; height: 80px"
@@ -856,10 +799,7 @@ function toggleViewMode(direction: TabView): void {
     />
   </div>
 
-  <div
-    v-if="!activeCollection"
-    class="w-full h-full flex justify-content-center align-items-center font-italic"
-  >
+  <div v-if="!activeCollection" class="w-full h-full flex justify-content-center align-items-center font-italic">
     <div class="text-center">
       <p>No Collection selected</p>
     </div>

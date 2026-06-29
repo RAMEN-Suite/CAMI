@@ -1,4 +1,4 @@
-import AppError from './app.error.js';
+import AppError from "./app.error.js";
 
 /**
  * Represents an internal server error. Used as generic fallback for unexpected errors.

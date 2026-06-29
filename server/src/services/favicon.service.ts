@@ -1,5 +1,5 @@
-import NotFoundError from '../errors/notFound.error.js';
-import { FaviconResponse } from '../models/types.js';
+import NotFoundError from "../errors/notFound.error.js";
+import { FaviconResponse } from "../models/types.js";
 
 export default class FaviconService {
   /**
@@ -12,17 +12,17 @@ export default class FaviconService {
     const url: string | undefined = process.env.FAVICON_URL;
 
     if (!url) {
-      throw new NotFoundError('URL to favicon is not provided');
+      throw new NotFoundError("URL to favicon is not provided");
     }
 
     const response: Response = await fetch(url);
 
     // Same here, not really a problem if icon is not found
     if (!response.ok) {
-      throw new NotFoundError('Favicon not found under url: ');
+      throw new NotFoundError("Favicon not found under url: ");
     }
 
-    const contentType: string = response.headers.get('Content-Type') ?? this.inferContentType(url);
+    const contentType: string = response.headers.get("Content-Type") ?? this.inferContentType(url);
     const arrayBuffer: ArrayBuffer = await response.arrayBuffer();
 
     // Convert all received data to buffer
@@ -40,16 +40,16 @@ export default class FaviconService {
    * @return {string} The inferred content type of the favicon.
    */
   private inferContentType(url: string): string {
-    if (url.endsWith('.ico')) {
-      return 'image/x-icon';
-    } else if (url.endsWith('.png')) {
-      return 'image/png';
-    } else if (url.endsWith('.jpg') || url.endsWith('.jpeg')) {
-      return 'image/jpeg';
-    } else if (url.endsWith('.svg')) {
-      return 'image/svg+xml';
+    if (url.endsWith(".ico")) {
+      return "image/x-icon";
+    } else if (url.endsWith(".png")) {
+      return "image/png";
+    } else if (url.endsWith(".jpg") || url.endsWith(".jpeg")) {
+      return "image/jpeg";
+    } else if (url.endsWith(".svg")) {
+      return "image/svg+xml";
     }
 
-    return 'image/x-icon';
+    return "image/x-icon";
   }
 }

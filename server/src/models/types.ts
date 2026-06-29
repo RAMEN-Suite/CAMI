@@ -1,8 +1,8 @@
-import { IAnnotation } from './IAnnotation.js';
-import ICharacter from './ICharacter.js';
-import { ICollection } from './ICollection.js';
-import { IEntity } from './IEntity.js';
-import { IText } from './IText.js';
+import { IAnnotation } from "./IAnnotation.js";
+import ICharacter from "./ICharacter.js";
+import { ICollection } from "./ICollection.js";
+import { IEntity } from "./IEntity.js";
+import { IText } from "./IText.js";
 
 export type AdditionalText = {
   annotation: IAnnotation;
@@ -16,7 +16,7 @@ export type Annotation = {
   initialData: AnnotationData;
   isTruncated: boolean;
   startUuid: string;
-  status: 'existing' | 'created' | 'deleted' | 'edited';
+  status: "existing" | "created" | "deleted" | "edited";
 };
 
 export type AnnotationNode = Node<IAnnotation>;
@@ -28,9 +28,7 @@ export interface AnnotationData {
 }
 
 /** A node object for retrieving data */
-export type NodeDto<
-  T extends Node<BaseNodeData> = AnnotationNode | EntityNode | CollectionNode | TextNode,
-> = {
+export type NodeDto<T extends Node<BaseNodeData> = AnnotationNode | EntityNode | CollectionNode | TextNode> = {
   node: T;
   connectedNodes: NodeDto[];
 };
@@ -39,7 +37,7 @@ export type NodeDto<
  * A status field for nodes in the frontend and for API requests. Is accessed during editing
  * (to display the current edit state) and before saving to tell the backend how to process the data.
  */
-export type NodeStatus = 'added' | 'removed' | 'created' | 'deleted' | 'modified' | 'unchanged';
+export type NodeStatus = "added" | "removed" | "created" | "deleted" | "modified" | "unchanged";
 
 export type AnnotationType = {
   category: string;
@@ -69,14 +67,14 @@ export type AnnotationConfigEntity = {
 };
 
 /** Base node labels in RAMEN */
-export type BaseNodeLabel = 'Annotation' | 'Character' | 'Collection' | 'Entity' | 'Content';
+export type BaseNodeLabel = "Annotation" | "Character" | "Collection" | "Entity" | "Content";
 
 export type BaseNodeData = {
   uuid: string;
 };
 
 /** Relationship types in RAMEN */
-export type BaseRelationshipType = 'HAS_ANNOTATION' | 'PART_OF' | 'REFERS_TO';
+export type BaseRelationshipType = "HAS_ANNOTATION" | "PART_OF" | "REFERS_TO";
 
 export type Character = {
   data: ICharacter;
@@ -99,7 +97,7 @@ export type CollectionAccessObject = {
   texts: TextNode[];
 };
 
-export type CollectionNetworkActionType = 'move' | 'reference' | 'dereference' | 'delete';
+export type CollectionNetworkActionType = "move" | "reference" | "dereference" | "delete";
 
 export type CollectionCreationData = CollectionAccessObject & {
   parentCollection: CollectionNode | null;
@@ -134,7 +132,7 @@ export type FaviconResponse = {
 };
 
 export type MalformedAnnotation = {
-  reason: 'indexOutOfBounds' | 'unconfiguredType';
+  reason: "indexOutOfBounds" | "unconfiguredType";
   data: StandoffAnnotation;
 };
 
@@ -154,16 +152,14 @@ export type NodeAncestry = NodeDto<CollectionNode>[];
 
 export type NodeSearchParams = {
   nodeLabels?: string[];
-  order?: 'asc' | 'desc';
+  order?: "asc" | "desc";
   offset?: number;
   limit?: number;
   search?: string;
 };
 
 /** A status object for incoming API requests that should update a subgraph */
-export type NodeStatusObject<
-  T extends Node<BaseNodeData> = AnnotationNode | EntityNode | CollectionNode | TextNode,
-> = {
+export type NodeStatusObject<T extends Node<BaseNodeData> = AnnotationNode | EntityNode | CollectionNode | TextNode> = {
   node: T;
   connectedNodes: NodeStatusObject<T>[];
   meta: {
@@ -213,17 +209,9 @@ export type PropertyConfig = {
   template?: PropertyConfigStringTemplate /* Render as normal input or textarea? */;
 };
 
-export type PropertyConfigDataType =
-  | 'array'
-  | 'boolean'
-  | 'date'
-  | 'date-time'
-  | 'integer'
-  | 'number'
-  | 'string'
-  | 'time';
+export type PropertyConfigDataType = "array" | "boolean" | "date" | "date-time" | "integer" | "number" | "string" | "time";
 
-export type PropertyConfigStringTemplate = 'input' | 'textarea';
+export type PropertyConfigStringTemplate = "input" | "textarea";
 
 export type StandoffAnnotation = {
   [key: string]: string | number | boolean;

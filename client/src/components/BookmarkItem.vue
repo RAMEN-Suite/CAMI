@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useBookmarks } from '../composables/useBookmarks';
-import { Bookmark, CollectionNode } from '../models/types';
-import router from '../router';
-import NodeTag from './NodeTag.vue';
-import Button from 'primevue/button';
-import Card from 'primevue/card';
+import { computed } from "vue";
+import { useBookmarks } from "../composables/useBookmarks";
+import { Bookmark, CollectionNode } from "../models/types";
+import router from "../router";
+import NodeTag from "./NodeTag.vue";
+import Button from "primevue/button";
+import Card from "primevue/card";
 
 const props = defineProps<{
   bookmarkData: Bookmark;
@@ -14,7 +14,7 @@ const props = defineProps<{
 const { removeBookmark } = useBookmarks();
 
 const uuid: string = props.bookmarkData.data.data.uuid;
-const isCollection: boolean = props.bookmarkData.type === 'collection';
+const isCollection: boolean = props.bookmarkData.type === "collection";
 
 function handleItemClick(): void {
   router.push(`/${props.bookmarkData.type}s/${uuid}`);
@@ -22,7 +22,7 @@ function handleItemClick(): void {
 
 const htmlTitle = computed<string>(
   () =>
-    `Go go ${props.bookmarkData.type} ${isCollection ? (props.bookmarkData.data as CollectionNode).data.label : 'with UUID ' + props.bookmarkData.data.data.uuid}`,
+    `Go go ${props.bookmarkData.type} ${isCollection ? (props.bookmarkData.data as CollectionNode).data.label : "with UUID " + props.bookmarkData.data.data.uuid}`,
 );
 
 // TODO: This should be in a helper function
@@ -31,7 +31,7 @@ const PREVIEW_LENGTH: number = 120;
 const displayedText = computed<string>(
   () =>
     props.bookmarkData.data.data?.text.slice(0, PREVIEW_LENGTH) +
-    (props.bookmarkData.data.data?.text.length > PREVIEW_LENGTH ? '...' : ''),
+    (props.bookmarkData.data.data?.text.length > PREVIEW_LENGTH ? "..." : ""),
 );
 </script>
 

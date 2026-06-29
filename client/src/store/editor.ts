@@ -1,5 +1,5 @@
-import { computed, readonly, ref } from 'vue';
-import { RedrawModeOptions } from '../models/types';
+import { computed, readonly, ref } from "vue";
+import { RedrawModeOptions } from "../models/types";
 
 const newRangeAnchorUuid = ref<string | null>(null);
 
@@ -7,7 +7,7 @@ const newRangeAnchorUuid = ref<string | null>(null);
 const lastRangeSnapshot = ref<Range>(null);
 
 const redrawMode = ref<RedrawModeOptions | null>(null);
-const isRedrawMode = computed<boolean>(() => redrawMode.value?.direction === 'on');
+const isRedrawMode = computed<boolean>(() => redrawMode.value?.direction === "on");
 
 /**
  * Deprecated store for editor state and operations (caret placement, change detection etc.). Currently only kept for
@@ -40,7 +40,7 @@ export function useEditorStore() {
   }
 
   function resetEditor(): void {
-    toggleRedrawMode({ direction: 'off', cause: 'success' });
+    toggleRedrawMode({ direction: "off", cause: "success" });
     setNewRangeAnchorUuid(null);
   }
 
@@ -84,14 +84,14 @@ export function useEditorStore() {
    * @param {RedrawModeOptions} options - An object containing the direction of the redraw mode and the cause of the mode change.
    */
   function toggleRedrawMode(options: RedrawModeOptions): void {
-    if (options?.direction === 'on') {
+    if (options?.direction === "on") {
       createRangeSnapshotAndClear();
 
       redrawMode.value = options;
     } else {
       redrawMode.value = null;
 
-      if (options?.cause === 'cancel') {
+      if (options?.cause === "cancel") {
         restoreRangeSnapshot();
       } else {
         lastRangeSnapshot.value = null;

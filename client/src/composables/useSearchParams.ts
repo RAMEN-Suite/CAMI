@@ -1,8 +1,8 @@
-import { DeepReadonly, readonly, Ref, ref, toValue } from 'vue';
-import { NodeSearchParams } from '../models/types';
-import { useGuidelinesStore } from '../store/guidelines';
-import { useTimeoutFn } from '@vueuse/core';
-import { FETCH_DELAY } from '../config/constants';
+import { DeepReadonly, readonly, Ref, ref, toValue } from "vue";
+import { NodeSearchParams } from "../models/types";
+import { useGuidelinesStore } from "../store/guidelines";
+import { useTimeoutFn } from "@vueuse/core";
+import { FETCH_DELAY } from "../config/constants";
 
 export type UseSearchParamsReturn = {
   searchParams: DeepReadonly<Ref<NodeSearchParams>>;
@@ -28,7 +28,7 @@ export type UseSearchParamsReturn = {
  * @returns {UseSearchParamsReturn} An object with reactive properties for performing a search query on the backend.
  */
 export function useSearchParams(options: {
-  scope: 'Collection' | 'Entity' | 'Content';
+  scope: "Collection" | "Entity" | "Content";
   rowCount?: number;
 }): UseSearchParamsReturn {
   const { getAvailableNodeLabels } = useGuidelinesStore();
@@ -38,11 +38,11 @@ export function useSearchParams(options: {
   const availableNodeLabels: string[] = toValue(getAvailableNodeLabels(options.scope));
 
   const searchParams = ref<NodeSearchParams>({
-    searchInput: '',
+    searchInput: "",
     nodeLabels: availableNodeLabels,
     offset: 0,
     rowCount: DEFAULT_ROW_COUNT,
-    sortDirection: 'asc' as 'asc' | 'desc',
+    sortDirection: "asc" as "asc" | "desc",
   });
 
   /**
@@ -53,11 +53,11 @@ export function useSearchParams(options: {
    */
   function resetSearchParams(): void {
     searchParams.value = {
-      searchInput: '',
+      searchInput: "",
       nodeLabels: availableNodeLabels,
       offset: 0,
       rowCount: DEFAULT_ROW_COUNT,
-      sortDirection: 'asc',
+      sortDirection: "asc",
     };
   }
 
@@ -79,10 +79,7 @@ export function useSearchParams(options: {
    * @param {{ immediate: boolean }} options - Optional options object.
    * @param {boolean} options.immediate - Whether to update the search parameters immediately or not.
    */
-  function updateSearchParams(
-    params: NodeSearchParams,
-    options: { immediate: boolean } = { immediate: true },
-  ): void {
+  function updateSearchParams(params: NodeSearchParams, options: { immediate: boolean } = { immediate: true }): void {
     const { immediate } = options;
 
     if (immediate) {

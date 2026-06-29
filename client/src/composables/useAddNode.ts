@@ -1,5 +1,5 @@
-import { ref, readonly, Ref, DeepReadonly } from 'vue';
-import { NodeStatusObject } from '../models/types';
+import { ref, readonly, Ref, DeepReadonly } from "vue";
+import { NodeStatusObject } from "../models/types";
 
 type ErrorMessage = {
   severity: string;
@@ -7,7 +7,7 @@ type ErrorMessage = {
   id: number;
 };
 
-type PipelineStep = null | 'choosing' | 'editing' | 'finishing';
+type PipelineStep = null | "choosing" | "editing" | "finishing";
 
 export type UseAddNodeReturn = {
   currentStep: Readonly<Ref<PipelineStep, PipelineStep>>;
@@ -31,14 +31,14 @@ export type UseAddNodeReturn = {
 export function useAddNode(): UseAddNodeReturn {
   const node = ref<NodeStatusObject | null>(null);
 
-  const currentStep = ref<PipelineStep>('choosing');
+  const currentStep = ref<PipelineStep>("choosing");
   const errorMessages = ref<ErrorMessage[]>([]);
   const errorMessageCount = ref<number>(0);
 
   function addErrorMessage(error: DOMException | unknown): void {
     errorMessages.value.push({
-      severity: 'error',
-      content: 'An unknown error occurred.',
+      severity: "error",
+      content: "An unknown error occurred.",
       id: errorMessageCount.value++,
     });
   }
@@ -69,7 +69,7 @@ export function useAddNode(): UseAddNodeReturn {
 
   async function init(): Promise<void> {
     clearErrorMessages();
-    setPipelineStep('choosing');
+    setPipelineStep("choosing");
 
     // setPipelineStep('finishing');
   }

@@ -1,13 +1,13 @@
-import { Extension } from '@tiptap/core';
-import { EditorState, Plugin, PluginKey, Transaction } from '@tiptap/pm/state';
-import { Decoration, DecorationSet, EditorView } from '@tiptap/pm/view';
-import { ANNOTATION_DECORATION_KEY } from './annotationDecoration';
-import { Node } from '@tiptap/pm/model';
+import { Extension } from "@tiptap/core";
+import { EditorState, Plugin, PluginKey, Transaction } from "@tiptap/pm/state";
+import { Decoration, DecorationSet, EditorView } from "@tiptap/pm/view";
+import { ANNOTATION_DECORATION_KEY } from "./annotationDecoration";
+import { Node } from "@tiptap/pm/model";
 
-type ToggleDirection = 'on' | 'off';
+type ToggleDirection = "on" | "off";
 
 type HighlightOptions = {
-  displayType: 'range' | 'zeroPoint' | 'block' | 'semanticBlock';
+  displayType: "range" | "zeroPoint" | "block" | "semanticBlock";
 };
 
 type HighlightMeta = {
@@ -21,19 +21,15 @@ type Range = {
   to: number;
 };
 
-declare module '@tiptap/core' {
+declare module "@tiptap/core" {
   interface Commands<ReturnType> {
     annotationHighlight: {
-      toggleAnnotationHighlight: (
-        direction: ToggleDirection,
-        uuid: string,
-        options: HighlightOptions,
-      ) => ReturnType;
+      toggleAnnotationHighlight: (direction: ToggleDirection, uuid: string, options: HighlightOptions) => ReturnType;
     };
   }
 }
 
-export const ANNOTATION_HIGHLIGHT_KEY = new PluginKey('annotationHighlight');
+export const ANNOTATION_HIGHLIGHT_KEY = new PluginKey("annotationHighlight");
 
 /**
  * Builds the decoration set used to highlight the annotation with the given uuid.
@@ -45,11 +41,7 @@ export const ANNOTATION_HIGHLIGHT_KEY = new PluginKey('annotationHighlight');
  * @param {HighlightOptions} options The highlight options
  * @returns {DecorationSet} The decoration set for the annotation, or an empty set if it cannot be built
  */
-function buildDecorationSet(
-  editorState: EditorState,
-  uuid: string,
-  options: HighlightOptions,
-): DecorationSet {
+function buildDecorationSet(editorState: EditorState, uuid: string, options: HighlightOptions): DecorationSet {
   if (!options) {
     return DecorationSet.empty;
   }
@@ -59,9 +51,9 @@ function buildDecorationSet(
 
   let range: Range | null = null;
 
-  if (displayType === 'range') {
+  if (displayType === "range") {
     range = findDecorationBoundariesByUuid(uuid, editorState);
-  } else if (displayType === 'zeroPoint') {
+  } else if (displayType === "zeroPoint") {
     range = findNodeBoundariesByUuid(editorState.doc, uuid);
   }
 
@@ -92,8 +84,8 @@ function createDecoration(from: number, to: number): Decoration {
     from,
     to,
     {
-      nodeName: 'span',
-      class: 'highlight',
+      nodeName: "span",
+      class: "highlight",
     },
     { inclusiveEnd: true },
   );
@@ -110,11 +102,7 @@ function createDecoration(from: number, to: number): Decoration {
  */
 function findDecorationBoundariesByUuid(uuid: string, editorState: EditorState): Range | null {
   const annotationDecos: Decoration[] =
-    ANNOTATION_DECORATION_KEY.getState(editorState)?.all?.find(
-      undefined,
-      undefined,
-      (spec: any) => spec._uuid === uuid,
-    ) ?? [];
+    ANNOTATION_DECORATION_KEY.getState(editorState)?.all?.find(undefined, undefined, (spec: any) => spec._uuid === uuid) ?? [];
 
   if (annotationDecos.length === 0) {
     return null;
@@ -158,7 +146,7 @@ function findNodeBoundariesByUuid(doc: Node, uuid: string): Range | null {
 }
 
 export const AnnotationHighlight = Extension.create({
-  name: 'annotationHighlight',
+  name: "annotationHighlight",
 
   addCommands() {
     return {
@@ -190,7 +178,7 @@ export const AnnotationHighlight = Extension.create({
               return pluginState;
             }
 
-            if (meta.direction === 'off') {
+            if (meta.direction === "off") {
               return DecorationSet.empty;
             } else {
               if (!meta.options) {
@@ -219,16 +207,14 @@ export const AnnotationHighlight = Extension.create({
                 return;
               }
 
-              const domNode: Element | null = view.dom.querySelector('.highlight');
+              const domNode: Element | null = view.dom.querySelector(".highlight");
 
               if (!domNode) {
-                console.warn(
-                  'Could not find dom node to scroll into view. Maybe the class name has changed.',
-                );
+                console.warn("Could not find dom node to scroll into view. Maybe the class name has changed.");
                 return;
               }
 
-              domNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              domNode.scrollIntoView({ behavior: "smooth", block: "center" });
             },
           };
         },

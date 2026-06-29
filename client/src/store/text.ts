@@ -1,7 +1,7 @@
-import { readonly, ref } from 'vue';
-import { useAppStore } from './app';
-import { CollectionNode, NodeAncestry, TextNode, TextAccessObject } from '../models/types';
-import { cloneDeep } from '../utils/helper/helper';
+import { readonly, ref } from "vue";
+import { useAppStore } from "./app";
+import { CollectionNode, NodeAncestry, TextNode, TextAccessObject } from "../models/types";
+import { cloneDeep } from "../utils/helper/helper";
 
 const { api } = useAppStore();
 
@@ -27,7 +27,7 @@ export function useTextStore() {
       initializeText(text);
     } catch (e: unknown) {
       error.value = e as Error;
-      console.error('Error fetching text:', e);
+      console.error("Error fetching text:", e);
     } finally {
       isFetching.value = false;
     }

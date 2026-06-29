@@ -1,49 +1,42 @@
 <script setup lang="ts">
-import { useTemplateRef, computed, ref, watchEffect } from 'vue';
-import { useGuidelinesStore } from '../store/guidelines';
-import { capitalize } from '../utils/helper/helper';
-import AnnotationButton from './AnnotationButton.vue';
-import { AnnotationType, NodeStatusObject, AnnotationNode, Annotation } from '../models/types';
-import { useCreateAnnotation } from '../composables/useCreateAnnotation';
-import { useFilterStore } from '../store/filter';
-import ShortcutError from '../utils/errors/shortcut.error';
-import AnnotationRangeError from '../utils/errors/annotationRange.error';
-import { useAppStore } from '../store/app';
-import { useDialog } from 'primevue';
-import AnnotationCreateModal from './AnnotationCreateModal.vue';
-import { useTiptapStore } from '../store/tiptap';
-import { useValidateTextSelection } from '../composables/useValidateTextSelection';
-import { Selection } from '@tiptap/pm/state';
-import Button from 'primevue/button';
-import TableInsertPopover from './TableInsertPopover.vue';
-import Tabs from 'primevue/tabs';
-import TabList from 'primevue/tablist';
-import Tab from 'primevue/tab';
-import TabPanels from 'primevue/tabpanels';
-import TabPanel from 'primevue/tabpanel';
+import { useTemplateRef, computed, ref, watchEffect } from "vue";
+import { useGuidelinesStore } from "../store/guidelines";
+import { capitalize } from "../utils/helper/helper";
+import AnnotationButton from "./AnnotationButton.vue";
+import { AnnotationType, NodeStatusObject, AnnotationNode, Annotation } from "../models/types";
+import { useCreateAnnotation } from "../composables/useCreateAnnotation";
+import { useFilterStore } from "../store/filter";
+import ShortcutError from "../utils/errors/shortcut.error";
+import AnnotationRangeError from "../utils/errors/annotationRange.error";
+import { useAppStore } from "../store/app";
+import { useDialog } from "primevue";
+import AnnotationCreateModal from "./AnnotationCreateModal.vue";
+import { useTiptapStore } from "../store/tiptap";
+import { useValidateTextSelection } from "../composables/useValidateTextSelection";
+import { Selection } from "@tiptap/pm/state";
+import Button from "primevue/button";
+import TableInsertPopover from "./TableInsertPopover.vue";
+import Tabs from "primevue/tabs";
+import TabList from "primevue/tablist";
+import Tab from "primevue/tab";
+import TabPanels from "primevue/tabpanels";
+import TabPanel from "primevue/tabpanel";
 
 const { isValid: isSelectionValid } = useValidateTextSelection();
-const {
-  groupedAnnotationTypes,
-  annotationHasConstraints,
-  getAnnotationConfig,
-  isBuiltinStructuralType,
-  isZeroPoint,
-} = useGuidelinesStore();
+const { groupedAnnotationTypes, annotationHasConstraints, getAnnotationConfig, isBuiltinStructuralType, isZeroPoint } =
+  useGuidelinesStore();
 const { addToastMessage, createModalInstance, destroyModalInstance } = useAppStore();
 const { selectedOptions } = useFilterStore();
 const { tiptap, annotations, structuralAnnotations } = useTiptapStore();
-const { createTextAnnotation: createAnnotation } = useCreateAnnotation('Content');
+const { createTextAnnotation: createAnnotation } = useCreateAnnotation("Content");
 
-const selectedTab = ref<'annotations' | 'structure'>('annotations');
+const selectedTab = ref<"annotations" | "structure">("annotations");
 
 const annotationCategories = computed(() =>
-  Object.entries(groupedAnnotationTypes.value ?? {}).filter(
-    ([category]) => category !== 'structure',
-  ),
+  Object.entries(groupedAnnotationTypes.value ?? {}).filter(([category]) => category !== "structure"),
 );
 
-const selectedCategory = ref<string>('');
+const selectedCategory = ref<string>("");
 
 watchEffect(() => {
   if (!selectedCategory.value && annotationCategories.value.length > 0) {
@@ -51,15 +44,13 @@ watchEffect(() => {
   }
 });
 
-const tablePopover = useTemplateRef<InstanceType<typeof TableInsertPopover>>('table-popover');
+const tablePopover = useTemplateRef<InstanceType<typeof TableInsertPopover>>("table-popover");
 const dialog: ReturnType<typeof useDialog> = useDialog();
 
 // Project-defined custom block types: isBlock:true entries that are not pre-configured built-ins.
 // These get a generic wrapIn/lift toggle button rather than a dedicated tiptap command button.
 const customStructureTypes = computed(() =>
-  (groupedAnnotationTypes.value?.['structure'] ?? []).filter(
-    t => t.isBlock && !isBuiltinStructuralType(t.type),
-  ),
+  (groupedAnnotationTypes.value?.["structure"] ?? []).filter((t) => t.isBlock && !isBuiltinStructuralType(t.type)),
 );
 
 /**
@@ -94,8 +85,7 @@ function handleInlineAnnotationButtonClick(data: { type: string; subType?: strin
     // Needs to be captured since modal opening collapses editor selection
     const capturedSelection = { from: selection.from, to: selection.to };
 
-    const textInSelection: string =
-      tiptap.value?.state.doc.textBetween(selection.from, selection.to) ?? '';
+    const textInSelection: string = tiptap.value?.state.doc.textBetween(selection.from, selection.to) ?? "";
 
     const newAnnotationTemplate: NodeStatusObject<AnnotationNode> = createAnnotation({
       ...data,
@@ -110,7 +100,7 @@ function handleInlineAnnotationButtonClick(data: { type: string; subType?: strin
             closable: false,
             closeOnEscape: true,
             dismissableMask: true,
-            style: { width: '25rem', height: '35rem' },
+            style: { width: "25rem", height: "35rem" },
             pt: {
               content: {
                 style: {
@@ -137,20 +127,20 @@ function handleInlineAnnotationButtonClick(data: { type: string; subType?: strin
   } catch (error: unknown) {
     if (error instanceof AnnotationRangeError) {
       addToastMessage({
-        severity: 'warn',
-        summary: 'Invalid selection',
+        severity: "warn",
+        summary: "Invalid selection",
         detail: error.message,
         life: 3000,
       });
     } else if (error instanceof ShortcutError) {
       addToastMessage({
-        severity: 'warn',
-        summary: 'Annotation type not enabled',
+        severity: "warn",
+        summary: "Annotation type not enabled",
         detail: error.message,
         life: 3000,
       });
     } else {
-      console.error('Unexpected error:', error);
+      console.error("Unexpected error:", error);
     }
   } finally {
     tiptap.value
@@ -197,8 +187,7 @@ function handleBlockAnnotationClick(data: { type: string; subType?: string | num
     // Needs to be captured since modal opening collapses editor selection
     const capturedSelection = { from: selection!.from, to: selection!.to };
 
-    const textInSelection: string =
-      tiptap.value?.state.doc.textBetween(capturedSelection.from, capturedSelection.to) ?? '';
+    const textInSelection: string = tiptap.value?.state.doc.textBetween(capturedSelection.from, capturedSelection.to) ?? "";
 
     const newAnnotationTemplate: NodeStatusObject<AnnotationNode> = createAnnotation({
       ...data,
@@ -206,31 +195,27 @@ function handleBlockAnnotationClick(data: { type: string; subType?: string | num
     });
 
     // Add block annotation to all nodes in selection
-    tiptap.value?.commands.addSemanticBlockLabel(
-      newAnnotationTemplate,
-      capturedSelection.from,
-      capturedSelection.to,
-    );
+    tiptap.value?.commands.addSemanticBlockLabel(newAnnotationTemplate, capturedSelection.from, capturedSelection.to);
 
     // Add to store
     structuralAnnotations.value?.set(newAnnotationTemplate.node.data.uuid, newAnnotationTemplate);
   } catch (error: unknown) {
     if (error instanceof AnnotationRangeError) {
       addToastMessage({
-        severity: 'warn',
-        summary: 'Invalid selection',
+        severity: "warn",
+        summary: "Invalid selection",
         detail: error.message,
         life: 3000,
       });
     } else if (error instanceof ShortcutError) {
       addToastMessage({
-        severity: 'warn',
-        summary: 'Annotation type not enabled',
+        severity: "warn",
+        summary: "Annotation type not enabled",
         detail: error.message,
         life: 3000,
       });
     } else {
-      console.error('Unexpected error:', error);
+      console.error("Unexpected error:", error);
     }
   }
 }
@@ -256,20 +241,12 @@ function handleBlockAnnotationClick(data: { type: string; subType?: string | num
       <TabPanel value="annotations">
         <Tabs v-model:value="selectedCategory">
           <TabList>
-            <Tab
-              v-for="[category, types] in annotationCategories"
-              :key="category"
-              :value="category"
-            >
+            <Tab v-for="[category, types] in annotationCategories" :key="category" :value="category">
               {{ capitalize(category) }} ({{ types.length }})
             </Tab>
           </TabList>
           <TabPanels>
-            <TabPanel
-              v-for="[category, types] in annotationCategories"
-              :key="category"
-              :value="category"
-            >
+            <TabPanel v-for="[category, types] in annotationCategories" :key="category" :value="category">
               <div class="buttons">
                 <AnnotationButton
                   v-for="type in types"

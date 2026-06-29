@@ -1,5 +1,5 @@
-import { DeepReadonly } from 'vue';
-import type { BuiltinStructuralType } from '../models/types';
+import { DeepReadonly } from "vue";
+import type { BuiltinStructuralType } from "../models/types";
 
 /**
  * Tiptap-native attribute owned by a loaded editor extension (`heading` -> `level`,
@@ -44,9 +44,7 @@ export type AnnotationMapping = DeepReadonly<{
    *    },
    * },
    */
-  attrByRole: Partial<
-    Record<BuiltinStructuralType, Partial<Record<BuiltinEditorAttribute, string>>>
-  >;
+  attrByRole: Partial<Record<BuiltinStructuralType, Partial<Record<BuiltinEditorAttribute, string>>>>;
 }>;
 
 /**
@@ -54,7 +52,7 @@ export type AnnotationMapping = DeepReadonly<{
  * `tableCell` -> `colspan`/`rowspan`). Single source of truth for both the runtime membership set and
  * the {@link BuiltinEditorAttribute} union — add a new editor-owned attribute here only.
  */
-export const EDITOR_OWNED_ATTRIBUTES = ['level', 'colspan', 'rowspan'] as const;
+export const EDITOR_OWNED_ATTRIBUTES = ["level", "colspan", "rowspan"] as const;
 
 /**
  * Default mapping between builtin structural annotations and their (optional) project-specific override
@@ -62,13 +60,13 @@ export const EDITOR_OWNED_ATTRIBUTES = ['level', 'colspan', 'rowspan'] as const;
  */
 export const DEFAULT_ANNOTATION_MAPPING: AnnotationMapping = {
   typeByRole: {
-    paragraph: 'p',
-    hardBreak: 'lb',
+    paragraph: "p",
+    hardBreak: "lb",
   },
   attrByRole: {
     tableRow: {
-      colspan: 'cols',
-      rowspan: 'rows',
+      colspan: "cols",
+      rowspan: "rows",
     },
   },
 };

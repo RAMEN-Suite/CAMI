@@ -1,9 +1,9 @@
-import { computed, readonly, ref } from 'vue';
-import { useTiptapStore } from '../store/tiptap';
-import { ANNOTATION_DECORATION_KEY } from '../editors/text/extensions/annotationDecoration';
-import { IndexMap } from '../models/types';
-import { Decoration } from '@tiptap/pm/view';
-import { Node } from '@tiptap/pm/model';
+import { computed, readonly, ref } from "vue";
+import { useTiptapStore } from "../store/tiptap";
+import { ANNOTATION_DECORATION_KEY } from "../editors/text/extensions/annotationDecoration";
+import { IndexMap } from "../models/types";
+import { Decoration } from "@tiptap/pm/view";
+import { Node } from "@tiptap/pm/model";
 
 /**
  * Composable that builds standoff-annotation index maps from the current ProseMirror document.
@@ -22,8 +22,7 @@ export function useCreateIndexMaps() {
   const { tiptap } = useTiptapStore();
   const doc = computed<Node>(() => tiptap.value!.state.doc);
 
-  const decorations: Decoration[] =
-    ANNOTATION_DECORATION_KEY.getState(tiptap.value!.state)?.all.find() ?? [];
+  const decorations: Decoration[] = ANNOTATION_DECORATION_KEY.getState(tiptap.value!.state)?.all.find() ?? [];
 
   // Maps for standoff indices
   const decorationIndexMap = ref<IndexMap>(new Map());
@@ -122,7 +121,7 @@ export function useCreateIndexMaps() {
    */
   function buildZeroPointIndexMap(): IndexMap {
     const map: IndexMap = new Map();
-    traverseForInlineNode(doc.value, 0, 'zeroPointAnnotation', map);
+    traverseForInlineNode(doc.value, 0, "zeroPointAnnotation", map);
     zeroPointIndexMap.value = map;
 
     return map;
@@ -135,7 +134,7 @@ export function useCreateIndexMaps() {
    */
   function buildHardBreakIndexMap(): IndexMap {
     const map: IndexMap = new Map();
-    traverseForInlineNode(doc.value, 0, 'hardBreak', map);
+    traverseForInlineNode(doc.value, 0, "hardBreak", map);
     hardBreakIndexMap.value = map;
 
     return map;
@@ -150,9 +149,7 @@ export function useCreateIndexMaps() {
    */
   function buildDecorationIndexMap(): IndexMap {
     // All available decoration positions that need remapping
-    const sortedPositions: number[] = [...new Set(decorations.flatMap(d => [d.from, d.to]))].sort(
-      (a, b) => a - b,
-    );
+    const sortedPositions: number[] = [...new Set(decorations.flatMap((d) => [d.from, d.to]))].sort((a, b) => a - b);
     const positionMap = new Map<number, number>();
 
     // The index of the character in the plain text (counts only char positions, not doc positions)
@@ -212,7 +209,7 @@ export function useCreateIndexMaps() {
     const startIndex: number = charIndex;
     let current: number = charIndex;
 
-    node.forEach(child => {
+    node.forEach((child) => {
       current = traverseNode(child, current, map);
     });
 
@@ -237,12 +234,7 @@ export function useCreateIndexMaps() {
    * @param map - Accumulator map; entries are added in place.
    * @returns The updated `charIndex` (unchanged when the current node is the target inline atom).
    */
-  function traverseForInlineNode(
-    node: Node,
-    charIndex: number,
-    nodeTypeName: string,
-    map: IndexMap,
-  ): number {
+  function traverseForInlineNode(node: Node, charIndex: number, nodeTypeName: string, map: IndexMap): number {
     // Collect character count recursively
     if (node.isText) {
       return charIndex + node.text!.length;
@@ -254,7 +246,7 @@ export function useCreateIndexMaps() {
     }
 
     let current = charIndex;
-    node.forEach(child => {
+    node.forEach((child) => {
       current = traverseForInlineNode(child, current, nodeTypeName, map);
     });
 

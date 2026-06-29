@@ -1,23 +1,15 @@
-import { useGuidelinesStore } from '../store/guidelines';
-import { Annotation, AnnotationNode, PropertyConfig } from '../models/types';
-import { getDefaultValueForProperty } from '../utils/helper/helper';
-import { IAnnotation } from '../models/IAnnotation';
+import { useGuidelinesStore } from "../store/guidelines";
+import { Annotation, AnnotationNode, PropertyConfig } from "../models/types";
+import { getDefaultValueForProperty } from "../utils/helper/helper";
+import { IAnnotation } from "../models/IAnnotation";
 
 /**
  * Return type for the `useCreateAnnotation` hook.
  * Provides factory functions for creating different types of annotations.
  */
 type UseCreateAnnotationReturnType = {
-  createCollectionAnnotation: (params: {
-    nodeLabels: string[];
-    subType?: string | number;
-    type: string;
-  }) => Annotation;
-  createTextAnnotation: (params: {
-    selectedText: string;
-    subType?: string | number;
-    type: string;
-  }) => Annotation;
+  createCollectionAnnotation: (params: { nodeLabels: string[]; subType?: string | number; type: string }) => Annotation;
+  createTextAnnotation: (params: { selectedText: string; subType?: string | number; type: string }) => Annotation;
 };
 
 /**
@@ -30,9 +22,7 @@ type UseCreateAnnotationReturnType = {
  * @param {('Content' | 'Collection')} scope - The scope for which the annotation is being created. This determines the type of annotation that will be created.
  * @returns {UseCreateAnnotationReturnType} An object containing the functions to create annotations.
  */
-export function useCreateAnnotation(
-  scope: 'Content' | 'Collection',
-): UseCreateAnnotationReturnType {
+export function useCreateAnnotation(scope: "Content" | "Collection"): UseCreateAnnotationReturnType {
   const { getAnnotationFields, getCollectionAnnotationFields } = useGuidelinesStore();
 
   /**
@@ -44,22 +34,18 @@ export function useCreateAnnotation(
    * @param {Object} params - The parameters object. Contains the fields, subType (optional) and type of the annotation.
    * @returns {Annotation} An object containing the properties, entities and additional texts of the annotation.
    */
-  function createAnnotationObject(params: {
-    fields: PropertyConfig[];
-    subType?: string | number;
-    type: string;
-  }): Annotation {
+  function createAnnotationObject(params: { fields: PropertyConfig[]; subType?: string | number; type: string }): Annotation {
     const nodeData: IAnnotation = createNodeData({ ...params });
     const node: AnnotationNode = {
       data: nodeData,
-      nodeLabels: ['Annotation'],
+      nodeLabels: ["Annotation"],
     };
 
     const newAnnotation: Annotation = {
       node,
       connectedNodes: [],
       meta: {
-        status: 'created',
+        status: "created",
       },
     };
 
@@ -75,19 +61,14 @@ export function useCreateAnnotation(
    * @param {Object} params - The parameters object. Contains the fields, subType (optional) and type of the annotation.
    * @returns {IAnnotation} A base node data object with the given parameters.
    */
-  function createBaseNodeData(params: {
-    fields: PropertyConfig[];
-    subType?: string | number;
-    type: string;
-  }): IAnnotation {
+  function createBaseNodeData(params: { fields: PropertyConfig[]; subType?: string | number; type: string }): IAnnotation {
     const { type, subType, fields } = params;
-    const subTypeField: PropertyConfig | undefined = fields.find(field => field.name === 'subType');
+    const subTypeField: PropertyConfig | undefined = fields.find((field) => field.name === "subType");
 
     const baseNodeData: IAnnotation = {} as IAnnotation;
 
     fields.forEach((field: PropertyConfig) => {
-      baseNodeData[field.name] =
-        field?.required === true ? getDefaultValueForProperty(field.type) : null;
+      baseNodeData[field.name] = field?.required === true ? getDefaultValueForProperty(field.type) : null;
     });
 
     // Set explicitly after the fields are set to override default values if necessary
@@ -111,11 +92,7 @@ export function useCreateAnnotation(
    * @param {Object} params - The parameters object. Contains the type, subType (optional) and node labels of the collection.
    * @returns {Annotation} An object containing the properties, entities and additional texts of the annotation.
    */
-  function createCollectionAnnotation(params: {
-    type: string;
-    subType?: string | number;
-    nodeLabels: string[];
-  }): Annotation {
+  function createCollectionAnnotation(params: { type: string; subType?: string | number; nodeLabels: string[] }): Annotation {
     const { type, nodeLabels } = params;
 
     const fields: PropertyConfig[] = getCollectionAnnotationFields(nodeLabels, type);
@@ -134,20 +111,16 @@ export function useCreateAnnotation(
    * @param {Object} params - The parameters object. Contains the fields, subType (optional) and type of the annotation.
    * @returns {IAnnotation} A node data object with the given parameters.
    */
-  function createNodeData(params: {
-    fields: PropertyConfig[];
-    subType?: string | number;
-    type: string;
-  }): IAnnotation {
+  function createNodeData(params: { fields: PropertyConfig[]; subType?: string | number; type: string }): IAnnotation {
     const nodeData: IAnnotation = createBaseNodeData(params);
 
     // Other fields specifically for content annotations
-    if (scope === 'Content') {
+    if (scope === "Content") {
       // Both can be 0 since the real values are created in the backend on save
       nodeData.startIndex = 0;
       nodeData.endIndex = 0;
       // Empty string since value is added in createTextAnnotation() and will be calculated on save anyway (connected characters).
-      nodeData.text = '';
+      nodeData.text = "";
     }
 
     return nodeData;
@@ -159,11 +132,7 @@ export function useCreateAnnotation(
    * @param {Object} params - The parameters object. Currently consists only of the type, subtype (optional) and characters to be annotated.
    * @returns {Annotation} - The created content annotation object.
    */
-  function createTextAnnotation(params: {
-    type: string;
-    subType?: string | number;
-    selectedText: string;
-  }): Annotation {
+  function createTextAnnotation(params: { type: string; subType?: string | number; selectedText: string }): Annotation {
     const { type, selectedText } = params;
 
     const fields: PropertyConfig[] = getAnnotationFields(type);

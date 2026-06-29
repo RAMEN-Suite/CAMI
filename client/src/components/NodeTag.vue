@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { BaseNodeLabel } from '../models/types';
-import { Tag } from 'primevue';
+import { BaseNodeLabel } from "../models/types";
+import { Tag } from "primevue";
 
 const props = defineProps<{
   content: string;
@@ -11,22 +11,22 @@ const props = defineProps<{
 // TODO: This should come from a configuration and/or expose CSS classes for customization
 const config = {
   Annotation: {
-    severity: 'warn',
+    severity: "warn",
   },
   Character: {
-    severity: 'secondary',
+    severity: "secondary",
   },
   Collection: {
-    severity: 'contrast',
+    severity: "contrast",
   },
   Content: {
-    severity: 'contrast',
+    severity: "contrast",
   },
   Entity: {
-    severity: 'info',
+    severity: "info",
   },
   Text: {
-    severity: 'secondary',
+    severity: "secondary",
   },
 };
 </script>

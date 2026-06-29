@@ -3,7 +3,7 @@ https://www.npmjs.com/package/generate-license-file
 
 The following npm package may be included in this product:
 
- - source-map-js@1.2.1
+- source-map-js@1.2.1
 
 This package contains the following license:
 
@@ -13,14 +13,14 @@ All rights reserved.
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
 
-* Redistributions of source code must retain the above copyright notice, this
+- Redistributions of source code must retain the above copyright notice, this
   list of conditions and the following disclaimer.
 
-* Redistributions in binary form must reproduce the above copyright notice,
+- Redistributions in binary form must reproduce the above copyright notice,
   this list of conditions and the following disclaimer in the documentation
   and/or other materials provided with the distribution.
 
-* Neither the names of the Mozilla Foundation nor the names of project
+- Neither the names of the Mozilla Foundation nor the names of project
   contributors may be used to endorse or promote products derived from this
   software without specific prior written permission.
 
@@ -35,14 +35,14 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
------------
+---
 
 The following npm packages may be included in this product:
 
- - @types/linkify-it@5.0.0
- - @types/markdown-it@14.1.2
- - @types/mdurl@2.0.0
- - @types/web-bluetooth@0.0.20
+- @types/linkify-it@5.0.0
+- @types/markdown-it@14.1.2
+- @types/mdurl@2.0.0
+- @types/web-bluetooth@0.0.20
 
 These packages each contain the following license:
 
@@ -68,11 +68,11 @@ MIT License
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE
 
------------
+---
 
 The following npm package may be included in this product:
 
- - argparse@2.0.1
+- argparse@2.0.1
 
 This package contains the following license:
 
@@ -81,7 +81,7 @@ A. HISTORY OF THE SOFTWARE
 
 Python was created in the early 1990s by Guido van Rossum at Stichting
 Mathematisch Centrum (CWI, see http://www.cwi.nl) in the Netherlands
-as a successor of a language called ABC.  Guido remains Python's
+as a successor of a language called ABC. Guido remains Python's
 principal author, although it includes many contributions from others.
 
 In 1995, Guido continued his work on Python at the Corporation for
@@ -90,15 +90,15 @@ in Reston, Virginia where he released several versions of the
 software.
 
 In May 2000, Guido and the Python core development team moved to
-BeOpen.com to form the BeOpen PythonLabs team.  In October of the same
+BeOpen.com to form the BeOpen PythonLabs team. In October of the same
 year, the PythonLabs team moved to Digital Creations, which became
-Zope Corporation.  In 2001, the Python Software Foundation (PSF, see
+Zope Corporation. In 2001, the Python Software Foundation (PSF, see
 https://www.python.org/psf/) was formed, a non-profit organization
 created specifically to own Python-related Intellectual Property.
 Zope Corporation was a sponsoring member of the PSF.
 
 All Python releases are Open Source (see http://www.opensource.org for
-the Open Source Definition).  Historically, most, but not all, Python
+the Open Source Definition). Historically, most, but not all, Python
 releases have also been GPL-compatible; the table below summarizes
 the various releases.
 
@@ -120,19 +120,18 @@ the various releases.
 Footnotes:
 
 (1) GPL-compatible doesn't mean that we're distributing Python under
-    the GPL.  All Python licenses, unlike the GPL, let you distribute
-    a modified version without making your changes open source.  The
-    GPL-compatible licenses make it possible to combine Python with
-    other software that is released under the GPL; the others don't.
+the GPL. All Python licenses, unlike the GPL, let you distribute
+a modified version without making your changes open source. The
+GPL-compatible licenses make it possible to combine Python with
+other software that is released under the GPL; the others don't.
 
 (2) According to Richard Stallman, 1.6.1 is not GPL-compatible,
-    because its license has a choice of law clause.  According to
-    CNRI, however, Stallman's lawyer has told CNRI's lawyer that 1.6.1
-    is "not incompatible" with the GPL.
+because its license has a choice of law clause. According to
+CNRI, however, Stallman's lawyer has told CNRI's lawyer that 1.6.1
+is "not incompatible" with the GPL.
 
 Thanks to the many outside volunteers who have worked under Guido's
 direction to make these releases possible.
-
 
 B. TERMS AND CONDITIONS FOR ACCESSING OR OTHERWISE USING PYTHON
 ===============================================================
@@ -141,51 +140,50 @@ PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
 --------------------------------------------
 
 1. This LICENSE AGREEMENT is between the Python Software Foundation
-("PSF"), and the Individual or Organization ("Licensee") accessing and
-otherwise using this software ("Python") in source or binary form and
-its associated documentation.
+   ("PSF"), and the Individual or Organization ("Licensee") accessing and
+   otherwise using this software ("Python") in source or binary form and
+   its associated documentation.
 
 2. Subject to the terms and conditions of this License Agreement, PSF hereby
-grants Licensee a nonexclusive, royalty-free, world-wide license to reproduce,
-analyze, test, perform and/or display publicly, prepare derivative works,
-distribute, and otherwise use Python alone or in any derivative version,
-provided, however, that PSF's License Agreement and PSF's notice of copyright,
-i.e., "Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020 Python Software Foundation;
-All Rights Reserved" are retained in Python alone or in any derivative version
-prepared by Licensee.
+   grants Licensee a nonexclusive, royalty-free, world-wide license to reproduce,
+   analyze, test, perform and/or display publicly, prepare derivative works,
+   distribute, and otherwise use Python alone or in any derivative version,
+   provided, however, that PSF's License Agreement and PSF's notice of copyright,
+   i.e., "Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020 Python Software Foundation;
+   All Rights Reserved" are retained in Python alone or in any derivative version
+   prepared by Licensee.
 
 3. In the event Licensee prepares a derivative work that is based on
-or incorporates Python or any part thereof, and wants to make
-the derivative work available to others as provided herein, then
-Licensee hereby agrees to include in any such work a brief summary of
-the changes made to Python.
+   or incorporates Python or any part thereof, and wants to make
+   the derivative work available to others as provided herein, then
+   Licensee hereby agrees to include in any such work a brief summary of
+   the changes made to Python.
 
 4. PSF is making Python available to Licensee on an "AS IS"
-basis.  PSF MAKES NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR
-IMPLIED.  BY WAY OF EXAMPLE, BUT NOT LIMITATION, PSF MAKES NO AND
-DISCLAIMS ANY REPRESENTATION OR WARRANTY OF MERCHANTABILITY OR FITNESS
-FOR ANY PARTICULAR PURPOSE OR THAT THE USE OF PYTHON WILL NOT
-INFRINGE ANY THIRD PARTY RIGHTS.
+   basis. PSF MAKES NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR
+   IMPLIED. BY WAY OF EXAMPLE, BUT NOT LIMITATION, PSF MAKES NO AND
+   DISCLAIMS ANY REPRESENTATION OR WARRANTY OF MERCHANTABILITY OR FITNESS
+   FOR ANY PARTICULAR PURPOSE OR THAT THE USE OF PYTHON WILL NOT
+   INFRINGE ANY THIRD PARTY RIGHTS.
 
 5. PSF SHALL NOT BE LIABLE TO LICENSEE OR ANY OTHER USERS OF PYTHON
-FOR ANY INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES OR LOSS AS
-A RESULT OF MODIFYING, DISTRIBUTING, OR OTHERWISE USING PYTHON,
-OR ANY DERIVATIVE THEREOF, EVEN IF ADVISED OF THE POSSIBILITY THEREOF.
+   FOR ANY INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES OR LOSS AS
+   A RESULT OF MODIFYING, DISTRIBUTING, OR OTHERWISE USING PYTHON,
+   OR ANY DERIVATIVE THEREOF, EVEN IF ADVISED OF THE POSSIBILITY THEREOF.
 
 6. This License Agreement will automatically terminate upon a material
-breach of its terms and conditions.
+   breach of its terms and conditions.
 
 7. Nothing in this License Agreement shall be deemed to create any
-relationship of agency, partnership, or joint venture between PSF and
-Licensee.  This License Agreement does not grant permission to use PSF
-trademarks or trade name in a trademark sense to endorse or promote
-products or services of Licensee, or any third party.
+   relationship of agency, partnership, or joint venture between PSF and
+   Licensee. This License Agreement does not grant permission to use PSF
+   trademarks or trade name in a trademark sense to endorse or promote
+   products or services of Licensee, or any third party.
 
 8. By copying, installing or otherwise using Python, Licensee
-agrees to be bound by the terms and conditions of this License
-Agreement.
-
+   agrees to be bound by the terms and conditions of this License
+   Agreement.
 
 BEOPEN.COM LICENSE AGREEMENT FOR PYTHON 2.0
 -------------------------------------------
@@ -193,126 +191,124 @@ BEOPEN.COM LICENSE AGREEMENT FOR PYTHON 2.0
 BEOPEN PYTHON OPEN SOURCE LICENSE AGREEMENT VERSION 1
 
 1. This LICENSE AGREEMENT is between BeOpen.com ("BeOpen"), having an
-office at 160 Saratoga Avenue, Santa Clara, CA 95051, and the
-Individual or Organization ("Licensee") accessing and otherwise using
-this software in source or binary form and its associated
-documentation ("the Software").
+   office at 160 Saratoga Avenue, Santa Clara, CA 95051, and the
+   Individual or Organization ("Licensee") accessing and otherwise using
+   this software in source or binary form and its associated
+   documentation ("the Software").
 
 2. Subject to the terms and conditions of this BeOpen Python License
-Agreement, BeOpen hereby grants Licensee a non-exclusive,
-royalty-free, world-wide license to reproduce, analyze, test, perform
-and/or display publicly, prepare derivative works, distribute, and
-otherwise use the Software alone or in any derivative version,
-provided, however, that the BeOpen Python License is retained in the
-Software, alone or in any derivative version prepared by Licensee.
+   Agreement, BeOpen hereby grants Licensee a non-exclusive,
+   royalty-free, world-wide license to reproduce, analyze, test, perform
+   and/or display publicly, prepare derivative works, distribute, and
+   otherwise use the Software alone or in any derivative version,
+   provided, however, that the BeOpen Python License is retained in the
+   Software, alone or in any derivative version prepared by Licensee.
 
 3. BeOpen is making the Software available to Licensee on an "AS IS"
-basis.  BEOPEN MAKES NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR
-IMPLIED.  BY WAY OF EXAMPLE, BUT NOT LIMITATION, BEOPEN MAKES NO AND
-DISCLAIMS ANY REPRESENTATION OR WARRANTY OF MERCHANTABILITY OR FITNESS
-FOR ANY PARTICULAR PURPOSE OR THAT THE USE OF THE SOFTWARE WILL NOT
-INFRINGE ANY THIRD PARTY RIGHTS.
+   basis. BEOPEN MAKES NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR
+   IMPLIED. BY WAY OF EXAMPLE, BUT NOT LIMITATION, BEOPEN MAKES NO AND
+   DISCLAIMS ANY REPRESENTATION OR WARRANTY OF MERCHANTABILITY OR FITNESS
+   FOR ANY PARTICULAR PURPOSE OR THAT THE USE OF THE SOFTWARE WILL NOT
+   INFRINGE ANY THIRD PARTY RIGHTS.
 
 4. BEOPEN SHALL NOT BE LIABLE TO LICENSEE OR ANY OTHER USERS OF THE
-SOFTWARE FOR ANY INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES OR LOSS
-AS A RESULT OF USING, MODIFYING OR DISTRIBUTING THE SOFTWARE, OR ANY
-DERIVATIVE THEREOF, EVEN IF ADVISED OF THE POSSIBILITY THEREOF.
+   SOFTWARE FOR ANY INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES OR LOSS
+   AS A RESULT OF USING, MODIFYING OR DISTRIBUTING THE SOFTWARE, OR ANY
+   DERIVATIVE THEREOF, EVEN IF ADVISED OF THE POSSIBILITY THEREOF.
 
 5. This License Agreement will automatically terminate upon a material
-breach of its terms and conditions.
+   breach of its terms and conditions.
 
 6. This License Agreement shall be governed by and interpreted in all
-respects by the law of the State of California, excluding conflict of
-law provisions.  Nothing in this License Agreement shall be deemed to
-create any relationship of agency, partnership, or joint venture
-between BeOpen and Licensee.  This License Agreement does not grant
-permission to use BeOpen trademarks or trade names in a trademark
-sense to endorse or promote products or services of Licensee, or any
-third party.  As an exception, the "BeOpen Python" logos available at
-http://www.pythonlabs.com/logos.html may be used according to the
-permissions granted on that web page.
+   respects by the law of the State of California, excluding conflict of
+   law provisions. Nothing in this License Agreement shall be deemed to
+   create any relationship of agency, partnership, or joint venture
+   between BeOpen and Licensee. This License Agreement does not grant
+   permission to use BeOpen trademarks or trade names in a trademark
+   sense to endorse or promote products or services of Licensee, or any
+   third party. As an exception, the "BeOpen Python" logos available at
+   http://www.pythonlabs.com/logos.html may be used according to the
+   permissions granted on that web page.
 
 7. By copying, installing or otherwise using the software, Licensee
-agrees to be bound by the terms and conditions of this License
-Agreement.
-
+   agrees to be bound by the terms and conditions of this License
+   Agreement.
 
 CNRI LICENSE AGREEMENT FOR PYTHON 1.6.1
 ---------------------------------------
 
 1. This LICENSE AGREEMENT is between the Corporation for National
-Research Initiatives, having an office at 1895 Preston White Drive,
-Reston, VA 20191 ("CNRI"), and the Individual or Organization
-("Licensee") accessing and otherwise using Python 1.6.1 software in
-source or binary form and its associated documentation.
+   Research Initiatives, having an office at 1895 Preston White Drive,
+   Reston, VA 20191 ("CNRI"), and the Individual or Organization
+   ("Licensee") accessing and otherwise using Python 1.6.1 software in
+   source or binary form and its associated documentation.
 
 2. Subject to the terms and conditions of this License Agreement, CNRI
-hereby grants Licensee a nonexclusive, royalty-free, world-wide
-license to reproduce, analyze, test, perform and/or display publicly,
-prepare derivative works, distribute, and otherwise use Python 1.6.1
-alone or in any derivative version, provided, however, that CNRI's
-License Agreement and CNRI's notice of copyright, i.e., "Copyright (c)
-1995-2001 Corporation for National Research Initiatives; All Rights
-Reserved" are retained in Python 1.6.1 alone or in any derivative
-version prepared by Licensee.  Alternately, in lieu of CNRI's License
-Agreement, Licensee may substitute the following text (omitting the
-quotes): "Python 1.6.1 is made available subject to the terms and
-conditions in CNRI's License Agreement.  This Agreement together with
-Python 1.6.1 may be located on the Internet using the following
-unique, persistent identifier (known as a handle): 1895.22/1013.  This
-Agreement may also be obtained from a proxy server on the Internet
-using the following URL: http://hdl.handle.net/1895.22/1013".
+   hereby grants Licensee a nonexclusive, royalty-free, world-wide
+   license to reproduce, analyze, test, perform and/or display publicly,
+   prepare derivative works, distribute, and otherwise use Python 1.6.1
+   alone or in any derivative version, provided, however, that CNRI's
+   License Agreement and CNRI's notice of copyright, i.e., "Copyright (c)
+   1995-2001 Corporation for National Research Initiatives; All Rights
+   Reserved" are retained in Python 1.6.1 alone or in any derivative
+   version prepared by Licensee. Alternately, in lieu of CNRI's License
+   Agreement, Licensee may substitute the following text (omitting the
+   quotes): "Python 1.6.1 is made available subject to the terms and
+   conditions in CNRI's License Agreement. This Agreement together with
+   Python 1.6.1 may be located on the Internet using the following
+   unique, persistent identifier (known as a handle): 1895.22/1013. This
+   Agreement may also be obtained from a proxy server on the Internet
+   using the following URL: http://hdl.handle.net/1895.22/1013".
 
 3. In the event Licensee prepares a derivative work that is based on
-or incorporates Python 1.6.1 or any part thereof, and wants to make
-the derivative work available to others as provided herein, then
-Licensee hereby agrees to include in any such work a brief summary of
-the changes made to Python 1.6.1.
+   or incorporates Python 1.6.1 or any part thereof, and wants to make
+   the derivative work available to others as provided herein, then
+   Licensee hereby agrees to include in any such work a brief summary of
+   the changes made to Python 1.6.1.
 
 4. CNRI is making Python 1.6.1 available to Licensee on an "AS IS"
-basis.  CNRI MAKES NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR
-IMPLIED.  BY WAY OF EXAMPLE, BUT NOT LIMITATION, CNRI MAKES NO AND
-DISCLAIMS ANY REPRESENTATION OR WARRANTY OF MERCHANTABILITY OR FITNESS
-FOR ANY PARTICULAR PURPOSE OR THAT THE USE OF PYTHON 1.6.1 WILL NOT
-INFRINGE ANY THIRD PARTY RIGHTS.
+   basis. CNRI MAKES NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR
+   IMPLIED. BY WAY OF EXAMPLE, BUT NOT LIMITATION, CNRI MAKES NO AND
+   DISCLAIMS ANY REPRESENTATION OR WARRANTY OF MERCHANTABILITY OR FITNESS
+   FOR ANY PARTICULAR PURPOSE OR THAT THE USE OF PYTHON 1.6.1 WILL NOT
+   INFRINGE ANY THIRD PARTY RIGHTS.
 
 5. CNRI SHALL NOT BE LIABLE TO LICENSEE OR ANY OTHER USERS OF PYTHON
-1.6.1 FOR ANY INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES OR LOSS AS
-A RESULT OF MODIFYING, DISTRIBUTING, OR OTHERWISE USING PYTHON 1.6.1,
-OR ANY DERIVATIVE THEREOF, EVEN IF ADVISED OF THE POSSIBILITY THEREOF.
+   1.6.1 FOR ANY INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES OR LOSS AS
+   A RESULT OF MODIFYING, DISTRIBUTING, OR OTHERWISE USING PYTHON 1.6.1,
+   OR ANY DERIVATIVE THEREOF, EVEN IF ADVISED OF THE POSSIBILITY THEREOF.
 
 6. This License Agreement will automatically terminate upon a material
-breach of its terms and conditions.
+   breach of its terms and conditions.
 
 7. This License Agreement shall be governed by the federal
-intellectual property law of the United States, including without
-limitation the federal copyright law, and, to the extent such
-U.S. federal law does not apply, by the law of the Commonwealth of
-Virginia, excluding Virginia's conflict of law provisions.
-Notwithstanding the foregoing, with regard to derivative works based
-on Python 1.6.1 that incorporate non-separable material that was
-previously distributed under the GNU General Public License (GPL), the
-law of the Commonwealth of Virginia shall govern this License
-Agreement only as to issues arising under or with respect to
-Paragraphs 4, 5, and 7 of this License Agreement.  Nothing in this
-License Agreement shall be deemed to create any relationship of
-agency, partnership, or joint venture between CNRI and Licensee.  This
-License Agreement does not grant permission to use CNRI trademarks or
-trade name in a trademark sense to endorse or promote products or
-services of Licensee, or any third party.
+   intellectual property law of the United States, including without
+   limitation the federal copyright law, and, to the extent such
+   U.S. federal law does not apply, by the law of the Commonwealth of
+   Virginia, excluding Virginia's conflict of law provisions.
+   Notwithstanding the foregoing, with regard to derivative works based
+   on Python 1.6.1 that incorporate non-separable material that was
+   previously distributed under the GNU General Public License (GPL), the
+   law of the Commonwealth of Virginia shall govern this License
+   Agreement only as to issues arising under or with respect to
+   Paragraphs 4, 5, and 7 of this License Agreement. Nothing in this
+   License Agreement shall be deemed to create any relationship of
+   agency, partnership, or joint venture between CNRI and Licensee. This
+   License Agreement does not grant permission to use CNRI trademarks or
+   trade name in a trademark sense to endorse or promote products or
+   services of Licensee, or any third party.
 
 8. By clicking on the "ACCEPT" button where indicated, or by copying,
-installing or otherwise using Python 1.6.1, Licensee agrees to be
-bound by the terms and conditions of this License Agreement.
+   installing or otherwise using Python 1.6.1, Licensee agrees to be
+   bound by the terms and conditions of this License Agreement.
 
         ACCEPT
-
 
 CWI LICENSE AGREEMENT FOR PYTHON 0.9.0 THROUGH 1.2
 --------------------------------------------------
 
 Copyright (c) 1991 - 1995, Stichting Mathematisch Centrum Amsterdam,
-The Netherlands.  All rights reserved.
+The Netherlands. All rights reserved.
 
 Permission to use, copy, modify, and distribute this software and its
 documentation for any purpose and without fee is hereby granted,
@@ -331,11 +327,11 @@ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
 OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
------------
+---
 
 The following npm package may be included in this product:
 
- - typescript@5.8.3
+- typescript@5.8.3
 
 This package contains the following license:
 
@@ -343,7 +339,7 @@ Apache License
 
 Version 2.0, January 2004
 
-http://www.apache.org/licenses/ 
+http://www.apache.org/licenses/
 
 TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 
@@ -395,11 +391,11 @@ If the Work includes a "NOTICE" text file as part of its distribution, then any 
 
 END OF TERMS AND CONDITIONS
 
------------
+---
 
 The following npm package may be included in this product:
 
- - @babel/parser@7.29.2
+- @babel/parser@7.29.2
 
 This package contains the following license:
 
@@ -423,11 +419,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------------
+---
 
 The following npm package may be included in this product:
 
- - markdown-it@14.1.1
+- markdown-it@14.1.1
 
 This package contains the following license:
 
@@ -454,11 +450,11 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
------------
+---
 
 The following npm package may be included in this product:
 
- - mdurl@2.0.0
+- mdurl@2.0.0
 
 This package contains the following license:
 
@@ -485,7 +481,7 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
---------------------------------------------------------------------------------
+---
 
 .parse() is based on Joyent's node.js `url` code:
 
@@ -508,11 +504,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 
------------
+---
 
 The following npm package may be included in this product:
 
- - linkify-it@5.0.0
+- linkify-it@5.0.0
 
 This package contains the following license:
 
@@ -539,11 +535,11 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
------------
+---
 
 The following npm package may be included in this product:
 
- - estree-walker@2.0.2
+- estree-walker@2.0.2
 
 This package contains the following license:
 
@@ -555,11 +551,11 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
------------
+---
 
 The following npm package may be included in this product:
 
- - prosemirror-tables@1.8.5
+- prosemirror-tables@1.8.5
 
 This package contains the following license:
 
@@ -583,25 +579,25 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------------
+---
 
 The following npm packages may be included in this product:
 
- - prosemirror-collab@1.3.1
- - prosemirror-commands@1.7.1
- - prosemirror-dropcursor@1.8.2
- - prosemirror-gapcursor@1.4.1
- - prosemirror-history@1.5.0
- - prosemirror-inputrules@1.5.1
- - prosemirror-keymap@1.2.3
- - prosemirror-markdown@1.13.4
- - prosemirror-menu@1.3.0
- - prosemirror-model@1.25.4
- - prosemirror-schema-basic@1.2.4
- - prosemirror-schema-list@1.5.1
- - prosemirror-state@1.4.4
- - prosemirror-transform@1.11.0
- - prosemirror-view@1.41.7
+- prosemirror-collab@1.3.1
+- prosemirror-commands@1.7.1
+- prosemirror-dropcursor@1.8.2
+- prosemirror-gapcursor@1.4.1
+- prosemirror-history@1.5.0
+- prosemirror-inputrules@1.5.1
+- prosemirror-keymap@1.2.3
+- prosemirror-markdown@1.13.4
+- prosemirror-menu@1.3.0
+- prosemirror-model@1.25.4
+- prosemirror-schema-basic@1.2.4
+- prosemirror-schema-list@1.5.1
+- prosemirror-state@1.4.4
+- prosemirror-transform@1.11.0
+- prosemirror-view@1.41.7
 
 These packages each contain the following license:
 
@@ -625,11 +621,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------------
+---
 
 The following npm package may be included in this product:
 
- - rope-sequence@1.3.4
+- rope-sequence@1.3.4
 
 This package contains the following license:
 
@@ -653,12 +649,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------------
+---
 
 The following npm packages may be included in this product:
 
- - orderedmap@2.1.1
- - w3c-keyname@2.2.8
+- orderedmap@2.1.1
+- w3c-keyname@2.2.8
 
 These packages each contain the following license:
 
@@ -682,11 +678,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------------
+---
 
 The following npm package may be included in this product:
 
- - prosemirror-changeset@2.4.0
+- prosemirror-changeset@2.4.0
 
 This package contains the following license:
 
@@ -710,11 +706,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------------
+---
 
 The following npm package may be included in this product:
 
- - csstype@3.2.3
+- csstype@3.2.3
 
 This package contains the following license:
 
@@ -738,11 +734,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------------
+---
 
 The following npm package may be included in this product:
 
- - crelt@1.0.6
+- crelt@1.0.6
 
 This package contains the following license:
 
@@ -766,11 +762,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------------
+---
 
 The following npm package may be included in this product:
 
- - linkifyjs@4.3.2
+- linkifyjs@4.3.2
 
 This package contains the following license:
 
@@ -794,12 +790,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------------
+---
 
 The following npm packages may be included in this product:
 
- - entities@4.5.0
- - entities@7.0.1
+- entities@4.5.0
+- entities@7.0.1
 
 These packages each contain the following license:
 
@@ -815,11 +811,11 @@ Redistributions in binary form must reproduce the above copyright notice, this l
 THIS IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
------------
+---
 
 The following npm package may be included in this product:
 
- - magic-string@0.30.21
+- magic-string@0.30.21
 
 This package contains the following license:
 
@@ -831,11 +827,11 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
------------
+---
 
 The following npm package may be included in this product:
 
- - @jridgewell/sourcemap-codec@1.5.5
+- @jridgewell/sourcemap-codec@1.5.5
 
 This package contains the following license:
 
@@ -859,12 +855,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------------
+---
 
 The following npm packages may be included in this product:
 
- - punycode.js@2.3.1
- - uc.micro@2.1.0
+- punycode.js@2.3.1
+- uc.micro@2.1.0
 
 These packages each contain the following license:
 
@@ -889,11 +885,11 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
------------
+---
 
 The following npm package may be included in this product:
 
- - picocolors@1.1.1
+- picocolors@1.1.1
 
 This package contains the following license:
 
@@ -913,23 +909,23 @@ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
------------
+---
 
 The following npm package may be included in this product:
 
- - @vue/devtools-api@6.6.1
+- @vue/devtools-api@6.6.1
 
 This package contains the following license:
 
 MIT
 
------------
+---
 
 The following npm packages may be included in this product:
 
- - @babel/helper-string-parser@7.27.1
- - @babel/helper-validator-identifier@7.28.5
- - @babel/types@7.29.0
+- @babel/helper-string-parser@7.27.1
+- @babel/helper-validator-identifier@7.28.5
+- @babel/types@7.29.0
 
 These packages each contain the following license:
 
@@ -956,11 +952,11 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
------------
+---
 
 The following npm package may be included in this product:
 
- - primeicons@7.0.0
+- primeicons@7.0.0
 
 This package contains the following license:
 
@@ -986,12 +982,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------------
+---
 
 The following npm packages may be included in this product:
 
- - @remirror/core-constants@3.0.0
- - prosemirror-trailing-node@3.0.0
+- @remirror/core-constants@3.0.0
+- prosemirror-trailing-node@3.0.0
 
 These packages each contain the following license:
 
@@ -1017,13 +1013,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------------
+---
 
 The following npm packages may be included in this product:
 
- - @vueuse/core@10.10.0
- - @vueuse/metadata@10.10.0
- - @vueuse/shared@10.10.0
+- @vueuse/core@10.10.0
+- @vueuse/metadata@10.10.0
+- @vueuse/shared@10.10.0
 
 These packages each contain the following license:
 
@@ -1049,11 +1045,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------------
+---
 
 The following npm package may be included in this product:
 
- - vue-demi@0.14.8
+- vue-demi@0.14.8
 
 This package contains the following license:
 
@@ -1079,13 +1075,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------------
+---
 
 The following npm packages may be included in this product:
 
- - @floating-ui/core@1.7.5
- - @floating-ui/dom@1.7.6
- - @floating-ui/utils@0.2.11
+- @floating-ui/core@1.7.5
+- @floating-ui/dom@1.7.6
+- @floating-ui/utils@0.2.11
 
 These packages each contain the following license:
 
@@ -1110,13 +1106,13 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
------------
+---
 
 The following npm packages may be included in this product:
 
- - @primeuix/styled@0.5.0
- - @primeuix/styles@1.0.0
- - @primeuix/utils@0.5.1
+- @primeuix/styled@0.5.0
+- @primeuix/styles@1.0.0
+- @primeuix/utils@0.5.1
 
 These packages each contain the following license:
 
@@ -1142,40 +1138,40 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------------
+---
 
 The following npm packages may be included in this product:
 
- - @tiptap/core@3.22.3
- - @tiptap/extension-blockquote@3.20.5
- - @tiptap/extension-bold@3.21.0
- - @tiptap/extension-bubble-menu@3.20.5
- - @tiptap/extension-bullet-list@3.20.5
- - @tiptap/extension-code-block@3.20.5
- - @tiptap/extension-code@3.20.5
- - @tiptap/extension-document@3.20.5
- - @tiptap/extension-dropcursor@3.20.5
- - @tiptap/extension-floating-menu@3.20.5
- - @tiptap/extension-gapcursor@3.20.5
- - @tiptap/extension-hard-break@3.22.3
- - @tiptap/extension-heading@3.20.5
- - @tiptap/extension-horizontal-rule@3.20.5
- - @tiptap/extension-italic@3.20.5
- - @tiptap/extension-link@3.22.0
- - @tiptap/extension-list-item@3.20.5
- - @tiptap/extension-list-keymap@3.20.5
- - @tiptap/extension-list@3.22.3
- - @tiptap/extension-ordered-list@3.20.5
- - @tiptap/extension-paragraph@3.20.5
- - @tiptap/extension-strike@3.20.5
- - @tiptap/extension-table@3.22.3
- - @tiptap/extension-text@3.20.5
- - @tiptap/extension-underline@3.20.5
- - @tiptap/extension-unique-id@3.22.3
- - @tiptap/extensions@3.20.5
- - @tiptap/pm@3.22.3
- - @tiptap/starter-kit@3.20.5
- - @tiptap/vue-3@3.20.5
+- @tiptap/core@3.22.3
+- @tiptap/extension-blockquote@3.20.5
+- @tiptap/extension-bold@3.21.0
+- @tiptap/extension-bubble-menu@3.20.5
+- @tiptap/extension-bullet-list@3.20.5
+- @tiptap/extension-code-block@3.20.5
+- @tiptap/extension-code@3.20.5
+- @tiptap/extension-document@3.20.5
+- @tiptap/extension-dropcursor@3.20.5
+- @tiptap/extension-floating-menu@3.20.5
+- @tiptap/extension-gapcursor@3.20.5
+- @tiptap/extension-hard-break@3.22.3
+- @tiptap/extension-heading@3.20.5
+- @tiptap/extension-horizontal-rule@3.20.5
+- @tiptap/extension-italic@3.20.5
+- @tiptap/extension-link@3.22.0
+- @tiptap/extension-list-item@3.20.5
+- @tiptap/extension-list-keymap@3.20.5
+- @tiptap/extension-list@3.22.3
+- @tiptap/extension-ordered-list@3.20.5
+- @tiptap/extension-paragraph@3.20.5
+- @tiptap/extension-strike@3.20.5
+- @tiptap/extension-table@3.22.3
+- @tiptap/extension-text@3.20.5
+- @tiptap/extension-underline@3.20.5
+- @tiptap/extension-unique-id@3.22.3
+- @tiptap/extensions@3.20.5
+- @tiptap/pm@3.22.3
+- @tiptap/starter-kit@3.20.5
+- @tiptap/vue-3@3.20.5
 
 These packages each contain the following license:
 
@@ -1201,11 +1197,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------------
+---
 
 The following npm package may be included in this product:
 
- - escape-string-regexp@4.0.0
+- escape-string-regexp@4.0.0
 
 This package contains the following license:
 
@@ -1219,11 +1215,11 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
------------
+---
 
 The following npm package may be included in this product:
 
- - uuid@10.0.0
+- uuid@10.0.0
 
 This package contains the following license:
 
@@ -1237,11 +1233,11 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
------------
+---
 
 The following npm package may be included in this product:
 
- - primeflex@3.3.1
+- primeflex@3.3.1
 
 This package contains the following license:
 
@@ -1255,11 +1251,11 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
------------
+---
 
 The following npm package may be included in this product:
 
- - @primevue/themes@4.0.0-rc.2
+- @primevue/themes@4.0.0-rc.2
 
 This package contains the following license:
 
@@ -1285,13 +1281,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------------
+---
 
 The following npm packages may be included in this product:
 
- - @primevue/core@4.3.2
- - @primevue/icons@4.3.2
- - primevue@4.3.2
+- @primevue/core@4.3.2
+- @primevue/icons@4.3.2
+- primevue@4.3.2
 
 These packages each contain the following license:
 
@@ -1317,20 +1313,20 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------------
+---
 
 The following npm packages may be included in this product:
 
- - @vue/compiler-core@3.5.30
- - @vue/compiler-dom@3.5.30
- - @vue/compiler-sfc@3.5.30
- - @vue/compiler-ssr@3.5.30
- - @vue/reactivity@3.5.30
- - @vue/runtime-core@3.5.30
- - @vue/runtime-dom@3.5.30
- - @vue/server-renderer@3.5.30
- - @vue/shared@3.5.30
- - vue@3.5.30
+- @vue/compiler-core@3.5.30
+- @vue/compiler-dom@3.5.30
+- @vue/compiler-sfc@3.5.30
+- @vue/compiler-ssr@3.5.30
+- @vue/reactivity@3.5.30
+- @vue/runtime-core@3.5.30
+- @vue/runtime-dom@3.5.30
+- @vue/server-renderer@3.5.30
+- @vue/shared@3.5.30
+- vue@3.5.30
 
 These packages each contain the following license:
 
@@ -1356,11 +1352,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------------
+---
 
 The following npm package may be included in this product:
 
- - vue-router@4.3.2
+- vue-router@4.3.2
 
 This package contains the following license:
 
@@ -1386,11 +1382,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------------
+---
 
 The following npm package may be included in this product:
 
- - postcss@8.5.8
+- postcss@8.5.8
 
 This package contains the following license:
 
@@ -1415,11 +1411,11 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
------------
+---
 
 The following npm package may be included in this product:
 
- - nanoid@3.3.11
+- nanoid@3.3.11
 
 This package contains the following license:
 
@@ -1444,7 +1440,7 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
------------
+---
 
 This file was generated with the generate-license-file npm package!
 https://www.npmjs.com/package/generate-license-file

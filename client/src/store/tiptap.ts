@@ -1,36 +1,29 @@
-import { ref, shallowRef, watch } from 'vue';
-import {
-  NodeDto,
-  ApiJson,
-  Annotation,
-  NodeStatusObject,
-  AnnotationNode,
-  ToCItem,
-} from '../models/types';
-import { Editor } from '@tiptap/vue-3';
-import { Node } from '@tiptap/pm/model';
-import Heading from '@tiptap/extension-heading';
-import Document from '@tiptap/extension-document';
-import Paragraph from '@tiptap/extension-paragraph';
-import Text from '@tiptap/extension-text';
-import { BulletList, ListItem } from '@tiptap/extension-list';
-import UniqueID from '@tiptap/extension-unique-id';
-import HardBreak from '@tiptap/extension-hard-break';
-import { TableKit } from '@tiptap/extension-table';
-import { UndoRedo } from '@tiptap/extensions';
-import { Gapcursor } from '@tiptap/extensions';
-import { ZeroPointAnnotation } from '../editors/text/extensions/zeroPointAnnotation';
-import StandoffConverter from '../services/standoffConverter';
-import { buildDocStructure, cloneDeep, getVisibleDocRange } from '../utils/helper/helper';
-import { AnnotationDecoration } from '../editors/text/extensions/annotationDecoration';
-import { useFilterStore } from './filter';
-import { useEventListener } from '@vueuse/core';
-import { AnnotationAttributes } from '../editors/text/extensions/AnnotationAttributes';
-import { CustomBlock } from '../editors/text/extensions/customBlock';
-import { BlockDecorations } from '../editors/text/extensions/blockDecorations';
-import { history } from 'prosemirror-history';
-import { useEditorSettingsStore } from './editorSettings';
-import { AnnotationHighlight } from '../editors/text/extensions/annotationHighlight';
+import { ref, shallowRef, watch } from "vue";
+import { NodeDto, ApiJson, Annotation, NodeStatusObject, AnnotationNode, ToCItem } from "../models/types";
+import { Editor } from "@tiptap/vue-3";
+import { Node } from "@tiptap/pm/model";
+import Heading from "@tiptap/extension-heading";
+import Document from "@tiptap/extension-document";
+import Paragraph from "@tiptap/extension-paragraph";
+import Text from "@tiptap/extension-text";
+import { BulletList, ListItem } from "@tiptap/extension-list";
+import UniqueID from "@tiptap/extension-unique-id";
+import HardBreak from "@tiptap/extension-hard-break";
+import { TableKit } from "@tiptap/extension-table";
+import { UndoRedo } from "@tiptap/extensions";
+import { Gapcursor } from "@tiptap/extensions";
+import { ZeroPointAnnotation } from "../editors/text/extensions/zeroPointAnnotation";
+import StandoffConverter from "../services/standoffConverter";
+import { buildDocStructure, cloneDeep, getVisibleDocRange } from "../utils/helper/helper";
+import { AnnotationDecoration } from "../editors/text/extensions/annotationDecoration";
+import { useFilterStore } from "./filter";
+import { useEventListener } from "@vueuse/core";
+import { AnnotationAttributes } from "../editors/text/extensions/AnnotationAttributes";
+import { CustomBlock } from "../editors/text/extensions/customBlock";
+import { BlockDecorations } from "../editors/text/extensions/blockDecorations";
+import { history } from "prosemirror-history";
+import { useEditorSettingsStore } from "./editorSettings";
+import { AnnotationHighlight } from "../editors/text/extensions/annotationHighlight";
 
 const { selectedOptions } = useFilterStore();
 const { settings } = useEditorSettingsStore();
@@ -42,7 +35,7 @@ const annotations = ref<Map<string, Annotation>>();
 
 const initialStructuralAnnotations = ref<Map<string, Annotation>>();
 const initialAnnotations = ref<Map<string, Annotation>>();
-let initialDoc: ReturnType<Editor['getJSON']> | null = null;
+let initialDoc: ReturnType<Editor["getJSON"]> | null = null;
 let initialPlainText: string | null = null;
 
 const tableOfContent = ref<ToCItem[]>([]);
@@ -64,13 +57,12 @@ function getConfiguredExtensions(): any[] {
     ZeroPointAnnotation,
     CustomBlock,
     AnnotationDecoration.configure({
-      getAnnotationByUuid: (uuid: string) =>
-        annotations.value?.get(uuid)?.node ?? structuralAnnotations.value?.get(uuid)?.node,
+      getAnnotationByUuid: (uuid: string) => annotations.value?.get(uuid)?.node ?? structuralAnnotations.value?.get(uuid)?.node,
     }),
     BlockDecorations,
     UniqueID.configure({
-      types: 'all',
-      attributeName: 'uuid',
+      types: "all",
+      attributeName: "uuid",
       generateID: () => crypto.randomUUID(),
     }),
     AnnotationAttributes,
@@ -104,25 +96,25 @@ function hasUnsavedChanges(): boolean {
 
   // Compare plain text
   if (tiptap.value?.state.doc.textContent !== initialPlainText) {
-    console.log('Text has changed.');
+    console.log("Text has changed.");
     return true;
   }
 
   // Compare docs. Maybe a bit slow on longer texts, but most cases are probably catched by plain text comparison
   if (JSON.stringify(tiptap.value?.getJSON()) !== JSON.stringify(initialDoc)) {
-    console.log('Doc has changed.');
+    console.log("Doc has changed.");
     return true;
   }
 
   // Compare annotations size
   if (initialAnnotations.value?.size !== annotations.value?.size) {
-    console.log('Annotation size has changed.');
+    console.log("Annotation size has changed.");
     return true;
   }
 
   // Compare annotations status (modified -> something has been changed, not need to deep compare)
-  if (annotations.value?.values().some(a => a.meta.status !== 'unchanged')) {
-    console.log('Some annotations were modified');
+  if (annotations.value?.values().some((a) => a.meta.status !== "unchanged")) {
+    console.log("Some annotations were modified");
     return true;
   }
 
@@ -138,10 +130,10 @@ function initializeTiptap(standoffObject: { text: string; annotations: NodeDto[]
   tiptap.value = new Editor({
     content: tipTapJson,
     extensions: [...getConfiguredExtensions()],
-    autofocus: 'start',
+    autofocus: "start",
     editorProps: {
       attributes: {
-        class: 'tiptap-editor-pane',
+        class: "tiptap-editor-pane",
       },
     },
     onCreate: ({ editor }) => {
@@ -172,12 +164,10 @@ function initializeEventListeners(): void {
   const scrollContainer: HTMLElement | null | undefined = tiptap.value?.view.dom.parentElement;
 
   // TODO: Should this maybe moved directly to the plugin?
-  useEventListener(scrollContainer, 'scroll', handleScroll);
+  useEventListener(scrollContainer, "scroll", handleScroll);
 }
 
-function initializeDecorationView(
-  annotations: Map<string, NodeStatusObject<AnnotationNode>>,
-): void {
+function initializeDecorationView(annotations: Map<string, NodeStatusObject<AnnotationNode>>): void {
   const { from, to } = getVisibleDocRange(tiptap.value!.view);
 
   tiptap.value?.commands.initializeDecorations(annotations, selectedOptions.value, from, to);
@@ -185,7 +175,7 @@ function initializeDecorationView(
 
 // TODO: Shouldn't this be in the filter? Circular depenency though :/ fix on architecure rewrite
 // (or not at all)
-watch(selectedOptions, newVal => {
+watch(selectedOptions, (newVal) => {
   if (!tiptap.value) {
     return;
   }
@@ -196,7 +186,7 @@ watch(selectedOptions, newVal => {
 // Re-apply outline/pill decorations whenever the user toggles a view setting.
 watch(
   settings,
-  newVal => {
+  (newVal) => {
     if (!tiptap.value) {
       return;
     }
@@ -240,7 +230,7 @@ function setNewInitialDocState() {
  * @returns {void} This function does not return any value.
  */
 function resetHistory(): void {
-  tiptap.value?.unregisterPlugin('history');
+  tiptap.value?.unregisterPlugin("history");
   tiptap.value?.registerPlugin(history());
 }
 
@@ -249,10 +239,7 @@ function destroyTiptap(): void {
   tiptap.value = null;
 }
 
-function setAnnotations(data: {
-  structuralAnnotations?: Map<string, Annotation>;
-  annotations?: Map<string, Annotation>;
-}): void {
+function setAnnotations(data: { structuralAnnotations?: Map<string, Annotation>; annotations?: Map<string, Annotation> }): void {
   structuralAnnotations.value = data.structuralAnnotations;
   annotations.value = data.annotations;
 

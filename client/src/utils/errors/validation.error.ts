@@ -1,4 +1,4 @@
-import AppError from './app.error.js';
+import AppError from "./app.error.js";
 
 /**
  * Represents an error for validation failures (e.g. missing required fields or node labels).

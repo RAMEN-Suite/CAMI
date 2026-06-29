@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { ref, useTemplateRef } from 'vue';
-import Popover from 'primevue/popover';
-import InputNumber from 'primevue/inputnumber';
-import Button from 'primevue/button';
-import Checkbox from 'primevue/checkbox';
-import { useTiptapStore } from '../store/tiptap';
+import { ref, useTemplateRef } from "vue";
+import Popover from "primevue/popover";
+import InputNumber from "primevue/inputnumber";
+import Button from "primevue/button";
+import Checkbox from "primevue/checkbox";
+import { useTiptapStore } from "../store/tiptap";
 
 const { tiptap } = useTiptapStore();
 
-const popover = useTemplateRef<InstanceType<typeof Popover>>('popover');
+const popover = useTemplateRef<InstanceType<typeof Popover>>("popover");
 
 const columns = ref<number>(3);
 const rows = ref<number>(3);
@@ -19,11 +19,7 @@ function toggle(event: PointerEvent): void {
 }
 
 function addTable(): void {
-  tiptap.value
-    ?.chain()
-    .focus()
-    .insertTable({ cols: columns.value, rows: rows.value, withHeaderRow: hasHeaderRow.value })
-    .run();
+  tiptap.value?.chain().focus().insertTable({ cols: columns.value, rows: rows.value, withHeaderRow: hasHeaderRow.value }).run();
 
   columns.value = 3;
   rows.value = 3;

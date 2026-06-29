@@ -1,8 +1,8 @@
-import { QueryResult } from 'neo4j-driver';
-import Neo4jDriver from '../database/neo4j.js';
-import GuidelinesService from './guidelines.service.js';
-import { createCharactersFromText, toNativeTypes, toNeo4jTypes } from '../utils/helper.js';
-import { NodeDto } from '../models/types.js';
+import { QueryResult } from "neo4j-driver";
+import Neo4jDriver from "../database/neo4j.js";
+import GuidelinesService from "./guidelines.service.js";
+import { createCharactersFromText, toNativeTypes, toNeo4jTypes } from "../utils/helper.js";
+import { NodeDto } from "../models/types.js";
 import {
   AdditionalText,
   Annotation,
@@ -11,10 +11,10 @@ import {
   EntityNode,
   PropertyConfig,
   TextNode,
-} from '../models/types.js';
-import { IGuidelines } from '../models/IGuidelines.js';
-import ICharacter from '../models/ICharacter.js';
-import { IAnnotation } from '../models/IAnnotation.js';
+} from "../models/types.js";
+import { IGuidelines } from "../models/IGuidelines.js";
+import ICharacter from "../models/ICharacter.js";
+import { IAnnotation } from "../models/IAnnotation.js";
 
 type FlatAnnotationTree = {
   rootUuid: string;
@@ -31,8 +31,8 @@ type AnnotationRecordEdge = {
  * Data type for annotation data before saving them in the database. Contains only the
  * uuids of the nodes to be (dis-)connected with the annotation node instead of the complete node data.
  */
-type ProcessedAnnotation = Omit<Annotation, 'data'> & {
-  data: Omit<AnnotationData, 'entities' | 'additionalTexts'> & {
+type ProcessedAnnotation = Omit<Annotation, "data"> & {
+  data: Omit<AnnotationData, "entities" | "additionalTexts"> & {
     additionalTexts: {
       deleted: AdditionalText[];
       created: CreatedAdditionalText[];
@@ -44,7 +44,7 @@ type ProcessedAnnotation = Omit<Annotation, 'data'> & {
   };
 };
 
-type CreatedAdditionalText = Omit<AdditionalText, 'text'> & {
+type CreatedAdditionalText = Omit<AdditionalText, "text"> & {
   text: TextNode & {
     characters: ICharacter[];
   };
@@ -62,18 +62,16 @@ export default class AnnotationService {
    * @param {CollectionPostData} collection - The collection containing the annotations.
    * @returns {Partial<Annotation>[]} An array of annotation objects.
    */
-  public createAnnotationObjectsFromCollection(
-    collection: CollectionPostData,
-  ): Partial<Annotation>[] {
+  public createAnnotationObjectsFromCollection(collection: CollectionPostData): Partial<Annotation>[] {
     const annotations: AnnotationData[] = collection.data.annotations;
     const initialAnnotations: AnnotationData[] = collection.initialData.annotations;
 
-    const annotationUuids: string[] = annotations.map(a => a.properties.uuid);
+    const annotationUuids: string[] = annotations.map((a) => a.properties.uuid);
 
     const annotationObjects: Partial<Annotation>[] = [];
 
     // Create annotation objects for old annotations-> they will be deleted
-    initialAnnotations.forEach(anno => {
+    initialAnnotations.forEach((anno) => {
       // Get only annotations that were deleted in by the user
       if (annotationUuids.includes(anno.properties.uuid)) {
         return;
@@ -83,14 +81,14 @@ export default class AnnotationService {
         characterUuids: [],
         data: anno,
         initialData: anno,
-        status: 'deleted',
+        status: "deleted",
       });
     });
 
     // Create annotation objects for all else annotations
-    annotations.forEach(annotation => {
+    annotations.forEach((annotation) => {
       const initial: AnnotationData | undefined = initialAnnotations.find(
-        a => a.properties.uuid === annotation.properties.uuid,
+        (a) => a.properties.uuid === annotation.properties.uuid,
       );
 
       annotationObjects.push({
@@ -106,7 +104,7 @@ export default class AnnotationService {
             properties: {} as IAnnotation,
           } as AnnotationData),
         // "existing" or "created" doesn't matter here since they are handled the same way
-        status: 'existing',
+        status: "existing",
       });
     });
 
@@ -126,10 +124,10 @@ export default class AnnotationService {
    * @returns A nested {@link NodeDto} array representing the full annotation tree.
    */
   private buildAnnotationNodeTree(flatTrees: FlatAnnotationTree[]): NodeDto[] {
-    return flatTrees.map(tree => {
+    return flatTrees.map((tree) => {
       const { rootUuid, annotationNodes, edges } = tree;
 
-      const nodeMap = new Map<string, NodeDto>(annotationNodes.map(n => [n.node.data.uuid, n]));
+      const nodeMap = new Map<string, NodeDto>(annotationNodes.map((n) => [n.node.data.uuid, n]));
       const adjacency = new Map<string, string[]>();
 
       edges.forEach((edge: AnnotationRecordEdge) => {
@@ -145,15 +143,15 @@ export default class AnnotationService {
         const nodeData = {
           nodeLabels: root.node.nodeLabels,
           data: toNativeTypes(root.node.data),
-        } as NodeDto['node'];
+        } as NodeDto["node"];
 
         // Create node data for children and traverse further into their children using the adjacency list
         const children = [
           ...root.connectedNodes.map((child: NodeDto) => ({
-            node: toNativeTypes(child.node) as NodeDto['node'],
+            node: toNativeTypes(child.node) as NodeDto["node"],
             connectedNodes: [],
           })),
-          ...(adjacency.get(uuid) ?? []).map(n => buildNestedDto(n)),
+          ...(adjacency.get(uuid) ?? []).map((n) => buildNestedDto(n)),
         ];
 
         return {
@@ -209,7 +207,7 @@ export default class AnnotationService {
     `;
 
     const result: QueryResult = await Neo4jDriver.runQuery(query, { nodeUuid });
-    const annotations: FlatAnnotationTree[] = result.records[0].get('annotations');
+    const annotations: FlatAnnotationTree[] = result.records[0].get("annotations");
 
     return this.buildAnnotationNodeTree(annotations);
   }
@@ -221,37 +219,30 @@ export default class AnnotationService {
    * @param {Annotation[]} annotations - The annotations to be processed.
    * @return {Promise<ProcessedAnnotation[]>} A promise that resolves to the processed annotations.
    */
-  private async processAnnotationsBeforeSaving(
-    annotations: Partial<Annotation>[],
-  ): Promise<ProcessedAnnotation[]> {
+  private async processAnnotationsBeforeSaving(annotations: Partial<Annotation>[]): Promise<ProcessedAnnotation[]> {
     const guidelineService: GuidelinesService = new GuidelinesService();
     const guidelines: IGuidelines = await guidelineService.getGuidelines();
 
-    return annotations.map(annotation => {
+    return annotations.map((annotation) => {
       // Needed to convert the types of the annotation's node properties
-      const annotationConfigFields: PropertyConfig[] =
-        guidelineService.getAnnotationConfigFieldsFromGuidelines(
-          guidelines,
-          annotation.data!.properties.type,
-        );
+      const annotationConfigFields: PropertyConfig[] = guidelineService.getAnnotationConfigFieldsFromGuidelines(
+        guidelines,
+        annotation.data!.properties.type,
+      );
 
       const initialEntities: EntityNode[] = annotation.initialData!.entities;
       const newEntities: EntityNode[] = annotation.data!.entities;
 
-      const initialEntityUuids: string[] = initialEntities.map(item => item.data.uuid);
-      const newEntityUuids: string[] = newEntities.map(item => item.data.uuid);
+      const initialEntityUuids: string[] = initialEntities.map((item) => item.data.uuid);
+      const newEntityUuids: string[] = newEntities.map((item) => item.data.uuid);
 
-      const createdEntities: EntityNode[] = newEntities.filter(
-        entity => !initialEntityUuids.includes(entity.data.uuid),
-      );
+      const createdEntities: EntityNode[] = newEntities.filter((entity) => !initialEntityUuids.includes(entity.data.uuid));
 
       // When entities are created from the editor, remove leading and trailing whitespace
       // TODO: When entities can contain more than just label, use the toNeo4jTypes function?
-      createdEntities.forEach(e => (e.data.label = e.data.label.trim()));
+      createdEntities.forEach((e) => (e.data.label = e.data.label.trim()));
 
-      const deletedEntities: EntityNode[] = initialEntities.filter(
-        entity => !newEntityUuids.includes(entity.data.uuid),
-      );
+      const deletedEntities: EntityNode[] = initialEntities.filter((entity) => !newEntityUuids.includes(entity.data.uuid));
 
       // ------------------------------------------------------------------------------------------------
       // TODO: This needs to be restructured a lot
@@ -259,13 +250,11 @@ export default class AnnotationService {
       const createdAdditionalTexts: CreatedAdditionalText[] = [];
       const deletedAdditionalTexts: AdditionalText[] = [];
 
-      const oldTextUuids: string[] = annotation.initialData!.additionalTexts.map(
-        t => t.annotation.uuid,
-      );
-      const newTextUuids: string[] = annotation.data!.additionalTexts.map(t => t.annotation.uuid);
+      const oldTextUuids: string[] = annotation.initialData!.additionalTexts.map((t) => t.annotation.uuid);
+      const newTextUuids: string[] = annotation.data!.additionalTexts.map((t) => t.annotation.uuid);
 
       // Characters need to be created to be saved in the query
-      annotation.data!.additionalTexts.forEach(additionalText => {
+      annotation.data!.additionalTexts.forEach((additionalText) => {
         if (!oldTextUuids.includes(additionalText.annotation.uuid)) {
           createdAdditionalTexts.push({
             annotation: additionalText.annotation,
@@ -278,7 +267,7 @@ export default class AnnotationService {
         }
       });
 
-      annotation.initialData!.additionalTexts.forEach(additionalText => {
+      annotation.initialData!.additionalTexts.forEach((additionalText) => {
         if (!newTextUuids.includes(additionalText.annotation.uuid)) {
           deletedAdditionalTexts.push(additionalText);
         }
@@ -303,11 +292,10 @@ export default class AnnotationService {
 
   public async saveAnnotations(
     nodeUuid: string,
-    nodeLabel: 'Collection' | 'Content',
+    nodeLabel: "Collection" | "Content",
     annotations: Partial<Annotation>[],
   ): Promise<IAnnotation[]> {
-    const processedAnnotations: ProcessedAnnotation[] =
-      await this.processAnnotationsBeforeSaving(annotations);
+    const processedAnnotations: ProcessedAnnotation[] = await this.processAnnotationsBeforeSaving(annotations);
 
     // TODO: Improve query speed, way too many db hits
     let query: string = `
@@ -400,12 +388,12 @@ export default class AnnotationService {
     `;
 
     // Return if annotations are attached to Collection node
-    if (nodeLabel === 'Collection') {
+    if (nodeLabel === "Collection") {
       query += `RETURN collect(distinct a {.*}) as annotations`;
     }
 
     // Character-specific operations that are only applied for Text annotations
-    if (nodeLabel === 'Content') {
+    if (nodeLabel === "Content") {
       query += `
       // Remove existing relationships between annotation and character nodes before creating new ones
       CALL {
@@ -454,6 +442,6 @@ export default class AnnotationService {
       annotations: processedAnnotations,
     });
 
-    return result.records[0]?.get('annotations');
+    return result.records[0]?.get("annotations");
   }
 }

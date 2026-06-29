@@ -1,17 +1,16 @@
 <script setup lang="ts">
-import { inject, watch, computed, ref } from 'vue';
-import Button from 'primevue/button';
-import ButtonGroup from 'primevue/buttongroup';
-import Message from 'primevue/message';
-import Textarea from 'primevue/textarea';
-import { useExport } from '../composables/useExport';
-import { RouteLocationNormalizedLoaded, useRoute } from 'vue-router';
-import { useTiptapStore } from '../store/tiptap';
+import { inject, watch, computed, ref } from "vue";
+import Button from "primevue/button";
+import ButtonGroup from "primevue/buttongroup";
+import Message from "primevue/message";
+import Textarea from "primevue/textarea";
+import { useExport } from "../composables/useExport";
+import { RouteLocationNormalizedLoaded, useRoute } from "vue-router";
+import { useTiptapStore } from "../store/tiptap";
 
 const route: RouteLocationNormalizedLoaded = useRoute();
 
-const { jsonToExport, status, errorMessages, buildJson, copyToClipboard, downloadJson, reset } =
-  useExport();
+const { jsonToExport, status, errorMessages, buildJson, copyToClipboard, downloadJson, reset } = useExport();
 const { hasUnsavedChanges } = useTiptapStore();
 
 const totalCharacters = ref([]);
@@ -19,10 +18,10 @@ const totalAnnotations = ref([]);
 
 const textHasUnsavedChanges = hasUnsavedChanges();
 
-const dialogRef: any = inject('dialogRef');
+const dialogRef: any = inject("dialogRef");
 
-const copyLabel = computed<string>(() => (status.value === 'copied' ? 'Copied!' : 'Copy'));
-const copyIcon = computed<string>(() => (status.value === 'copied' ? 'pi pi-check' : 'pi pi-copy'));
+const copyLabel = computed<string>(() => (status.value === "copied" ? "Copied!" : "Copy"));
+const copyIcon = computed<string>(() => (status.value === "copied" ? "pi pi-check" : "pi pi-copy"));
 
 watch(() => route.path, closeModal);
 
@@ -55,15 +54,9 @@ function closeModal(): void {
       {{ msg.content }}
     </Message>
 
-    <Message
-      v-if="textHasUnsavedChanges"
-      severity="warn"
-      icon="pi pi-exclamation-circle"
-      class="w-full my-2"
-      closable
-    >
-      When there are unsaved changes, they will not be exported. Please save your work before
-      exporting to ensure everything is exported correctly.
+    <Message v-if="textHasUnsavedChanges" severity="warn" icon="pi pi-exclamation-circle" class="w-full my-2" closable>
+      When there are unsaved changes, they will not be exported. Please save your work before exporting to ensure everything is
+      exported correctly.
     </Message>
 
     <Message v-if="status !== 'error'" icon="pi pi-info-circle" class="my-2 w-full" severity="info">
@@ -73,21 +66,11 @@ function closeModal(): void {
           <li class="list-disc">{{ totalCharacters.length.toLocaleString() }} characters</li>
           <li class="list-disc">{{ totalAnnotations.length.toLocaleString() }} annotations</li>
         </ul>
-        <p>
-          Please note that other nodes connected to the annotations (entities, more texts etc.) can
-          not yet be exported.
-        </p>
+        <p>Please note that other nodes connected to the annotations (entities, more texts etc.) can not yet be exported.</p>
       </div>
     </Message>
 
-    <Textarea
-      v-model="jsonToExport"
-      rows="10"
-      class="w-full"
-      readonly
-      spellcheck="false"
-      placeholder="No data to export."
-    />
+    <Textarea v-model="jsonToExport" rows="10" class="w-full" readonly spellcheck="false" placeholder="No data to export." />
 
     <div class="flex justify-content-center gap-2">
       <ButtonGroup>

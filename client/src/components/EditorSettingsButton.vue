@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { useTemplateRef } from 'vue';
-import Popover from 'primevue/popover';
-import Button from 'primevue/button';
-import ToggleSwitch from 'primevue/toggleswitch';
-import { useEditorSettingsStore } from '../store/editorSettings';
+import { useTemplateRef } from "vue";
+import Popover from "primevue/popover";
+import Button from "primevue/button";
+import ToggleSwitch from "primevue/toggleswitch";
+import { useEditorSettingsStore } from "../store/editorSettings";
 
 const { settings } = useEditorSettingsStore();
 
-const popover = useTemplateRef<InstanceType<typeof Popover>>('popover');
+const popover = useTemplateRef<InstanceType<typeof Popover>>("popover");
 
 function toggle(event: PointerEvent): void {
   popover.value?.toggle(event);

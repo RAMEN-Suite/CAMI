@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import Button from 'primevue/button';
-import { useRouter } from 'vue-router';
+import { ref, onMounted } from "vue";
+import Button from "primevue/button";
+import { useRouter } from "vue-router";
 
 const router = useRouter();
 const hasHistory = ref<boolean>(false);
@@ -16,7 +16,7 @@ function goBack() {
 
 // Must be outside of vue router for now
 function goHome() {
-  window.location.href = '/';
+  window.location.href = "/";
 }
 </script>
 

@@ -1,8 +1,8 @@
-import fs from 'fs/promises';
-import path from 'path';
-import ExternalServiceError from '../errors/externalService.error.js';
-import { isValidConfigFile, isValidHttpUrl } from '../utils/helper.js';
-import { CONFIG_DIR } from '../constants.js';
+import fs from "fs/promises";
+import path from "path";
+import ExternalServiceError from "../errors/externalService.error.js";
+import { isValidConfigFile, isValidHttpUrl } from "../utils/helper.js";
+import { CONFIG_DIR } from "../constants.js";
 
 export default class StylesService {
   /**
@@ -45,7 +45,7 @@ export default class StylesService {
     const filePath: string = path.join(CONFIG_DIR, url);
 
     try {
-      return await fs.readFile(filePath, 'utf-8');
+      return await fs.readFile(filePath, "utf-8");
     } catch (err: unknown) {
       throw new ExternalServiceError(`Failed to read styles from file from the provided file `);
     }

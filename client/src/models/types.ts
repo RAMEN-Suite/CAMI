@@ -1,11 +1,11 @@
-import { TreeNode } from 'primevue/treenode';
-import { IAnnotation } from './IAnnotation';
-import ICharacter from './ICharacter';
-import { ICollection } from './ICollection';
-import { IEntity } from './IEntity';
-import { IText } from './IText';
-import type { BuiltinEditorAttribute } from '../config/editor';
-import type { AnnotationMapping } from '../config/editor';
+import { TreeNode } from "primevue/treenode";
+import { IAnnotation } from "./IAnnotation";
+import ICharacter from "./ICharacter";
+import { ICollection } from "./ICollection";
+import { IEntity } from "./IEntity";
+import { IText } from "./IText";
+import type { BuiltinEditorAttribute } from "../config/editor";
+import type { AnnotationMapping } from "../config/editor";
 
 export type AdditionalText = {
   annotation: IAnnotation;
@@ -13,9 +13,7 @@ export type AdditionalText = {
 };
 
 /** A status object for nodes in the frontend and for API requests */
-export type NodeStatusObject<
-  T extends Node<BaseNodeData> = AnnotationNode | EntityNode | CollectionNode | TextNode,
-> = {
+export type NodeStatusObject<T extends Node<BaseNodeData> = AnnotationNode | EntityNode | CollectionNode | TextNode> = {
   node: T;
   connectedNodes: NodeStatusObject<T>[];
   meta: {
@@ -28,16 +26,14 @@ export type NodeStatusObject<
  * A status field for nodes in the frontend and for API requests. Is accessed during editing
  * (to display the current edit state) and before saving to tell the backend how to process the data.
  */
-export type NodeStatus = 'added' | 'removed' | 'created' | 'deleted' | 'modified' | 'unchanged';
+export type NodeStatus = "added" | "removed" | "created" | "deleted" | "modified" | "unchanged";
 
 export type Annotation = NodeStatusObject<AnnotationNode>;
 
 export type AnnotationNode = Node<IAnnotation>;
 
 /** A node object for retrieving data */
-export type NodeDto<
-  T extends Node<BaseNodeData> = AnnotationNode | EntityNode | CollectionNode | TextNode,
-> = {
+export type NodeDto<T extends Node<BaseNodeData> = AnnotationNode | EntityNode | CollectionNode | TextNode> = {
   node: T;
   connectedNodes: NodeDto[];
 };
@@ -84,15 +80,7 @@ export type ApiJson = {
 };
 
 export type BuiltinStructuralType =
-  | 'paragraph'
-  | 'heading'
-  | 'hardBreak'
-  | 'table'
-  | 'tableRow'
-  | 'tableCell'
-  | 'tableHeader'
-  | 'bulletList'
-  | 'listItem';
+  "paragraph" | "heading" | "hardBreak" | "table" | "tableRow" | "tableCell" | "tableHeader" | "bulletList" | "listItem";
 
 // Editor-framework facts live in `config/editor` (imported above). Re-exported here for convenience
 // so existing model-type importers keep working.
@@ -121,11 +109,11 @@ export type BaseNodeData = {
 };
 
 /** Base node labels in RAMEN */
-export type BaseNodeLabel = 'Annotation' | 'Character' | 'Collection' | 'Entity' | 'Content';
+export type BaseNodeLabel = "Annotation" | "Character" | "Collection" | "Entity" | "Content";
 
 export type Bookmark = {
   data: CollectionNode | TextNode;
-  type: 'collection' | 'text';
+  type: "collection" | "text";
   createdAt: string; // ISO 8601 string
   updatedAt: string; // ISO 8601 string
 };
@@ -161,7 +149,7 @@ export type CollectionCreationData = CollectionAccessObject & {
   parentCollection: CollectionNode | null;
 };
 
-export type CollectionNetworkActionType = 'move' | 'reference' | 'dereference' | 'delete';
+export type CollectionNetworkActionType = "move" | "reference" | "dereference" | "delete";
 
 export type CollectionPostData = {
   data: CollectionAccessObject;
@@ -190,7 +178,7 @@ export type NodeSearchParams = {
   nodeLabels?: string[];
   offset?: number;
   rowCount?: number;
-  sortDirection?: 'asc' | 'desc';
+  sortDirection?: "asc" | "desc";
 };
 
 export type EntityNode = Node<IEntity>;
@@ -212,7 +200,7 @@ export type IndexMap = Map<string, { startIndex: number; endIndex: number }>;
 
 export type ColumnEntry = {
   data: NodeDto<CollectionNode>;
-  status: 'existing' | 'temporary';
+  status: "existing" | "temporary";
 };
 
 export type Level = {
@@ -222,7 +210,7 @@ export type Level = {
 };
 
 export type MalformedAnnotation = {
-  reason: 'indexOutOfBounds' | 'unconfiguredType';
+  reason: "indexOutOfBounds" | "unconfiguredType";
   data: StandoffAnnotation;
 };
 
@@ -288,21 +276,13 @@ export type PropertyConfig = {
   options?: string[] | number[] /* Options if type is dropdown */;
 };
 
-export type PropertyConfigDataType =
-  | 'array'
-  | 'boolean'
-  | 'date'
-  | 'date-time'
-  | 'integer'
-  | 'number'
-  | 'string'
-  | 'time';
+export type PropertyConfigDataType = "array" | "boolean" | "date" | "date-time" | "integer" | "number" | "string" | "time";
 
-export type PropertyConfigStringTemplate = 'input' | 'textarea';
+export type PropertyConfigStringTemplate = "input" | "textarea";
 
 export type RedrawModeOptions = {
-  direction: 'on' | 'off';
-  cause?: 'success' | 'cancel';
+  direction: "on" | "off";
+  cause?: "success" | "cancel";
   annotationUuid?: string;
 };
 

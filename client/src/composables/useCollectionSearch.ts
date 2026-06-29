@@ -1,8 +1,8 @@
-import { readonly, ref } from 'vue';
-import { NodeSearchParams } from '../models/types';
-import { useGuidelinesStore } from '../store/guidelines';
-import { useTimeoutFn } from '@vueuse/core';
-import { FETCH_DELAY } from '../config/constants';
+import { readonly, ref } from "vue";
+import { NodeSearchParams } from "../models/types";
+import { useGuidelinesStore } from "../store/guidelines";
+import { useTimeoutFn } from "@vueuse/core";
+import { FETCH_DELAY } from "../config/constants";
 
 /**
  * Composable function for managing search parameters for fetching collection data. An optional UUID
@@ -29,13 +29,13 @@ export function useCollectionSearch(rowCount?: number) {
   const { availableCollectionLabels } = useGuidelinesStore();
 
   // UUID of the parent collection (if there is one)
-  const parentUuid = ref<string>('');
+  const parentUuid = ref<string>("");
 
   const searchParams = ref<NodeSearchParams>({
-    searchInput: '',
+    searchInput: "",
     nodeLabels: availableCollectionLabels.value,
     rowCount: DEFAULT_ROW_COUNT,
-    sortDirection: 'asc' as 'asc' | 'desc',
+    sortDirection: "asc" as "asc" | "desc",
   });
 
   /**
@@ -46,10 +46,10 @@ export function useCollectionSearch(rowCount?: number) {
    */
   function resetSearchParams(): void {
     searchParams.value = {
-      searchInput: '',
+      searchInput: "",
       nodeLabels: availableCollectionLabels.value,
       rowCount: DEFAULT_ROW_COUNT,
-      sortDirection: 'asc',
+      sortDirection: "asc",
     };
   }
 
@@ -71,10 +71,7 @@ export function useCollectionSearch(rowCount?: number) {
    * @param {{ immediate: boolean }} options - Optional options object.
    * @param {boolean} options.immediate - Whether to update the search parameters immediately or not.
    */
-  function updateSearchParams(
-    params: NodeSearchParams,
-    options: { immediate: boolean } = { immediate: true },
-  ): void {
+  function updateSearchParams(params: NodeSearchParams, options: { immediate: boolean } = { immediate: true }): void {
     const { immediate } = options;
 
     if (immediate) {

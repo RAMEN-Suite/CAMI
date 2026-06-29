@@ -1,8 +1,8 @@
-import { DeepReadonly, readonly, Ref } from 'vue';
-import { useStorage } from '@vueuse/core';
-import type { Bookmark } from '../models/types';
+import { DeepReadonly, readonly, Ref } from "vue";
+import { useStorage } from "@vueuse/core";
+import type { Bookmark } from "../models/types";
 
-type BookmarkParams = Omit<Bookmark, 'createdAt' | 'updatedAt'>;
+type BookmarkParams = Omit<Bookmark, "createdAt" | "updatedAt">;
 
 type UseBookmarksReturnType = {
   bookmarks: DeepReadonly<Ref<Bookmark[]>>;
@@ -20,7 +20,7 @@ type UseBookmarksReturnType = {
  * @returns {UseBookmarksReturnType} An object containing the bookmarks reactive ref, and functions to add, remove and toggle bookmarks.
  */
 export function useBookmarks(): UseBookmarksReturnType {
-  const bookmarks = useStorage<Bookmark[]>('bookmarks', []);
+  const bookmarks = useStorage<Bookmark[]>("bookmarks", []);
 
   /**
    * Adds a new bookmark to the browser's local storage.
@@ -48,7 +48,7 @@ export function useBookmarks(): UseBookmarksReturnType {
    * @returns {void} This function does not return any value.
    */
   function removeBookmark(uuid: string): void {
-    bookmarks.value = bookmarks.value.filter(bookmark => bookmark.data.data.uuid !== uuid);
+    bookmarks.value = bookmarks.value.filter((bookmark) => bookmark.data.data.uuid !== uuid);
   }
 
   /**
@@ -59,9 +59,7 @@ export function useBookmarks(): UseBookmarksReturnType {
    * @returns {void} This function does not return any value.
    */
   function toggleBookmark(params: BookmarkParams): void {
-    const isAlreadyBookmarked: boolean = bookmarks.value.some(
-      b => b.data.data.uuid === params.data.data.uuid,
-    );
+    const isAlreadyBookmarked: boolean = bookmarks.value.some((b) => b.data.data.uuid === params.data.data.uuid);
 
     if (isAlreadyBookmarked) {
       removeBookmark(params.data.data.uuid);

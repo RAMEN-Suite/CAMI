@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { ComponentPublicInstance, computed, DeepReadonly, ref, useTemplateRef, watch } from 'vue';
-import Popover from 'primevue/popover';
-import ButtonGroup from 'primevue/buttongroup';
-import ToggleButton from 'primevue/togglebutton';
-import { useBookmarks } from '../composables/useBookmarks';
-import BookmarkItem from './BookmarkItem.vue';
-import { Bookmark, CollectionNode, TextNode } from '../models/types';
-import { capitalize } from '../utils/helper/helper';
-import { RouteLocationNormalized, useRoute } from 'vue-router';
-import { InputText } from 'primevue';
-import InputIcon from 'primevue/inputicon';
-import IconField from 'primevue/iconfield';
+import { ComponentPublicInstance, computed, DeepReadonly, ref, useTemplateRef, watch } from "vue";
+import Popover from "primevue/popover";
+import ButtonGroup from "primevue/buttongroup";
+import ToggleButton from "primevue/togglebutton";
+import { useBookmarks } from "../composables/useBookmarks";
+import BookmarkItem from "./BookmarkItem.vue";
+import { Bookmark, CollectionNode, TextNode } from "../models/types";
+import { capitalize } from "../utils/helper/helper";
+import { RouteLocationNormalized, useRoute } from "vue-router";
+import { InputText } from "primevue";
+import InputIcon from "primevue/inputicon";
+import IconField from "primevue/iconfield";
 
 defineExpose({
   toggle,
@@ -19,20 +19,20 @@ defineExpose({
 const { bookmarks } = useBookmarks();
 const route: RouteLocationNormalized = useRoute();
 
-const popover = useTemplateRef<InstanceType<typeof Popover>>('popover');
-const searchbar = useTemplateRef<ComponentPublicInstance>('searchbar');
+const popover = useTemplateRef<InstanceType<typeof Popover>>("popover");
+const searchbar = useTemplateRef<ComponentPublicInstance>("searchbar");
 
-const selectedBookmarkType = ref<'collection' | 'text'>('collection');
-const searchValue = ref<string>('');
+const selectedBookmarkType = ref<"collection" | "text">("collection");
+const searchValue = ref<string>("");
 
 watch(route, () => popover.value.hide());
 
 watch(selectedBookmarkType, () => focusSearchBar());
 
 const displayedItems = computed<DeepReadonly<Bookmark[]>>(() =>
-  bookmarks.value.filter(bookmark => {
+  bookmarks.value.filter((bookmark) => {
     const stringToCheck: string =
-      selectedBookmarkType.value === 'collection'
+      selectedBookmarkType.value === "collection"
         ? (bookmark.data as CollectionNode).data.label
         : (bookmark.data as TextNode).data.text;
 
@@ -45,16 +45,12 @@ const displayedItems = computed<DeepReadonly<Bookmark[]>>(() =>
   }),
 );
 
-const collectionCount = computed<number>(
-  () => bookmarks.value.filter(bookmark => bookmark.type === 'collection').length,
-);
-const textCount = computed<number>(
-  () => bookmarks.value.filter(bookmark => bookmark.type === 'text').length,
-);
+const collectionCount = computed<number>(() => bookmarks.value.filter((bookmark) => bookmark.type === "collection").length);
+const textCount = computed<number>(() => bookmarks.value.filter((bookmark) => bookmark.type === "text").length);
 
 // TODO: Hardcoded since some Primevue variables are missing somehow -> Fix when updating Primevue version?
 const searchBarStylingOptions: Partial<CSSStyleDeclaration> = {
-  marginTop: 'calc(-1 * (var(--p-icon-size) / 2))',
+  marginTop: "calc(-1 * (var(--p-icon-size) / 2))",
 };
 
 /**
@@ -87,7 +83,7 @@ function onShowPopover(): void {
  * @returns {void} This function does not return any value.
  */
 function resetSearch(): void {
-  searchValue.value = '';
+  searchValue.value = "";
 
   focusSearchBar();
 }
@@ -109,7 +105,7 @@ function toggle(event: PointerEvent): void {
  *
  * @param {string} direction - The direction to toggle the view mode. Can be either 'collection' or 'text'.
  */
-function toggleBookmarkTypeView(direction: 'collection' | 'text'): void {
+function toggleBookmarkTypeView(direction: "collection" | "text"): void {
   selectedBookmarkType.value = direction;
 }
 </script>
@@ -151,14 +147,7 @@ function toggleBookmarkTypeView(direction: 'collection' | 'text'): void {
     <div class="search-bar mb-3 w-full">
       <IconField>
         <InputIcon class="pi pi-search" size="small" :style="searchBarStylingOptions" />
-        <InputText
-          v-model="searchValue"
-          ref="searchbar"
-          type="text"
-          size="small"
-          placeholder="Filter bookmarks"
-          class="w-full"
-        />
+        <InputText v-model="searchValue" ref="searchbar" type="text" size="small" placeholder="Filter bookmarks" class="w-full" />
         <InputIcon
           v-if="searchValue !== ''"
           class="pi pi-delete-left cursor-pointer"
@@ -174,9 +163,7 @@ function toggleBookmarkTypeView(direction: 'collection' | 'text'): void {
     </div>
     <div class="items-pane">
       <div v-if="displayedItems.length === 0" class="text-sm font-italic text-center">
-        <template v-if="searchValue === ''">
-          Currently there is no bookmarked {{ capitalize(selectedBookmarkType) }}.
-        </template>
+        <template v-if="searchValue === ''"> Currently there is no bookmarked {{ capitalize(selectedBookmarkType) }}. </template>
         <template v-else> There are no bookmarks matching your search query. </template>
       </div>
       <BookmarkItem
@@ -186,15 +173,9 @@ function toggleBookmarkTypeView(direction: 'collection' | 'text'): void {
         :key="item.data.data.uuid"
       />
 
-      <div
-        v-if="displayedItems.length > 0"
-        class="disclaimer mt-4 text-xs font-italic flex align-items-center gap-2"
-      >
+      <div v-if="displayedItems.length > 0" class="disclaimer mt-4 text-xs font-italic flex align-items-center gap-2">
         <i class="pi pi-exclamation-circle"></i>
-        <span>
-          The bookmarks are stored in your browser. If you change you device, they won't be
-          available there.
-        </span>
+        <span> The bookmarks are stored in your browser. If you change you device, they won't be available there. </span>
       </div>
     </div>
   </Popover>

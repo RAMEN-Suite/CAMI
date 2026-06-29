@@ -1,11 +1,11 @@
-import { int, QueryResult } from 'neo4j-driver';
-import Neo4jDriver from '../database/neo4j.js';
-import GuidelinesService from './guidelines.service.js';
-import { sortDirection } from '../utils/cypher.js';
-import { ancestryPaths } from '../utils/cypher.js';
-import { createCharactersFromText, toNativeTypes, toNeo4jTypes } from '../utils/helper.js';
-import NotFoundError from '../errors/notFound.error.js';
-import { IGuidelines } from '../models/IGuidelines.js';
+import { int, QueryResult } from "neo4j-driver";
+import Neo4jDriver from "../database/neo4j.js";
+import GuidelinesService from "./guidelines.service.js";
+import { sortDirection } from "../utils/cypher.js";
+import { ancestryPaths } from "../utils/cypher.js";
+import { createCharactersFromText, toNativeTypes, toNeo4jTypes } from "../utils/helper.js";
+import NotFoundError from "../errors/notFound.error.js";
+import { IGuidelines } from "../models/IGuidelines.js";
 import {
   CollectionAccessObject,
   PaginationResult,
@@ -20,11 +20,11 @@ import {
   NodeDto,
   NodeStatusObject,
   NodeUpdateObject,
-} from '../models/types.js';
-import { flattenNodeTree, buildSubgraphUpdateQuery } from '../utils/nodeUpdate.js';
-import ICharacter from '../models/ICharacter.js';
-import ValidationError from '../errors/validation.error.js';
-import { ICollection } from '../models/ICollection.js';
+} from "../models/types.js";
+import { flattenNodeTree, buildSubgraphUpdateQuery } from "../utils/nodeUpdate.js";
+import ICharacter from "../models/ICharacter.js";
+import ValidationError from "../errors/validation.error.js";
+import { ICollection } from "../models/ICollection.js";
 
 type CollectionTextObject = {
   all: TextNode[];
@@ -47,7 +47,7 @@ export default class CollectionService {
    * @return {string[]} The available labels.
    */
   private getAvailableCollectionLabelsFromGuidelines(guidelines: IGuidelines): string[] {
-    return guidelines?.collections.types.map(collection => collection.additionalLabel) ?? [];
+    return guidelines?.collections.types.map((collection) => collection.additionalLabel) ?? [];
   }
 
   /**
@@ -86,13 +86,13 @@ export default class CollectionService {
     // Build cursor condition, depending on whether a cursor is provided or not
     const cursorCondition: string = cursor
       ? `AND (c.label ${sortDirection(order)} $cursorLabel OR (c.label = $cursorLabel AND c.uuid ${sortDirection(order)} $cursorUuid))`
-      : '';
+      : "";
 
     // Base query: Add filters for nodeLabels and search string
     const baseQuery: string =
       baseCollectionSnippet +
       `
-      ${parentUuid ? 'WHERE' : 'AND'}
+      ${parentUuid ? "WHERE" : "AND"}
       CASE
           WHEN size($additionalLabels) = 0 THEN size([l in labels(c) WHERE l <> 'Collection']) = 0
           ELSE apoc.coll.intersection($additionalLabels, labels(c))
@@ -133,14 +133,14 @@ export default class CollectionService {
       Neo4jDriver.runQuery(dataQuery, queryParams),
     ]);
 
-    const totalRecords: number = countResult.records[0]?.get('totalRecords') || 0;
-    const rawData: CollectionNode[] = dataResult.records[0]?.get('collections') || [];
+    const totalRecords: number = countResult.records[0]?.get("totalRecords") || 0;
+    const rawData: CollectionNode[] = dataResult.records[0]?.get("collections") || [];
 
     // Check if there are more records
     const hasMore: boolean = rawData.length > limit;
     const collections: CollectionNode[] = hasMore ? rawData.slice(0, limit) : rawData;
 
-    const data: NodeDto<CollectionNode>[] = collections.map(c => ({
+    const data: NodeDto<CollectionNode>[] = collections.map((c) => ({
       node: {
         nodeLabels: c.nodeLabels,
         data: toNativeTypes(c.data) as ICollection,
@@ -190,7 +190,7 @@ export default class CollectionService {
     `;
 
     const result: QueryResult = await Neo4jDriver.runQuery(query, { uuid });
-    const rawCollection: CollectionNode = result.records[0]?.get('collection');
+    const rawCollection: CollectionNode = result.records[0]?.get("collection");
 
     if (!rawCollection) {
       throw new NotFoundError(`Collection with UUID ${uuid} not found`);
@@ -262,10 +262,10 @@ export default class CollectionService {
     `;
 
     const result: QueryResult = await Neo4jDriver.runQuery(query, { uuid });
-    const paths: NodeAncestry[] = result.records[0]?.get('paths');
+    const paths: NodeAncestry[] = result.records[0]?.get("paths");
 
     // Data need to be tranformed to native types, too, even without the possibility of editing them
-    const mapped: NodeAncestry[] = paths.map(path =>
+    const mapped: NodeAncestry[] = paths.map((path) =>
       path.map((pathElement: NodeDto) => {
         return {
           ...pathElement,
@@ -288,9 +288,7 @@ export default class CollectionService {
    * @throws {NotFoundError} If the collection with the specified UUID is not found.
    * @return {Promise<Omit<CollectionAccessObject, 'annotations' | 'collections'>>} A promise that resolves to the retrieved collection and text nodes, but not the annotations nodes.
    */
-  public async getExtendedCollectionById(
-    uuid: string,
-  ): Promise<Omit<CollectionAccessObject, 'annotations' | 'collections'>> {
+  public async getExtendedCollectionById(uuid: string): Promise<Omit<CollectionAccessObject, "annotations" | "collections">> {
     const query: string = `
     MATCH (c:Collection {uuid: $uuid})
 
@@ -318,16 +316,16 @@ export default class CollectionService {
     `;
 
     const result: QueryResult = await Neo4jDriver.runQuery(query, { uuid });
-    const rawCollection: Omit<CollectionAccessObject, 'annotations' | 'collections'> =
-      result.records[0]?.get('collection');
+    const rawCollection: Omit<CollectionAccessObject, "annotations" | "collections"> = result.records[0]?.get("collection");
 
     if (!rawCollection) {
       throw new NotFoundError(`Collection with UUID ${uuid} not found`);
     }
 
-    const collection: Omit<CollectionAccessObject, 'annotations' | 'collections'> = toNativeTypes(
-      rawCollection,
-    ) as Omit<CollectionAccessObject, 'annotations' | 'collections'>;
+    const collection: Omit<CollectionAccessObject, "annotations" | "collections"> = toNativeTypes(rawCollection) as Omit<
+      CollectionAccessObject,
+      "annotations" | "collections"
+    >;
 
     return collection;
   }
@@ -349,20 +347,18 @@ export default class CollectionService {
 
     // Collections must have and additional node label (if options exist)
     if (availableNodeLabels.length > 0 && collection.nodeLabels.length === 0) {
-      throw new ValidationError('A Collection MUST have an additional node label.');
+      throw new ValidationError("A Collection MUST have an additional node label.");
     }
 
     // Label property must always be a meaningful string
     const labelProp: string = collection.data.label;
 
-    if (labelProp === '') {
+    if (labelProp === "") {
       throw new ValidationError('The "label" property must not be empty.');
     }
 
-    if (labelProp.trim() === '') {
-      throw new ValidationError(
-        'The "label" property must not consist of only whitespace characters.',
-      );
+    if (labelProp.trim() === "") {
+      throw new ValidationError('The "label" property must not consist of only whitespace characters.');
     }
   }
 
@@ -388,7 +384,7 @@ export default class CollectionService {
     );
 
     const collection: CollectionNode = {
-      nodeLabels: [...data.collection.nodeLabels, 'Collection'],
+      nodeLabels: [...data.collection.nodeLabels, "Collection"],
       data: toNeo4jTypes(data.collection.data, fields),
     } as CollectionNode;
 
@@ -415,19 +411,16 @@ export default class CollectionService {
 
     const result: QueryResult = await Neo4jDriver.runQuery(query, { collection, parentUuid });
 
-    return result.records[0]?.get('collection');
+    return result.records[0]?.get("collection");
   }
 
-  public async createOrAddCollection(
-    uuid: string,
-    data: NodeStatusObject,
-  ): Promise<NodeDto<CollectionNode>> {
+  public async createOrAddCollection(uuid: string, data: NodeStatusObject): Promise<NodeDto<CollectionNode>> {
     const guidelineService: GuidelinesService = new GuidelinesService();
     const guidelines = await guidelineService.getGuidelines();
 
     const flatNodeTree: NodeUpdateObject = flattenNodeTree(data, guidelines);
 
-    const query: string = buildSubgraphUpdateQuery('Collection');
+    const query: string = buildSubgraphUpdateQuery("Collection");
 
     const result: QueryResult = await Neo4jDriver.runQuery(query, {
       uuid,
@@ -438,7 +431,7 @@ export default class CollectionService {
       attach: flatNodeTree.attach,
     });
 
-    const createdOrAddedCollection: CollectionNode = result.records[0]?.get('node');
+    const createdOrAddedCollection: CollectionNode = result.records[0]?.get("node");
 
     if (!createdOrAddedCollection) {
       throw new NotFoundError(`Could not add/create Collection with UUID ${uuid}`);
@@ -454,8 +447,8 @@ export default class CollectionService {
     const newData: CollectionAccessObject = data.data;
     const initialData: CollectionAccessObject = data.initialData;
 
-    const initialTextUuids: string[] = initialData.texts.map(t => t.data.uuid);
-    const newTextUUids: string[] = newData.texts.map(t => t.data.uuid);
+    const initialTextUuids: string[] = initialData.texts.map((t) => t.data.uuid);
+    const newTextUUids: string[] = newData.texts.map((t) => t.data.uuid);
 
     const createdTexts: CreatedText[] = newData.texts
       .filter((text: TextNode) => !initialTextUuids.includes(text.data.uuid))
@@ -464,9 +457,7 @@ export default class CollectionService {
         characters: createCharactersFromText(t.data.text),
       }));
 
-    const deletedTexts: TextNode[] = initialData.texts.filter(
-      text => !newTextUUids.includes(text.data.uuid),
-    );
+    const deletedTexts: TextNode[] = initialData.texts.filter((text) => !newTextUUids.includes(text.data.uuid));
 
     const collectionTextObject: CollectionTextObject = {
       all: newData.texts,
@@ -477,9 +468,7 @@ export default class CollectionService {
     return collectionTextObject;
   }
 
-  public async search(
-    options: Required<NodeSearchParams>,
-  ): Promise<PaginationResult<CollectionNode[]>> {
+  public async search(options: Required<NodeSearchParams>): Promise<PaginationResult<CollectionNode[]>> {
     const { nodeLabels, limit, order, offset, search } = options;
 
     const baseQuery: string = `
@@ -524,10 +513,10 @@ export default class CollectionService {
       }),
     ]);
 
-    const totalRecords: number = countResult.records[0]?.get('totalRecords') || 0;
+    const totalRecords: number = countResult.records[0]?.get("totalRecords") || 0;
 
-    const rawData: CollectionNode[] = dataResult.records[0]?.get('collections') || [];
-    const data: CollectionNode[] = rawData.map(c => toNativeTypes(c)) as CollectionNode[];
+    const rawData: CollectionNode[] = dataResult.records[0]?.get("collections") || [];
+    const data: CollectionNode[] = rawData.map((c) => toNativeTypes(c)) as CollectionNode[];
 
     return {
       data,
@@ -553,10 +542,7 @@ export default class CollectionService {
    * @throws {NotFoundError} If no Collection node with the given UUID exists after the update.
    * @returns The updated Collection node.
    */
-  public async updateCollection(
-    uuid: string,
-    root: NodeStatusObject,
-  ): Promise<NodeDto<CollectionNode>> {
+  public async updateCollection(uuid: string, root: NodeStatusObject): Promise<NodeDto<CollectionNode>> {
     const guidelineService: GuidelinesService = new GuidelinesService();
     const guidelines = await guidelineService.getGuidelines();
 
@@ -564,7 +550,7 @@ export default class CollectionService {
 
     const flat = flattenNodeTree(root, guidelines);
 
-    const query: string = buildSubgraphUpdateQuery('Collection');
+    const query: string = buildSubgraphUpdateQuery("Collection");
 
     console.dir(flat, { depth: null });
 
@@ -577,7 +563,7 @@ export default class CollectionService {
       attach: flat.attach,
     });
 
-    const updatedNode: CollectionNode = result.records[0]?.get('node');
+    const updatedNode: CollectionNode = result.records[0]?.get("node");
 
     if (!updatedNode) {
       throw new NotFoundError(`Collection with UUID ${uuid} not found`);
@@ -622,7 +608,7 @@ export default class CollectionService {
     `;
 
     const result: QueryResult = await Neo4jDriver.runQuery(query, { uuid });
-    const deletedCollection: CollectionNode = result.records[0]?.get('collection');
+    const deletedCollection: CollectionNode = result.records[0]?.get("collection");
 
     if (!deletedCollection) {
       throw new NotFoundError(`Collection with UUID ${uuid} not found`);

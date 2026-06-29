@@ -1,10 +1,10 @@
-import { Attribute, Extension, GlobalAttributes } from '@tiptap/vue-3';
-import { getDefaultValueForProperty } from '../../../utils/helper/helper';
-import { Annotation, AnnotationType, PropertyConfig } from '../../../models/types';
-import { useGuidelinesStore } from '../../../store/guidelines';
-import { Node } from '@tiptap/pm/model';
+import { Attribute, Extension, GlobalAttributes } from "@tiptap/vue-3";
+import { getDefaultValueForProperty } from "../../../utils/helper/helper";
+import { Annotation, AnnotationType, PropertyConfig } from "../../../models/types";
+import { useGuidelinesStore } from "../../../store/guidelines";
+import { Node } from "@tiptap/pm/model";
 
-declare module '@tiptap/core' {
+declare module "@tiptap/core" {
   interface Commands<ReturnType> {
     annotationAttributes: {
       addSemanticBlockLabel: (annotation: Annotation, from: number, to: number) => ReturnType;
@@ -13,8 +13,7 @@ declare module '@tiptap/core' {
   }
 }
 
-const { getStructuralAnnotationConfigs, getEditorRole, isBuiltinStructuralType } =
-  useGuidelinesStore();
+const { getStructuralAnnotationConfigs, getEditorRole, isBuiltinStructuralType } = useGuidelinesStore();
 
 // Returns {_annotationData, _semanticBlocks } attributes.
 // _annotationData: full neo4j round-trip payload; default = { type } for built-ins, null for customBlock.
@@ -28,11 +27,9 @@ function createDefaultAttrs(defaultType: string | null): Record<string, Attribut
     },
     _semanticBlocks: {
       default: [],
-      renderHTML: attributes => {
+      renderHTML: (attributes) => {
         return {
-          'data-semantic-block-types': attributes._semanticBlocks
-            .map((b: { uuid: string; type: string }) => b.type)
-            .join(','),
+          "data-semantic-block-types": attributes._semanticBlocks.map((b: { uuid: string; type: string }) => b.type).join(","),
         };
       },
     },
@@ -51,8 +48,7 @@ function createCustomAttributes(config: AnnotationType): Record<string, Attribut
   const configuredFields: PropertyConfig[] = config?.properties ?? [];
 
   configuredFields.forEach((field: PropertyConfig) => {
-    const defaultValue: any =
-      field.required === true ? getDefaultValueForProperty(field.type) : null;
+    const defaultValue: any = field.required === true ? getDefaultValueForProperty(field.type) : null;
 
     const htmlDataKey: string = `data-${[field.name]}`;
 
@@ -73,7 +69,7 @@ function createCustomAttributes(config: AnnotationType): Record<string, Attribut
  * @param {Node} doc - The doc root
  */
 function transferTiptapTypeToAnnotationType(doc: Node): void {
-  doc.forEach(node => {
+  doc.forEach((node) => {
     if (node.isBlock && isBuiltinStructuralType(node.type.name)) {
       node.attrs._annotationData.type = node.type.name;
     }
@@ -91,7 +87,7 @@ function transferTiptapTypeToAnnotationType(doc: Node): void {
  * uuid and type properties are derived to the tiptap node here
  */
 export const AnnotationAttributes = Extension.create({
-  name: 'annotationAttributes',
+  name: "annotationAttributes",
 
   // Disabled: type is now derived from the live node (node.type.name -> getAnnotationType)
   // wherever it's needed, so no per-transaction sync into `_annotationData.type` is required.
@@ -100,14 +96,12 @@ export const AnnotationAttributes = Extension.create({
   //   transferTiptapTypeToAnnotationType(editor.state.doc);
   // },
   addGlobalAttributes() {
-    const builtinAttrs: GlobalAttributes = getStructuralAnnotationConfigs().map(
-      (config: AnnotationType) => {
-        return {
-          types: [getEditorRole(config.type)],
-          attributes: createDefaultAttrs(config.type),
-        };
-      },
-    );
+    const builtinAttrs: GlobalAttributes = getStructuralAnnotationConfigs().map((config: AnnotationType) => {
+      return {
+        types: [getEditorRole(config.type)],
+        attributes: createDefaultAttrs(config.type),
+      };
+    });
 
     return [...builtinAttrs];
   },
@@ -126,7 +120,7 @@ export const AnnotationAttributes = Extension.create({
             const { uuid, type } = newAnnotation.node.data;
             const updated: { uuid: string; type: string }[] = [...existing, { uuid, type }];
 
-            tr.setNodeAttribute(pos, '_semanticBlocks', updated);
+            tr.setNodeAttribute(pos, "_semanticBlocks", updated);
           });
 
           dispatch?.(tr);
@@ -143,7 +137,7 @@ export const AnnotationAttributes = Extension.create({
 
             const existing: { uuid: string; type: string }[] = node.attrs._semanticBlocks ?? [];
 
-            if (!existing.some(b => b.uuid === uuid)) {
+            if (!existing.some((b) => b.uuid === uuid)) {
               return;
             }
 
@@ -154,8 +148,8 @@ export const AnnotationAttributes = Extension.create({
             // Remove semantic block from node's `_semanticBlocks` array
             tr.setNodeAttribute(
               pos,
-              '_semanticBlocks',
-              existing.filter(b => b.uuid !== uuid),
+              "_semanticBlocks",
+              existing.filter((b) => b.uuid !== uuid),
             );
           });
 

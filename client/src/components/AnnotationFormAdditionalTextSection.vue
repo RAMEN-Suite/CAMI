@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { nextTick, Ref, ref, watch, useTemplateRef, ComponentPublicInstance } from 'vue';
-import { useGuidelinesStore } from '../store/guidelines';
-import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
-import Fieldset from 'primevue/fieldset';
-import Select from 'primevue/select';
-import { AdditionalText } from '../models/types';
-import InputGroup from 'primevue/inputgroup';
-import IText from '../models/IText';
-import NodeTag from './NodeTag.vue';
-import IAnnotation from '../models/IAnnotation';
-import Tag from 'primevue/tag';
+import { nextTick, Ref, ref, watch, useTemplateRef, ComponentPublicInstance } from "vue";
+import { useGuidelinesStore } from "../store/guidelines";
+import Button from "primevue/button";
+import InputText from "primevue/inputtext";
+import Fieldset from "primevue/fieldset";
+import Select from "primevue/select";
+import { AdditionalText } from "../models/types";
+import InputGroup from "primevue/inputgroup";
+import IText from "../models/IText";
+import NodeTag from "./NodeTag.vue";
+import IAnnotation from "../models/IAnnotation";
+import Tag from "primevue/tag";
 
 /**
  * Interface for relevant state information about additional texts of the annotation
@@ -27,7 +27,7 @@ const additionalTexts = defineModel<AdditionalText[]>();
 
 const props = defineProps<{
   initialAdditionalTexts: AdditionalText[];
-  mode?: 'edit' | 'view';
+  mode?: "edit" | "view";
 }>();
 
 const { guidelines } = useGuidelinesStore();
@@ -37,30 +37,30 @@ const inputObject: Ref<InputObject> = ref<InputObject>({
   annotationTypeOptions: guidelines.value.annotations.additionalTexts,
   input: {
     annotationType: guidelines.value.annotations.additionalTexts[0] ?? null,
-    text: '',
+    text: "",
   },
 });
 
-const inputMode = ref<'edit' | 'view'>('view');
-const inputElm = useTemplateRef<ComponentPublicInstance>('additional-text-input');
+const inputMode = ref<"edit" | "view">("view");
+const inputElm = useTemplateRef<ComponentPublicInstance>("additional-text-input");
 
 // Used for toggling additional text preview mode. Bit hacky for now, but works.
-const textPreviewHandler = ref<Map<string, 'collapsed' | 'expanded'>>(new Map());
+const textPreviewHandler = ref<Map<string, "collapsed" | "expanded">>(new Map());
 
 watch(
   () => additionalTexts,
   (newTexts, oldTexts) => {
     // Add new text if it doesn't already exist
-    newTexts.value.forEach(text => {
+    newTexts.value.forEach((text) => {
       if (!textPreviewHandler.value.has(text.annotation.uuid)) {
-        textPreviewHandler.value.set(text.annotation.uuid, 'collapsed');
+        textPreviewHandler.value.set(text.annotation.uuid, "collapsed");
       }
     });
 
     // Remove texts that no longer exist
     if (oldTexts) {
-      oldTexts.value.forEach(text => {
-        if (!newTexts.value.some(newText => newText.annotation.uuid === text.annotation.uuid)) {
+      oldTexts.value.forEach((text) => {
+        if (!newTexts.value.some((newText) => newText.annotation.uuid === text.annotation.uuid)) {
           textPreviewHandler.value.delete(text.annotation.uuid);
         }
       });
@@ -83,7 +83,7 @@ function addAdditionalText(): void {
 
   additionalTexts.value.push({
     annotation: {
-      type: annotationType ?? 'commentary',
+      type: annotationType ?? "commentary",
       uuid: crypto.randomUUID(),
     } as IAnnotation,
     text: {
@@ -115,10 +115,10 @@ function cancelInputOperation(): void {
  * @param {'view' | 'edit'} mode - The new mode. Is either 'view' or 'edit'.
  * @returns {void} This function does not return any value.
  */
-function changeSelectionMode(mode: 'view' | 'edit'): void {
+function changeSelectionMode(mode: "view" | "edit"): void {
   inputMode.value = mode;
 
-  if (mode === 'view') {
+  if (mode === "view") {
     return;
   }
 
@@ -136,7 +136,7 @@ function changeSelectionMode(mode: 'view' | 'edit'): void {
  */
 function finishInputOperation(): void {
   resetInputForm();
-  changeSelectionMode('view');
+  changeSelectionMode("view");
 }
 
 /**
@@ -146,7 +146,7 @@ function finishInputOperation(): void {
  * @returns {void} This function does not return any value.
  */
 function handleDeleteAdditionalText(annotationUuid: string): void {
-  additionalTexts.value = additionalTexts.value.filter(t => t.annotation.uuid !== annotationUuid);
+  additionalTexts.value = additionalTexts.value.filter((t) => t.annotation.uuid !== annotationUuid);
 }
 
 /**
@@ -158,7 +158,7 @@ function handleDeleteAdditionalText(annotationUuid: string): void {
 function resetInputForm(): void {
   inputObject.value.input = {
     annotationType: null,
-    text: '',
+    text: "",
   };
 }
 
@@ -169,8 +169,8 @@ function resetInputForm(): void {
  * @param {string} uuid - The UUID of the additional text for which the mode should be toggled.
  */
 function togglePreviewMode(uuid: string): void {
-  const currentViewMode: 'collapsed' | 'expanded' = textPreviewHandler.value.get(uuid);
-  textPreviewHandler.value.set(uuid, currentViewMode === 'collapsed' ? 'expanded' : 'collapsed');
+  const currentViewMode: "collapsed" | "expanded" = textPreviewHandler.value.get(uuid);
+  textPreviewHandler.value.set(uuid, currentViewMode === "collapsed" ? "expanded" : "collapsed");
 }
 </script>
 
@@ -194,11 +194,7 @@ function togglePreviewMode(uuid: string): void {
           </div>
           <div class="flex">
             <Tag
-              v-if="
-                !props.initialAdditionalTexts
-                  .map(t => t.annotation.uuid)
-                  .includes(additionalText.annotation.uuid)
-              "
+              v-if="!props.initialAdditionalTexts.map((t) => t.annotation.uuid).includes(additionalText.annotation.uuid)"
               size="small"
               icon="pi pi-clock"
               severity="warn"
@@ -237,11 +233,7 @@ function togglePreviewMode(uuid: string): void {
           severity="secondary"
           size="small"
           class="w-full"
-          :title="
-            textPreviewHandler.get(additionalText.annotation.uuid) === 'collapsed'
-              ? 'Show full text'
-              : 'Hide full text'
-          "
+          :title="textPreviewHandler.get(additionalText.annotation.uuid) === 'collapsed' ? 'Show full text' : 'Hide full text'"
           @click="togglePreviewMode(additionalText.annotation.uuid)"
         />
       </div>
@@ -284,13 +276,7 @@ function togglePreviewMode(uuid: string): void {
             placeholder="Enter text"
             title="Enter text"
           />
-          <Button
-            type="submit"
-            icon="pi pi-check"
-            severity="secondary"
-            size="small"
-            title="Add new text"
-          />
+          <Button type="submit" icon="pi pi-check" severity="secondary" size="small" title="Add new text" />
           <Button
             type="button"
             icon="pi pi-times"

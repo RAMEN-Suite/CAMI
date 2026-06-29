@@ -9,7 +9,7 @@ defineProps<{ annotationType: string | number }>();
 <style scoped>
 /* This styles the icon container which will be enriched with
 custom SVG background-image properties by the users */
-[class^='annotation-type-icon'] {
+[class^="annotation-type-icon"] {
   display: block;
   background-size: contain;
   background-repeat: no-repeat;

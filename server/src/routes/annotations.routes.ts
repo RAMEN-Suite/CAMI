@@ -1,7 +1,7 @@
-import express, { NextFunction, Request, Response, Router } from 'express';
-import AnnotationService from '../services/annotation.service.js';
-import { IAnnotation } from '../models/IAnnotation.js';
-import { Annotation, NodeDto } from '../models/types.js';
+import express, { NextFunction, Request, Response, Router } from "express";
+import AnnotationService from "../services/annotation.service.js";
+import { IAnnotation } from "../models/IAnnotation.js";
+import { Annotation, NodeDto } from "../models/types.js";
 
 const router: Router = express.Router({ mergeParams: true });
 
@@ -15,7 +15,7 @@ function getParentUuid(req: Request): string {
   return req.params.collectionUuid;
 }
 
-router.get('/', async (req: Request, res: Response, next: NextFunction) => {
+router.get("/", async (req: Request, res: Response, next: NextFunction) => {
   const parentUuid: string = getParentUuid(req);
 
   try {
@@ -27,14 +27,14 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-router.post('/', async (req: Request, res: Response, next: NextFunction) => {
+router.post("/", async (req: Request, res: Response, next: NextFunction) => {
   const parentUuid: string = getParentUuid(req);
   const annotations = req.body;
 
   try {
     const updatedAnnotations: IAnnotation[] = await annotationService.saveAnnotations(
       parentUuid,
-      'Content',
+      "Content",
       annotations as Annotation[],
     );
 

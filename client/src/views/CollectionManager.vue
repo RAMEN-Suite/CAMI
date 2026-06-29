@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import CollectionTopMenu from '../components/CollectionTopMenu.vue';
-import LoadingSpinner from '../components/LoadingSpinner.vue';
-import Splitter from 'primevue/splitter';
-import SplitterPanel from 'primevue/splitterpanel';
-import { useCollectionManagerStore } from '../store/collectionManager';
-import CollectionBreadcrumbs from '../components/CollectionBreadcrumbs.vue';
-import CollectionsColumn from '../components/CollectionsColumn.vue';
-import CollectionEditPane from '../components/CollectionEditPane.vue';
-import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router';
-import { CollectionNode } from '../models/types';
-import CollectionPathError from '../components/CollectionPathError.vue';
-import { useAppStore } from '../store/app';
-import PageOverlay from '../components/PageOverlay.vue';
+import { ref, watch } from "vue";
+import CollectionTopMenu from "../components/CollectionTopMenu.vue";
+import LoadingSpinner from "../components/LoadingSpinner.vue";
+import Splitter from "primevue/splitter";
+import SplitterPanel from "primevue/splitterpanel";
+import { useCollectionManagerStore } from "../store/collectionManager";
+import CollectionBreadcrumbs from "../components/CollectionBreadcrumbs.vue";
+import CollectionsColumn from "../components/CollectionsColumn.vue";
+import CollectionEditPane from "../components/CollectionEditPane.vue";
+import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from "vue-router";
+import { CollectionNode } from "../models/types";
+import CollectionPathError from "../components/CollectionPathError.vue";
+import { useAppStore } from "../store/app";
+import PageOverlay from "../components/PageOverlay.vue";
 
 // Initial pageload
 const isLoading = ref<boolean>(true);
@@ -55,7 +55,7 @@ watch(
     }
 
     // Empty path query -> Restore default view
-    if (!newValue || newValue === '') {
+    if (!newValue || newValue === "") {
       await restoreDefaultView();
       return;
     }
@@ -114,9 +114,9 @@ function handleBreadcrumbHomeClick(): void {
 
 function showUnsavedChangesWarning() {
   addToastMessage({
-    severity: 'warn',
-    summary: 'You have unsaved changes.',
-    detail: 'Please save or discard your changes before selecting other collections.',
+    severity: "warn",
+    summary: "You have unsaved changes.",
+    detail: "Please save or discard your changes before selecting other collections.",
     life: 3000,
   });
 }
@@ -161,11 +161,7 @@ function showUnsavedChangesWarning() {
           >
             <SplitterPanel class="overflow-y-auto">
               <div class="columns-container h-full flex overflow-x-scroll">
-                <CollectionsColumn
-                  v-for="(_, index) in levels"
-                  :index="index"
-                  :parentUuid="levels[index].parentUuid"
-                />
+                <CollectionsColumn v-for="(_, index) in levels" :index="index" :parentUuid="levels[index].parentUuid" />
               </div>
             </SplitterPanel>
             <SplitterPanel :size="20" class="overflow-y-auto">

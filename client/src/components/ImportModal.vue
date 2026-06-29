@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { ref, computed, useTemplateRef, inject, watch } from 'vue';
-import { useEventListener } from '@vueuse/core';
-import { formatFileSize } from '../utils/helper/helper';
-import ProgressBar from 'primevue/progressbar';
-import Button from 'primevue/button';
-import ButtonGroup from 'primevue/buttongroup';
-import FileUpload from 'primevue/fileupload';
-import Message from 'primevue/message';
-import Textarea from 'primevue/textarea';
-import ToggleButton from 'primevue/togglebutton';
-import { useImport } from '../composables/useImport';
-import { RouteLocationNormalizedLoaded, useRoute } from 'vue-router';
+import { ref, computed, useTemplateRef, inject, watch } from "vue";
+import { useEventListener } from "@vueuse/core";
+import { formatFileSize } from "../utils/helper/helper";
+import ProgressBar from "primevue/progressbar";
+import Button from "primevue/button";
+import ButtonGroup from "primevue/buttongroup";
+import FileUpload from "primevue/fileupload";
+import Message from "primevue/message";
+import Textarea from "primevue/textarea";
+import ToggleButton from "primevue/togglebutton";
+import { useImport } from "../composables/useImport";
+import { RouteLocationNormalizedLoaded, useRoute } from "vue-router";
 
 const route: RouteLocationNormalizedLoaded = useRoute();
 
@@ -27,13 +27,13 @@ const {
 const totalCharacters = ref([]);
 const totalAnnotations = ref([]);
 
-const dialogRef: any = inject('dialogRef');
-const fileupload = useTemplateRef('fileupload');
+const dialogRef: any = inject("dialogRef");
+const fileupload = useTemplateRef("fileupload");
 
-const chooseOption = ref<'raw' | 'file'>('file');
+const chooseOption = ref<"raw" | "file">("file");
 
 const inputIsValid = computed<boolean>(() => {
-  if (chooseOption.value === 'raw') {
+  if (chooseOption.value === "raw") {
     return rawJson.value.length > 0;
   } else {
     return fileupload.value?.files.length === 1;
@@ -47,12 +47,12 @@ const editorContainsText = computed<boolean>(() => {
 // Needs to be instantiated at top-level to make Vue track changes better
 const reader: FileReader = new FileReader();
 
-useEventListener(reader, 'load', () => {
+useEventListener(reader, "load", () => {
   rawJson.value = reader.result as string;
   importJson();
 });
 
-useEventListener(reader, 'error', (event: ProgressEvent) => {
+useEventListener(reader, "error", (event: ProgressEvent) => {
   const error: DOMException = (event.target as FileReader).error;
   addErrorMessage(error);
 });
@@ -72,7 +72,7 @@ function handleFinishClick(): void {
  * @return {void} This function does not return any value.
  */
 function handleImport(): void {
-  if (chooseOption.value === 'raw') {
+  if (chooseOption.value === "raw") {
     importJson();
   } else {
     const file: File = fileupload.value.files[0];
@@ -87,7 +87,7 @@ async function handleCancelClick(): Promise<void> {
   closeModal();
 }
 
-function toggleViewMode(direction: 'raw' | 'file'): void {
+function toggleViewMode(direction: "raw" | "file"): void {
   chooseOption.value = direction;
 }
 
@@ -97,17 +97,9 @@ function closeModal(): void {
 </script>
 
 <template>
-  <h2 v-if="currentStep === null || currentStep === 'validating'" class="w-full text-center m-0">
-    Select JSON to import
-  </h2>
+  <h2 v-if="currentStep === null || currentStep === 'validating'" class="w-full text-center m-0">Select JSON to import</h2>
   <div v-if="currentStep === null || currentStep === 'validating'" class="choose-panel">
-    <Message
-      v-if="editorContainsText"
-      severity="warn"
-      icon="pi pi-exclamation-circle"
-      class="w-full my-2"
-      closable
-    >
+    <Message v-if="editorContainsText" severity="warn" icon="pi pi-exclamation-circle" class="w-full my-2" closable>
       Careful: This document already contains text that will be lost after the import has finished.
     </Message>
     <ButtonGroup class="w-full flex mb-2">
@@ -130,9 +122,7 @@ function closeModal(): void {
         @change="toggleViewMode('raw')"
       />
     </ButtonGroup>
-    <Message v-for="msg of errorMessages" :key="msg.id" :severity="msg.severity" closable>{{
-      msg.content
-    }}</Message>
+    <Message v-for="msg of errorMessages" :key="msg.id" :severity="msg.severity" closable>{{ msg.content }}</Message>
     <form @submit.prevent="handleImport">
       <div :style="{ height: '15rem' }">
         <Textarea
@@ -143,14 +133,7 @@ function closeModal(): void {
           placeholder="Enter some valid JSON"
           spellcheck="false"
         />
-        <FileUpload
-          v-else
-          name="import"
-          ref="fileupload"
-          :file-limit="1"
-          :multiple="false"
-          accept=".json,.txt"
-        >
+        <FileUpload v-else name="import" ref="fileupload" :file-limit="1" :multiple="false" accept=".json,.txt">
           <template #header="{ chooseCallback }">
             <div class="flex justify-content-center w-full">
               <Button
@@ -192,9 +175,7 @@ function closeModal(): void {
           <template #empty>
             <div class="flex flex-column align-items-center justify-center">
               <p class="mt-0 mb-4 font-italic">or</p>
-              <p
-                class="m-0 p-3 h-6rem border-round-lg drop-area flex justify-content-center gap-2 align-items-center"
-              >
+              <p class="m-0 p-3 h-6rem border-round-lg drop-area flex justify-content-center gap-2 align-items-center">
                 <i class="pi pi-file-arrow-up" style="font-size: 1rem" />
                 <span> Drag and drop files to here to upload.</span>
               </p>
@@ -203,21 +184,12 @@ function closeModal(): void {
         </FileUpload>
       </div>
       <div class="button-container flex justify-content-center gap-2 mt-2">
-        <Button
-          type="button"
-          label="Cancel"
-          title="Cancel"
-          severity="secondary"
-          @click="handleCancelClick"
-        ></Button>
+        <Button type="button" label="Cancel" title="Cancel" severity="secondary" @click="handleCancelClick"></Button>
         <Button type="submit" label="Import" title="Import JSON" :disabled="!inputIsValid"></Button>
       </div>
     </form>
   </div>
-  <div
-    v-else-if="currentStep === 'importing'"
-    class="card flex flex-column align-items-center gap-4"
-  >
+  <div v-else-if="currentStep === 'importing'" class="card flex flex-column align-items-center gap-4">
     <span> Importing data... </span>
     <ProgressBar mode="indeterminate" style="height: 5px; width: 100%"></ProgressBar>
   </div>
@@ -232,16 +204,10 @@ function closeModal(): void {
       </div>
     </Message>
     <Message icon="pi pi-info-circle" class="my-2 w-full" severity="info">
-      Currently, the text is dangling (not saved in the database). You can edit the text, but to get
-      a better performance, save the text and reload the page.
+      Currently, the text is dangling (not saved in the database). You can edit the text, but to get a better performance, save
+      the text and reload the page.
     </Message>
-    <Button
-      type="button"
-      label="Ok"
-      severity="contrast"
-      class="w-3 mt-4"
-      @click="handleFinishClick"
-    ></Button>
+    <Button type="button" label="Ok" severity="contrast" class="w-3 mt-4" @click="handleFinishClick"></Button>
   </div>
 </template>
 

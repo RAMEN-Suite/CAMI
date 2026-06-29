@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useTiptapStore } from '../store/tiptap';
-import Tree from 'primevue/tree';
-import Panel from 'primevue/panel';
-import { ToCItem } from '../models/types.ts';
-import EditorToCItem from './EditorToCItem.vue';
-import Button from 'primevue/button';
+import { ref } from "vue";
+import { useTiptapStore } from "../store/tiptap";
+import Tree from "primevue/tree";
+import Panel from "primevue/panel";
+import { ToCItem } from "../models/types.ts";
+import EditorToCItem from "./EditorToCItem.vue";
+import Button from "primevue/button";
 
 const { tiptap, tableOfContent } = useTiptapStore();
 
@@ -22,7 +22,7 @@ function handleNodeClick(node: ToCItem) {
 
   // This does not work reliably, maybe CSS attributes on scroll containers need to be more strict...
   if (domNode instanceof Element) {
-    domNode.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    domNode.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 }
 </script>
@@ -93,11 +93,7 @@ function handleNodeClick(node: ToCItem) {
               </template>
             </template>
             <template #default="slotProps">
-              <EditorToCItem
-                :key="slotProps.node.key"
-                :item="slotProps.node as ToCItem"
-                @item-click="handleNodeClick"
-              />
+              <EditorToCItem :key="slotProps.node.key" :item="slotProps.node as ToCItem" @item-click="handleNodeClick" />
             </template>
           </Tree>
         </template>

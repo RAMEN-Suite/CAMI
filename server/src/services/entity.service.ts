@@ -1,7 +1,7 @@
-import { int, QueryResult } from 'neo4j-driver';
-import Neo4jDriver from '../database/neo4j.js';
-import { EntityNode, NodeSearchParams, PaginationResult } from '../models/types.js';
-import { toNativeTypes } from '../utils/helper.js';
+import { int, QueryResult } from "neo4j-driver";
+import Neo4jDriver from "../database/neo4j.js";
+import { EntityNode, NodeSearchParams, PaginationResult } from "../models/types.js";
+import { toNativeTypes } from "../utils/helper.js";
 
 export default class EntityService {
   /**
@@ -10,9 +10,7 @@ export default class EntityService {
    * @param {Required<NodeSearchParams>} options - Pagination and filter options (search, nodeLabels, order, limit, offset).
    * @return {Promise<PaginationResult<EntityNode[]>>} A promise that resolves to a paginated result of Entity nodes.
    */
-  public async search(
-    options: Required<NodeSearchParams>,
-  ): Promise<PaginationResult<EntityNode[]>> {
+  public async search(options: Required<NodeSearchParams>): Promise<PaginationResult<EntityNode[]>> {
     const { nodeLabels, limit, order, offset, search } = options;
 
     const baseQuery: string = `
@@ -51,10 +49,10 @@ export default class EntityService {
       Neo4jDriver.runQuery(dataQuery, queryParams),
     ]);
 
-    const totalRecords: number = countResult.records[0]?.get('totalRecords') || 0;
+    const totalRecords: number = countResult.records[0]?.get("totalRecords") || 0;
 
-    const rawData: EntityNode[] = dataResult.records[0]?.get('entities') || [];
-    const data: EntityNode[] = rawData.map(e => toNativeTypes(e)) as EntityNode[];
+    const rawData: EntityNode[] = dataResult.records[0]?.get("entities") || [];
+    const data: EntityNode[] = rawData.map((e) => toNativeTypes(e)) as EntityNode[];
 
     return {
       data,
@@ -88,6 +86,6 @@ export default class EntityService {
 
     const result: QueryResult = await Neo4jDriver.runQuery(query, { nodeLabel, searchStr });
 
-    return result.records[0]?.get('entities');
+    return result.records[0]?.get("entities");
   }
 }

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import Button from 'primevue/button';
-import { useDialog } from 'primevue';
-import ImportModal from './ImportModal.vue';
-import { useAppStore } from '../store/app';
+import { computed } from "vue";
+import Button from "primevue/button";
+import { useDialog } from "primevue";
+import ImportModal from "./ImportModal.vue";
+import { useAppStore } from "../store/app";
 
 const dialog = useDialog();
 
@@ -20,7 +20,7 @@ function openImportModal(): void {
         modal: true,
         closable: false,
         closeOnEscape: false,
-        style: { width: '30rem' },
+        style: { width: "30rem" },
       },
       onClose: () => destroyModalInstance(),
     }),

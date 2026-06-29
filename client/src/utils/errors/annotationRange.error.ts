@@ -10,7 +10,7 @@ export default class AnnotationRangeError extends Error {
    * @type {'warn'}
    * @readonly
    */
-  severity: 'warn';
+  severity: "warn";
 
   /**
    * Creates an instance of AnnotationRangeError.
@@ -18,7 +18,7 @@ export default class AnnotationRangeError extends Error {
    */
   constructor(message: string) {
     super(message);
-    this.name = 'AnnotationRangeError';
-    this.severity = 'warn';
+    this.name = "AnnotationRangeError";
+    this.severity = "warn";
   }
 }

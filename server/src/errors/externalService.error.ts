@@ -1,4 +1,4 @@
-import AppError from './app.error.js';
+import AppError from "./app.error.js";
 
 /**
  * Represents an error for external service failures (currently, when fetching guidelines or styles fails).

@@ -1,13 +1,13 @@
-import express, { NextFunction, Request, Response, Router } from 'express';
-import EntityService from '../services/entity.service.js';
-import { capitalize } from '../utils/helper.js';
-import { EntityNode } from '../models/types.js';
+import express, { NextFunction, Request, Response, Router } from "express";
+import EntityService from "../services/entity.service.js";
+import { capitalize } from "../utils/helper.js";
+import { EntityNode } from "../models/types.js";
 
 const router: Router = express.Router({ mergeParams: true });
 
 const entityService: EntityService = new EntityService();
 
-router.get('/', async (req: Request, res: Response, next: NextFunction) => {
+router.get("/", async (req: Request, res: Response, next: NextFunction) => {
   const nodeLabel: string = capitalize(req.query.node as string);
   const searchStr: string = (req.query.searchStr as string).toLowerCase();
 

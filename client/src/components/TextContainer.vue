@@ -1,51 +1,49 @@
 <script setup lang="ts">
-import { NodeDto, NodeStatusObject, TextNode } from '../models/types';
-import Card from 'primevue/card';
-import NodeTag from './NodeTag.vue';
-import Button from 'primevue/button';
-import MultiSelect from 'primevue/multiselect';
-import Textarea from 'primevue/textarea';
-import { useGuidelinesStore } from '../store/guidelines';
-import { computed } from 'vue';
-import { useBookmarks } from '../composables/useBookmarks';
-import NodeStatusBadge from './NodeStatusBadge.vue';
+import { NodeDto, NodeStatusObject, TextNode } from "../models/types";
+import Card from "primevue/card";
+import NodeTag from "./NodeTag.vue";
+import Button from "primevue/button";
+import MultiSelect from "primevue/multiselect";
+import Textarea from "primevue/textarea";
+import { useGuidelinesStore } from "../store/guidelines";
+import { computed } from "vue";
+import { useBookmarks } from "../composables/useBookmarks";
+import NodeStatusBadge from "./NodeStatusBadge.vue";
 
 const props = defineProps<{
-  status: 'existing' | 'temporary';
+  status: "existing" | "temporary";
   text: NodeStatusObject<TextNode>;
-  mode: 'view' | 'edit';
+  mode: "view" | "edit";
 }>();
 
 const emit = defineEmits<{
-  (e: 'textAdded', text: NodeDto<TextNode>): void;
-  (e: 'textRemoved', text: NodeDto<TextNode>): void;
+  (e: "textAdded", text: NodeDto<TextNode>): void;
+  (e: "textRemoved", text: NodeDto<TextNode>): void;
 }>();
 
 const { getAvailableTextLabels } = useGuidelinesStore();
 const { bookmarks, toggleBookmark } = useBookmarks();
 
 const isBookmarked = computed<boolean>(() => {
-  return bookmarks.value.some(b => b.data.data.uuid === props.text.node.data.uuid);
+  return bookmarks.value.some((b) => b.data.data.uuid === props.text.node.data.uuid);
 });
 
 function handleBookmarkAction() {
-  toggleBookmark({ data: props.text.node, type: 'text' });
+  toggleBookmark({ data: props.text.node, type: "text" });
 }
 
 const PREVIEW_LENGTH: number = 300;
 
 const displayedText = computed<string>(
-  () =>
-    props.text.node.data.text.slice(0, PREVIEW_LENGTH) +
-    (props.text.node.data.text.length > PREVIEW_LENGTH ? '...' : ''),
+  () => props.text.node.data.text.slice(0, PREVIEW_LENGTH) + (props.text.node.data.text.length > PREVIEW_LENGTH ? "..." : ""),
 );
 
 function handleRemoveText() {
-  emit('textRemoved', props.text);
+  emit("textRemoved", props.text);
 }
 
 function handleAddTextClick() {
-  emit('textAdded', props.text);
+  emit("textAdded", props.text);
 }
 
 /**
@@ -57,16 +55,16 @@ function handleAddTextClick() {
  */
 function handleClickContainer(event: PointerEvent): void {
   // Temporary texts can not be opened in the editor, obviously
-  if (props.status === 'temporary') {
+  if (props.status === "temporary") {
     return;
   }
 
   // TODO: Change this when multiselect is moved to its own component
-  if ((event.target as HTMLElement).closest('.multiselect')) {
+  if ((event.target as HTMLElement).closest(".multiselect")) {
     return;
   }
 
-  window.open(`/editor/${props.text.node.data.uuid}`, '_blank', 'noopener noreferrer');
+  window.open(`/editor/${props.text.node.data.uuid}`, "_blank", "noopener noreferrer");
 }
 </script>
 

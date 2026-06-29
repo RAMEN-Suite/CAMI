@@ -1,21 +1,18 @@
 <script setup lang="ts">
-import { PropertyConfig } from '../models/types';
-import InputNumber from 'primevue/inputnumber';
-import InputText from 'primevue/inputtext';
-import Select from 'primevue/select';
-import Textarea from 'primevue/textarea';
-import InputDate from './InputDate.vue';
+import { PropertyConfig } from "../models/types";
+import InputNumber from "primevue/inputnumber";
+import InputText from "primevue/inputtext";
+import Select from "primevue/select";
+import Textarea from "primevue/textarea";
+import InputDate from "./InputDate.vue";
 
 const modelValue = defineModel<any>();
 const props = defineProps<{
   config: Partial<PropertyConfig>;
-  mode?: 'edit' | 'view';
+  mode?: "edit" | "view";
 }>();
 
-const isPrimitive: boolean =
-  props.config.type === 'string' ||
-  props.config.type === 'integer' ||
-  props.config.type === 'number';
+const isPrimitive: boolean = props.config.type === "string" || props.config.type === "integer" || props.config.type === "number";
 
 const minValue: number | null | undefined =
   props.config.exclusiveMinimum != null ? props.config.exclusiveMinimum + 1 : props.config.minimum;

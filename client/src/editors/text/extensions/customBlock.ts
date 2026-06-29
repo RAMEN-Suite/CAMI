@@ -1,4 +1,4 @@
-import { Node } from '@tiptap/core';
+import { Node } from "@tiptap/core";
 
 /**
  * Generic tiptap block node for project-defined structural annotation types that are not
@@ -9,26 +9,26 @@ import { Node } from '@tiptap/core';
  * the guidelines config; the tiptap schema itself allows any block content.
  */
 export const CustomBlock = Node.create({
-  name: 'customBlock',
+  name: "customBlock",
 
-  group: 'block',
+  group: "block",
 
-  content: 'block+',
+  content: "block+",
 
   renderHTML({ node, HTMLAttributes }) {
-    const type: string = node.attrs._type ?? node.attrs._annotationData?.type ?? 'customBlock';
+    const type: string = node.attrs._type ?? node.attrs._annotationData?.type ?? "customBlock";
 
-    return ['div', { ...HTMLAttributes, 'data-annotation-type': type }, 0];
+    return ["div", { ...HTMLAttributes, "data-annotation-type": type }, 0];
   },
 
   parseHTML() {
     return [
       {
-        tag: 'div[data-annotation-type]',
-        getAttrs: el => ({
+        tag: "div[data-annotation-type]",
+        getAttrs: (el) => ({
           _annotationData: (() => {
             try {
-              return JSON.parse((el as HTMLElement).getAttribute('data-block') ?? 'null');
+              return JSON.parse((el as HTMLElement).getAttribute("data-block") ?? "null");
             } catch {
               return null;
             }

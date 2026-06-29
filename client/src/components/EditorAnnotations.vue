@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { computed, ComputedRef, ref, watch } from 'vue';
-import { useGuidelinesStore } from '../store/guidelines';
-import { capitalize, toggleTextHightlighting } from '../utils/helper/helper';
-import { AnnotationType, NodeStatusObject, AnnotationNode } from '../models/types';
-import Button from 'primevue/button';
-import Panel from 'primevue/panel';
-import Tree from 'primevue/tree';
-import AnnotationTypeIcon from './AnnotationTypeIcon.vue';
-import { useTiptapStore } from '../store/tiptap';
+import { computed, ComputedRef, ref, watch } from "vue";
+import { useGuidelinesStore } from "../store/guidelines";
+import { capitalize, toggleTextHightlighting } from "../utils/helper/helper";
+import { AnnotationType, NodeStatusObject, AnnotationNode } from "../models/types";
+import Button from "primevue/button";
+import Panel from "primevue/panel";
+import Tree from "primevue/tree";
+import AnnotationTypeIcon from "./AnnotationTypeIcon.vue";
+import { useTiptapStore } from "../store/tiptap";
 
 export interface TreeNode {
   annotationCount?: number;
@@ -15,7 +15,7 @@ export interface TreeNode {
   data?: NodeStatusObject;
   key: string;
   label: string;
-  type: 'category' | 'type' | 'annotation';
+  type: "category" | "type" | "annotation";
 }
 
 const { groupedAndSortedAnnotationTypes } = useGuidelinesStore();
@@ -28,9 +28,7 @@ const expandedKeys = ref<Record<string, boolean>>({});
 watch(
   () => annotations.value?.size,
   () => {
-    displayedAnnotations.value = [...annotations.value!.values()].filter(
-      (a: NodeStatusObject) => a.meta.status !== 'deleted',
-    );
+    displayedAnnotations.value = [...annotations.value!.values()].filter((a: NodeStatusObject) => a.meta.status !== "deleted");
   },
   { deep: false, immediate: true },
 );
@@ -38,57 +36,53 @@ watch(
 const nodes: ComputedRef<TreeNode[]> = computed(() => {
   const nodes: TreeNode[] = [];
 
-  Object.entries(groupedAndSortedAnnotationTypes.value).forEach(
-    ([category, annotationType], i: number) => {
-      const newCategory: TreeNode = {
-        key: i.toString(),
-        label: category,
-        type: 'category',
+  Object.entries(groupedAndSortedAnnotationTypes.value).forEach(([category, annotationType], i: number) => {
+    const newCategory: TreeNode = {
+      key: i.toString(),
+      label: category,
+      type: "category",
+      children: [],
+      annotationCount: 0,
+    };
+
+    annotationType.forEach((annoType: AnnotationType, j: number) => {
+      const newAnnotationType: TreeNode = {
+        key: i.toString() + "-" + j.toString(),
+        label: annoType.type,
+        type: "type",
         children: [],
-        annotationCount: 0,
       };
 
-      annotationType.forEach((annoType: AnnotationType, j: number) => {
-        const newAnnotationType: TreeNode = {
-          key: i.toString() + '-' + j.toString(),
-          label: annoType.type,
-          type: 'type',
-          children: [],
+      const annos: NodeStatusObject[] = displayedAnnotations.value.filter((a) => a.node.data.type === annoType.type);
+
+      annos.forEach((anno: NodeStatusObject, k: number) => {
+        const newAnnotation: TreeNode = {
+          key: i.toString() + "-" + j.toString() + "-" + k.toString(),
+          label: anno.node.data.text,
+          type: "annotation",
+          data: anno,
         };
 
-        const annos: NodeStatusObject[] = displayedAnnotations.value.filter(
-          a => a.node.data.type === annoType.type,
-        );
-
-        annos.forEach((anno: NodeStatusObject, k: number) => {
-          const newAnnotation: TreeNode = {
-            key: i.toString() + '-' + j.toString() + '-' + k.toString(),
-            label: anno.node.data.text,
-            type: 'annotation',
-            data: anno,
-          };
-
-          newAnnotationType.children.push(newAnnotation);
-        });
-
-        newCategory.annotationCount += annos.length;
-
-        if (newAnnotationType.children.length > 0) {
-          newCategory.children.push(newAnnotationType);
-        }
+        newAnnotationType.children.push(newAnnotation);
       });
 
-      if (newCategory.children.length > 0) {
-        nodes.push(newCategory);
+      newCategory.annotationCount += annos.length;
+
+      if (newAnnotationType.children.length > 0) {
+        newCategory.children.push(newAnnotationType);
       }
-    },
-  );
+    });
+
+    if (newCategory.children.length > 0) {
+      nodes.push(newCategory);
+    }
+  });
 
   return nodes;
 });
 
 // Set initially expanded nodes -> Categories
-nodes.value.forEach(node => {
+nodes.value.forEach((node) => {
   expandedKeys.value[node.key] = true;
 });
 
@@ -122,7 +116,7 @@ function handleAnnotationClick(event: MouseEvent): void {
   }
 }
 
-function toggleViewMode(direction: 'current' | 'all'): void {
+function toggleViewMode(direction: "current" | "all"): void {
   selectedView.value = direction;
 }
 </script>
@@ -145,14 +139,7 @@ function toggleViewMode(direction: 'current' | 'all'): void {
       <i :class="`pi pi-chevron-${collapsed ? 'down' : 'up'}`"></i>
     </template>
     <div class="collapse-buttons">
-      <Button
-        type="button"
-        icon="pi pi-plus"
-        size="small"
-        label="Expand All"
-        title="Expand annotation tree"
-        @click="expandAll"
-      />
+      <Button type="button" icon="pi pi-plus" size="small" label="Expand All" title="Expand annotation tree" @click="expandAll" />
       <Button
         type="button"
         icon="pi pi-minus"
@@ -164,13 +151,7 @@ function toggleViewMode(direction: 'current' | 'all'): void {
     </div>
     <div class="tree">
       <div class="flex justify-center">
-        <Tree
-          v-model:expandedKeys="expandedKeys"
-          :value="nodes"
-          selectionMode="single"
-          :metaKeySelection="false"
-          class="w-full"
-        >
+        <Tree v-model:expandedKeys="expandedKeys" :value="nodes" selectionMode="single" :metaKeySelection="false" class="w-full">
           <template #default="slotProps">
             <div v-if="slotProps.node.type === 'category'">
               <div class="name-container ml-2 font-bold">
@@ -181,9 +162,7 @@ function toggleViewMode(direction: 'current' | 'all'): void {
               <div class="icon-container">
                 <AnnotationTypeIcon :annotation-type="slotProps.node.label" />
               </div>
-              <div class="name-container ml-2">
-                {{ slotProps.node.label }} [{{ slotProps.node.children.length }}]
-              </div>
+              <div class="name-container ml-2">{{ slotProps.node.label }} [{{ slotProps.node.children.length }}]</div>
             </div>
             <div
               v-else
@@ -192,10 +171,7 @@ function toggleViewMode(direction: 'current' | 'all'): void {
               @click="handleAnnotationClick"
               :style="{ 'text-wrap': 'nowrap' }"
             >
-              <div
-                class="ml-2 anno-entry preview"
-                :data-annotation-uuid="slotProps.node.data.node.data.uuid"
-              >
+              <div class="ml-2 anno-entry preview" :data-annotation-uuid="slotProps.node.data.node.data.uuid">
                 {{ slotProps.node.data.node.data.text }}
               </div>
             </div>

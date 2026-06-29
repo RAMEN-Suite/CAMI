@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed, ref, toValue, watch } from 'vue';
-import AutoComplete from 'primevue/autocomplete';
-import MultiSelect from 'primevue/multiselect';
+import { computed, ref, toValue, watch } from "vue";
+import AutoComplete from "primevue/autocomplete";
+import MultiSelect from "primevue/multiselect";
 
-import { useSearchParams } from '../composables/useSearchParams';
+import { useSearchParams } from "../composables/useSearchParams";
 import {
   BaseNodeLabel,
   CollectionNode,
@@ -12,11 +12,11 @@ import {
   PaginationData,
   PaginationResult,
   TextNode,
-} from '../models/types';
-import { useGuidelinesStore } from '../store/guidelines';
-import { useAppStore } from '../store/app';
-import NodeTag from './NodeTag.vue';
-import { filterDefaultLabels } from '../utils/helper/helper';
+} from "../models/types";
+import { useGuidelinesStore } from "../store/guidelines";
+import { useAppStore } from "../store/app";
+import NodeTag from "./NodeTag.vue";
+import { filterDefaultLabels } from "../utils/helper/helper";
 
 const props = defineProps<{
   baseNodeLabel: BaseNodeLabel;
@@ -30,7 +30,7 @@ const { searchParams, updateSearchParams, resetSearchParams } = useSearchParams(
 });
 
 const emit = defineEmits<{
-  (e: 'itemSelected', item: CollectionNode | TextNode | EntityNode): void;
+  (e: "itemSelected", item: CollectionNode | TextNode | EntityNode): void;
 }>();
 
 const PREVIEW_CHARACTER_SIZE: number = 25;
@@ -51,16 +51,16 @@ watch(searchParams, handleSearchParamsChange, {
 
 function getNodeLabelPlural(nodeLabel: BaseNodeLabel): string {
   switch (nodeLabel) {
-    case 'Collection':
-      return 'Collections';
-    case 'Content':
-      return 'Contents';
-    case 'Entity':
-      return 'Entities';
-    case 'Annotation':
-      return 'Annotations';
+    case "Collection":
+      return "Collections";
+    case "Content":
+      return "Contents";
+    case "Entity":
+      return "Entities";
+    case "Annotation":
+      return "Annotations";
     default:
-      return 'Nodes';
+      return "Nodes";
   }
 }
 
@@ -81,7 +81,7 @@ function setIsSearchActive(mode: boolean): void {
 function handleResultItemSelect(item: CollectionNode | TextNode | EntityNode): void {
   resetSearch();
 
-  emit('itemSelected', item);
+  emit("itemSelected", item);
 }
 
 function handleSearchInputChange(newInput: string) {
@@ -182,9 +182,7 @@ async function handleSearchParamsChange() {
             <template v-for="nodeLabel in filterDefaultLabels(option.nodeLabels)">
               <NodeTag :content="nodeLabel" :type="baseNodeLabel" />
             </template>
-            <span :title="option.data">{{
-              option.data?.text.slice(0, PREVIEW_CHARACTER_SIZE)
-            }}</span>
+            <span :title="option.data">{{ option.data?.text.slice(0, PREVIEW_CHARACTER_SIZE) }}</span>
           </div>
         </template>
       </template>

@@ -1,30 +1,30 @@
 <script setup lang="ts">
-import { EntityNode, NodeStatus, NodeStatusObject } from '../models/types';
-import Button from 'primevue/button';
-import { Popover } from 'primevue';
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
-import NodeCardHeader from './NodeCardHeader.vue';
-import { capitalize, useTemplateRef } from 'vue';
+import { EntityNode, NodeStatus, NodeStatusObject } from "../models/types";
+import Button from "primevue/button";
+import { Popover } from "primevue";
+import DataTable from "primevue/datatable";
+import Column from "primevue/column";
+import NodeCardHeader from "./NodeCardHeader.vue";
+import { capitalize, useTemplateRef } from "vue";
 
 const props = defineProps<{
-  mode: 'edit' | 'view';
+  mode: "edit" | "view";
 }>();
 
 const emit = defineEmits<{
-  (e: 'remove-node'): void;
+  (e: "remove-node"): void;
 }>();
 
 const node = defineModel<NodeStatusObject<EntityNode>>();
 
-const infoIcon = useTemplateRef('info-icon');
+const infoIcon = useTemplateRef("info-icon");
 
 function handleRemoveNode(): void {
-  console.log('handle remove :)');
-  if (node.value!.meta.status === 'added') {
-    emit('remove-node');
+  console.log("handle remove :)");
+  if (node.value!.meta.status === "added") {
+    emit("remove-node");
   } else {
-    setNodeStatus('removed');
+    setNodeStatus("removed");
   }
 }
 
@@ -78,12 +78,12 @@ const tableData = Object.entries(node.value!.node.data).map(([property, value]) 
       >
         <Column field="property" header="Property">
           <template #body="{ data }">
-            <span>{{ capitalize(data['property']) }}</span>
+            <span>{{ capitalize(data["property"]) }}</span>
           </template>
         </Column>
         <Column field="value" header="Value">
           <template #body="{ data }">
-            <span style="white-space: normal">{{ data['value'] }}</span>
+            <span style="white-space: normal">{{ data["value"] }}</span>
           </template>
         </Column>
       </DataTable>

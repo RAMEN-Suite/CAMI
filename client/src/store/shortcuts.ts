@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { ref } from "vue";
 
 const shortcutMap = ref<Map<string, () => void>>(new Map());
 /**
@@ -28,9 +28,9 @@ export function useShortcutsStore() {
    */
   function normalizeKeys(keys: string[]): string {
     return keys
-      .map(k => k.toLowerCase())
+      .map((k) => k.toLowerCase())
       .sort()
-      .join('+');
+      .join("+");
   }
 
   return { shortcutMap, normalizeKeys, registerShortcut };

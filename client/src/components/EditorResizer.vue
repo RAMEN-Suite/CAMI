@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ComputedRef, computed } from 'vue';
-import Button from 'primevue/button';
+import { ComputedRef, computed } from "vue";
+import Button from "primevue/button";
 
 const props = defineProps<{
   position: string;
@@ -9,7 +9,7 @@ const props = defineProps<{
   isActive: boolean;
 }>();
 
-const emit = defineEmits(['toggleSidebar']);
+const emit = defineEmits(["toggleSidebar"]);
 
 const { position, defaultWidth } = props;
 // Can not be destructured since reactivity would be lost
@@ -18,20 +18,20 @@ const isActive: ComputedRef<boolean> = computed(() => props.isActive);
 const width: ComputedRef<number> = computed(() => (sidebarIsCollapsed.value ? 0 : defaultWidth));
 
 const arrowDirection: ComputedRef<string> = computed(() => {
-  if (position === 'left') {
-    return sidebarIsCollapsed.value ? 'pi pi-arrow-right' : 'pi pi-arrow-left';
+  if (position === "left") {
+    return sidebarIsCollapsed.value ? "pi pi-arrow-right" : "pi pi-arrow-left";
   } else {
-    return sidebarIsCollapsed.value ? 'pi pi-arrow-left' : 'pi pi-arrow-right';
+    return sidebarIsCollapsed.value ? "pi pi-arrow-left" : "pi pi-arrow-right";
   }
 });
 
 const resizerClasses: ComputedRef<string> = computed(() => {
-  return ['resizer', `resizer-${position}`, `${isActive.value ? 'active' : ''}`].join(' ');
+  return ["resizer", `resizer-${position}`, `${isActive.value ? "active" : ""}`].join(" ");
 });
 
 function toggleSidebar() {
   // This sends the OLD value to the parent element where the state is updated and passed into here.
-  emit('toggleSidebar', position, sidebarIsCollapsed.value);
+  emit("toggleSidebar", position, sidebarIsCollapsed.value);
 }
 </script>
 
