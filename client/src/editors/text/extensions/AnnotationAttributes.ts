@@ -13,7 +13,8 @@ declare module '@tiptap/core' {
   }
 }
 
-const { BUILTIN_STRUCTURAL_TYPES_SET, structuralAnnotationConfigs } = useGuidelinesStore();
+const { getStructuralAnnotationConfigs, getEditorRole, isBuiltinStructuralType } =
+  useGuidelinesStore();
 
 // Returns {_annotationData, _semanticBlocks } attributes.
 // _annotationData: full neo4j round-trip payload; default = { type } for built-ins, null for customBlock.
@@ -73,7 +74,7 @@ function createCustomAttributes(config: AnnotationType): Record<string, Attribut
  */
 function transferTiptapTypeToAnnotationType(doc: Node): void {
   doc.forEach(node => {
-    if (node.isBlock && BUILTIN_STRUCTURAL_TYPES_SET.has(node.type.name)) {
+    if (node.isBlock && isBuiltinStructuralType(node.type.name)) {
       node.attrs._annotationData.type = node.type.name;
     }
   });
@@ -92,18 +93,18 @@ function transferTiptapTypeToAnnotationType(doc: Node): void {
 export const AnnotationAttributes = Extension.create({
   name: 'annotationAttributes',
 
-  onUpdate({ editor }) {
-    transferTiptapTypeToAnnotationType(editor.state.doc);
-  },
+  // Disabled: type is now derived from the live node (node.type.name -> getAnnotationType)
+  // wherever it's needed, so no per-transaction sync into `_annotationData.type` is required.
+  // Kept (with `transferTiptapTypeToAnnotationType`) for easy reversal.
+  // onUpdate({ editor }) {
+  //   transferTiptapTypeToAnnotationType(editor.state.doc);
+  // },
   addGlobalAttributes() {
-    const builtinAttrs: GlobalAttributes = structuralAnnotationConfigs.value.map(
+    const builtinAttrs: GlobalAttributes = getStructuralAnnotationConfigs().map(
       (config: AnnotationType) => {
-        const defaultAttrs: Record<string, Attribute> = createDefaultAttrs(config.type);
-        const customAttrs: Record<string, Attribute> = createCustomAttributes(config);
-
         return {
-          types: [config.editorRole ?? config.type],
-          attributes: { ...defaultAttrs, ...customAttrs },
+          types: [getEditorRole(config.type)],
+          attributes: createDefaultAttrs(config.type),
         };
       },
     );
@@ -165,3 +166,9 @@ export const AnnotationAttributes = Extension.create({
     };
   },
 });
+
+// `createCustomAttributes` and `transferTiptapTypeToAnnotationType` are intentionally kept defined
+// but no longer called (see the disabled `onUpdate`/`customAttrs` above). These references keep them
+// from tripping `noUnusedLocals`; delete them when re-enabling either helper.
+void createCustomAttributes;
+void transferTiptapTypeToAnnotationType;

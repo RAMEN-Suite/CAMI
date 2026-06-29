@@ -7,7 +7,12 @@ import {
   PropertyConfig,
   AnnotationNode,
   BaseNodeLabel,
+  BuiltinEditorAttribute,
+  BuiltinStructuralType,
+  AnnotationMapping,
 } from '../models/types';
+import { BUILTIN_STRUCTURAL_CONFIGS } from '../config/constants';
+import { EDITOR_OWNED_ATTRIBUTES, DEFAULT_ANNOTATION_MAPPING } from '../config/editor';
 
 const { initializeFilter } = useFilterStore();
 const guidelines = ref<IGuidelines>();
@@ -21,197 +26,39 @@ const availableEntityLabels = ref<string[]>([]);
 const availableTextLabels = ref<string[]>([]);
 const groupedAndSortedAnnotationTypes = ref<Record<string, AnnotationType[]>>();
 
-// Built-in structural annotation types with their tiptap hierarchy rules.
-// Projects can extend these (add properties) via annotations.types in the guidelines JSON.
-// "contains" drives the dynamic STRUCTURAL_CHILDREN map used during standoff→tiptap conversion.
-const BUILTIN_STRUCTURAL_CONFIGS: AnnotationType[] = [
-  {
-    type: 'paragraph',
-    isBlock: true,
-    contains: [],
-    topLevel: true,
-    priority: 20,
-    properties: [],
-    shortcut: [],
-    text: '',
-    category: 'structure',
-    defaultSelected: true,
-  },
-  {
-    type: 'heading',
-    isBlock: true,
-    contains: [],
-    topLevel: true,
-    priority: 30,
-    properties: [
-      {
-        name: 'level',
-        type: 'number',
-        minimum: 1,
-        maximum: 6,
-        required: true,
-        editable: true,
-        visible: true,
-      },
-    ],
-    shortcut: [],
-    text: '',
-    category: 'structure',
-    defaultSelected: true,
-  },
-  {
-    type: 'hardBreak',
-    isBlock: true,
-    contains: [],
-    topLevel: false,
-    priority: 10,
-    properties: [],
-    shortcut: [],
-    text: '',
-    category: 'structure',
-    defaultSelected: true,
-  },
-  {
-    type: 'table',
-    isBlock: true,
-    // caption/heading can be added later by extending contains via guidelines JSON
-    contains: ['tableRow'],
-    topLevel: true,
-    priority: 90,
-    properties: [],
-    shortcut: [],
-    text: '',
-    category: 'structure',
-    defaultSelected: true,
-  },
-  {
-    type: 'tableRow',
-    isBlock: true,
-    contains: ['tableHeader', 'tableCell'],
-    topLevel: false,
-    priority: 80,
-    properties: [],
-    shortcut: [],
-    text: '',
-    category: 'structure',
-    defaultSelected: true,
-  },
-  {
-    type: 'tableCell',
-    isBlock: true,
-    contains: ['paragraph', 'heading', 'bulletList', 'table'],
-    topLevel: false,
-    priority: 70,
-    properties: [],
-    shortcut: [],
-    text: '',
-    category: 'structure',
-    defaultSelected: true,
-  },
-  {
-    type: 'tableHeader',
-    isBlock: true,
-    contains: ['paragraph', 'heading', 'bulletList', 'table'],
-    topLevel: false,
-    priority: 70,
-    properties: [
-      { name: 'rowspan', type: 'number', required: true, editable: true, visible: true },
-      { name: 'colspan', type: 'number', required: true, editable: true, visible: true },
-    ],
-    shortcut: [],
-    text: '',
-    category: 'structure',
-    defaultSelected: true,
-  },
-  {
-    type: 'bulletList',
-    isBlock: true,
-    // caption/heading can be added later by extending contains via guidelines JSON
-    contains: ['listItem'],
-    topLevel: true,
-    priority: 60,
-    properties: [],
-    shortcut: [],
-    text: '',
-    category: 'structure',
-    defaultSelected: true,
-  },
-  {
-    type: 'listItem',
-    isBlock: true,
-    contains: ['paragraph', 'heading', 'bulletList', 'table'],
-    topLevel: false,
-    priority: 50,
-    properties: [],
-    shortcut: [],
-    text: '',
-    category: 'structure',
-    defaultSelected: true,
-  },
-];
-
-const BUILTIN_STRUCTURAL_TYPES_SET: ReadonlySet<string> = new Set(
-  BUILTIN_STRUCTURAL_CONFIGS.map(c => c.type),
-);
-
 // Merged structural configs: built-ins + any isBlock:true entries from the guidelines JSON.
 // Populated after initializeGuidelines; starts from built-in defaults.
 const mergedStructuralConfigs = ref<AnnotationType[]>([...BUILTIN_STRUCTURAL_CONFIGS]);
 
-// Map of structural type → allowed direct child structural types.
-// Replaces the hardcoded STRUCTURAL_CHILDREN constant in standoffConverter.ts.
-const structuralChildrenMap = computed<Record<string, string[]>>(() =>
-  Object.fromEntries(
-    mergedStructuralConfigs.value
-      .filter(c => c.contains && c.contains.length > 0)
-      .map(c => [c.type, c.contains!]),
-  ),
-);
+/**
+ * Mapping between default and project-specific structural annotations.
+ *
+ * Is {@linkcode DEFAULT_ANNOTATION_MAPPING} at first, but gets replaced with project-specific mapping via
+ * {@linkcode setAnnotationMapping}
+ */
+const annotationMapping = ref<AnnotationMapping>(DEFAULT_ANNOTATION_MAPPING);
 
-// Structural types that may appear directly under the document root.
-const docContainsTypes = computed<string[]>(() =>
-  mergedStructuralConfigs.value.filter(c => c.topLevel === true).map(c => c.type),
-);
+/** Inverse of the `typeByRole` key in the config (project type name -> built-in role)
+ *
+ * @example
+ * {
+ *    "p": "paragraph",
+ *    "lb": "hardBreak"
+ * }
+ */
+const roleByType = computed<Record<string, BuiltinStructuralType>>(() => {
+  const out: Record<string, BuiltinStructuralType> = {};
 
-function buildMergedStructuralConfigs(guidelinesData: IGuidelines): AnnotationType[] {
-  // Deep-copy built-ins so mutations don't affect the constant.
-  const result: AnnotationType[] = BUILTIN_STRUCTURAL_CONFIGS.map(c => ({
-    ...c,
-    properties: [...(c.properties ?? [])],
-    contains: [...(c.contains ?? [])],
-  }));
+  for (const role of Object.keys(annotationMapping.value.typeByRole) as BuiltinStructuralType[]) {
+    const projectType: string | undefined = annotationMapping.value.typeByRole[role];
 
-  for (const entry of guidelinesData.annotations.types) {
-    if (!entry.isBlock) {
-      continue;
-    }
-
-    // If editorRole is set, match against the built-in by role rather than by type name.
-    // This allows projects to rename built-ins (e.g. type:'p', editorRole:'paragraph').
-    const targetType: string = entry.editorRole ?? entry.type;
-    const existing: AnnotationType | undefined = result.find(c => c.type === targetType);
-
-    if (existing) {
-      console.log('i exist: ', entry);
-      // Extend built-in: append any extra properties defined in JSON
-      existing.properties = [...(existing.properties ?? []), ...(entry.properties ?? [])];
-      // If the entry is renaming this built-in, update the type and record the editor role.
-      if (entry.editorRole) {
-        existing.editorRole = entry.editorRole;
-        existing.type = entry.type;
-      }
-    } else {
-      // New project-specific custom structural type
-      result.push({
-        ...entry,
-        properties: [...(entry.properties ?? [])],
-        contains: [...(entry.contains ?? [])],
-      });
+    if (projectType !== undefined) {
+      out[projectType] = role;
     }
   }
 
-  return result;
-}
+  return out;
+});
 
 /**
  * Store for making the edition guidelines available to all components. When the component is mounted,
@@ -235,6 +82,22 @@ export function useGuidelinesStore() {
     availableTextLabels.value = getAvailableTextLabels();
 
     initializeFilter(guidelines.value);
+  }
+
+  /**
+   * Sets the active annotation mapping (project names <-> built-in editor roles/attributes) and
+   * rebuilds the merged structural configs so the renames take effect. Call on app load once the
+   * separate mapping JSON is fetched (alongside the guidelines); until then the default is used.
+   *
+   * @param {AnnotationMapping} mapping - The annotation mapping to apply.
+   * @return {void} This function does not return anything.
+   */
+  function setAnnotationMapping(mapping: AnnotationMapping): void {
+    annotationMapping.value = mapping;
+
+    if (guidelines.value) {
+      mergedStructuralConfigs.value = buildMergedStructuralConfigs(guidelines.value);
+    }
   }
 
   /**
@@ -547,47 +410,192 @@ export function useGuidelinesStore() {
     return mergedStructuralConfigs.value.find(c => c.type === type)?.priority ?? 0;
   }
 
-  // Returns the Tiptap node type name (editor-internal) for a given annotation type name.
-  // Falls back to the type itself for built-ins that have not been renamed.
-  function getEditorRole(type: string): string {
-    const config = mergedStructuralConfigs.value.find(c => c.type === type);
+  /**
+   * Returns the editor-owned properties of a structural annotation type: each pairs the editor
+   * `attribute` (the tiptap-native attr the editor needs, e.g. `level`) with the `property` (the
+   * project's name for it). The property equals the attribute unless the project mapped it — e.g.
+   * applying TEI semantics, `rows` instead of the native `rowspan`.
+   *
+   * @param {string} annotationType The project (configured) structural annotation type
+   * @returns {{ property: string; attribute: BuiltinEditorAttribute }[]} The editor-owned properties
+   * @example
+   * getEditorOwnedProperties("heading")
+   *
+   * // Could return (if configured)
+   *
+   * [{
+   *    attribute: 'level',
+   *    property: 'n',
+   * }]
+   */
+  function getEditorOwnedProperties(
+    annotationType: string,
+  ): { property: string; attribute: BuiltinEditorAttribute }[] {
+    const editorRole: BuiltinStructuralType | string = getEditorRole(annotationType);
+    const propertyByAttribute: Partial<Record<BuiltinEditorAttribute, string | undefined>> =
+      annotationMapping.value.attrByRole[editorRole as BuiltinStructuralType] ?? {};
 
-    return config?.editorRole ?? type;
+    const config: AnnotationType | undefined = BUILTIN_STRUCTURAL_CONFIGS.find(
+      c => c.type === editorRole,
+    );
+
+    const attributes: BuiltinEditorAttribute[] = (config?.properties ?? [])
+      .filter(p => EDITOR_OWNED_ATTRIBUTES.includes(p.name as BuiltinEditorAttribute))
+      .map(p => p.name as BuiltinEditorAttribute);
+
+    return attributes.map((attribute: BuiltinEditorAttribute) => ({
+      attribute,
+      property: propertyByAttribute[attribute] ?? attribute,
+    }));
   }
 
-  // Returns the user-defined annotation type name for a given editor role.
-  // E.g. getTypeByEditorRole('paragraph') returns 'p' when the project renamed it.
-  // Falls back to the role itself if no mapping exists.
-  function getTypeByEditorRole(role: string): string {
-    const config = mergedStructuralConfigs.value.find(c => (c.editorRole ?? c.type) === role);
-    return config?.type ?? role;
+  /**
+   * Merges project-defined properties onto a built-in-derived property list when they are configured for the
+   * same annotation type.
+   *
+   * This is the case when the project extends built-in structural annotation types, e.g. when a "paragraph" annotation
+   * should have a "rendtition" property.
+   *
+   * @param {PropertyConfig[]} base Built-in-derived properties
+   * @param {PropertyConfig[]} incoming Project-defined properties
+   * @returns {PropertyConfig[]} The merged property list
+   */
+  function mergeDomainProperties(
+    base: PropertyConfig[],
+    incoming: PropertyConfig[],
+  ): PropertyConfig[] {
+    const combined: PropertyConfig[] = [...base];
+
+    for (const prop of incoming) {
+      const index: number = combined.findIndex(p => p.name === prop.name);
+
+      if (index !== -1) {
+        combined[index] = { ...combined[index], ...prop };
+      } else {
+        combined.push(prop);
+      }
+    }
+
+    return combined;
   }
 
-  // Returns true if the given annotation type (user name) maps to one of the
-  // original built-in structural types, even if it has been renamed via editorRole.
-  function isBuiltinStructuralType(type: string): boolean {
-    const role: string = getEditorRole(type);
+  /**
+   * Checks if the given annotation type maps to one of the built-in structural types when set in the configuration.
+   *
+   * E.g. if the project has renamed 'paragraph' to 'p' in the configuration, this function returns true for 'paragraph'.
+   *
+   * @param {string} annotationType The annotation type
+   * @returns {boolean} True if the annotation type maps to one of the built-in structural types, `false` if otherwise
+   */
+  function isBuiltinStructuralType(annotationType: string): boolean {
+    const editorRole: string = getEditorRole(annotationType);
 
-    return BUILTIN_STRUCTURAL_TYPES_SET.has(role);
+    return BUILTIN_STRUCTURAL_CONFIGS.some(c => c.type === editorRole);
+  }
+
+  /**
+   * Returns the editor role (the built-in structural type / tiptap node type) for a given project
+   * annotation type, via the active annotation mapping.
+   *
+   * E.g. `getEditorRole('p')` returns "paragraph" when the mapping binds `paragraph -> 'p'`.
+   * Falls back to the type itself (built-in used by its own name, or a custom type).
+   *
+   * Complementary function of {@linkcode getAnnotationType}.
+   *
+   * @param {string} annotationType The project annotation type (e.g. `p`, `list`)
+   * @returns {string} The editor role (e.g. `paragraph`, `bulletList`) if mapped, else the type
+   */
+  function getEditorRole(annotationType: string): BuiltinStructuralType | string {
+    return roleByType.value[annotationType] ?? annotationType;
+  }
+
+  /**
+   * Returns the project annotation type name for a given editor role, via the active annotation mapping.
+   *
+   * E.g. `getAnnotationType('paragraph')` returns "p" when the mapping binds `paragraph -> 'p'`.
+   * Falls back to the role itself if not mapped.
+   *
+   * Complementary function of {@linkcode getEditorRole}.
+   *
+   * @param {BuiltinStructuralType} editorRole The editor role (e.g. `bulletList`)
+   * @returns {string} The project annotation type (e.g. `list`) if mapped, else the given role
+   */
+  function getAnnotationType(editorRole: BuiltinStructuralType | string): string {
+    return annotationMapping.value.typeByRole[editorRole as BuiltinStructuralType] ?? editorRole;
+  }
+
+  /**
+   * Builds the merged structural configs: built-in behavior (priority/contains/topLevel) combined with
+   * each type's properties, all keyed by the project's type names via the active editor mapping.
+   *
+   * Each built-in role becomes an entry under its project type name (`typeByRole[role] ?? role`), with
+   * its editor-owned properties renamed to their project names (`attrByRole[role][attr] ?? attr`) but
+   * keeping the built-in constraints. A project JSON entry whose type matches one of those entries
+   * merges its domain properties onto it; an entry that matches none is kept as a custom structural
+   * type. `contains` keeps built-in role names (it is matched against editor roles).
+   *
+   * @param {IGuidelines} guidelinesData The domain guidelines
+   * @returns {AnnotationType[]} The merged structural configs keyed by project type name
+   */
+  function buildMergedStructuralConfigs(guidelinesData: IGuidelines): AnnotationType[] {
+    // 1. Built-in types, renamed to the project's type/property names if configured
+    const builtInDerived: AnnotationType[] = BUILTIN_STRUCTURAL_CONFIGS.map(config => {
+      const editorRole: string = config.type;
+      const annotationType: string =
+        annotationMapping.value.typeByRole[editorRole as BuiltinStructuralType] ?? editorRole;
+      const propertyByAttribute =
+        annotationMapping.value.attrByRole[editorRole as BuiltinStructuralType] ?? {};
+
+      const properties: PropertyConfig[] = (config.properties ?? []).map(p => ({
+        ...p,
+        name: propertyByAttribute[p.name as BuiltinEditorAttribute] ?? p.name,
+      }));
+
+      return {
+        ...config,
+        type: annotationType,
+        properties,
+      };
+    });
+
+    // 2. All types in the custom configuration
+    for (const entry of guidelinesData.annotations.types) {
+      if (!entry.isBlock) {
+        continue;
+      }
+
+      const existing: AnnotationType | undefined = builtInDerived.find(c => c.type === entry.type);
+
+      if (existing) {
+        existing.properties = mergeDomainProperties(
+          existing.properties ?? [],
+          entry.properties ?? [],
+        );
+      } else {
+        builtInDerived.push({
+          ...entry,
+          properties: [...(entry.properties ?? [])],
+          contains: [...(entry.contains ?? [])],
+        });
+      }
+    }
+
+    return builtInDerived;
   }
 
   return {
     availableCollectionLabels,
     availableEntityLabels,
     availableTextLabels,
-    BUILTIN_STRUCTURAL_CONFIGS,
-    BUILTIN_STRUCTURAL_TYPES_SET,
     error: readonly(error),
     groupedAndSortedAnnotationTypes,
     groupedAnnotationTypes,
     guidelines,
     isFetching: readonly(isFetching),
     isInitialized: readonly(isInitialized),
-    structuralAnnotationConfigs: mergedStructuralConfigs,
     getStructuralAnnotationConfigs: (): AnnotationType[] => mergedStructuralConfigs.value,
     getPriorityForType,
-    structuralChildrenMap,
-    docContainsTypes,
+    getEditorOwnedProperties,
     annotationHasConstraints,
     getAllCollectionConfigFields,
     getAnnotationConfig,
@@ -603,9 +611,10 @@ export function useGuidelinesStore() {
     getCollectionConfigFields,
     getStructuralAnnotationConfig,
     getEditorRole,
-    getTypeByEditorRole,
+    getAnnotationType,
     isBuiltinStructuralType,
     initializeGuidelines,
+    setAnnotationMapping,
     isZeroPoint,
   };
 }

@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { ComponentPublicInstance, nextTick, ref, useTemplateRef } from 'vue';
 import AutoComplete from 'primevue/autocomplete';
-import { useAnnotationStore } from '../store/annotations';
-import { useCharactersStore } from '../store/characters';
-import { useEditorStore } from '../store/editor';
 import InputGroup from 'primevue/inputgroup';
 import Button from 'primevue/button';
+import { useTiptapStore } from '../store/tiptap';
 
 /**
  *  Enriches Search with an html key that contains the formatted search result
@@ -30,10 +28,7 @@ interface TextSearchObject {
 
 const PREVIEW_CHARACTER_SIZE: number = 25;
 
-const { createFullTextFromCharacters, jumpToSnippetByIndex, totalCharacters } =
-  useCharactersStore();
-const { extractSnippetAnnotations, updateTruncationStatus } = useAnnotationStore();
-const { hasUnsavedChanges, setNewRangeAnchorUuid, initializeHistory } = useEditorStore();
+const { hasUnsavedChanges } = useTiptapStore();
 
 const isSearchActive = ref<boolean>(false);
 
@@ -51,36 +46,7 @@ function resetSearch(): void {
   setIsSearchActive(false);
 }
 
-async function searchTextMatches(searchString: string): Promise<void> {
-  const textToSearch: string = createFullTextFromCharacters();
-  const searchResults: SearchResult[] = [];
-
-  try {
-    // Escape special regex characters in the search string to treat it as literal text
-    const escapedSearchString: string = searchString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex: RegExp = new RegExp(escapedSearchString, 'gi');
-
-    const matches = textToSearch.matchAll(regex);
-
-    matches.forEach(match => {
-      searchResults.push({
-        index: match.index,
-        match: match[0],
-        startIndex: match.index,
-        endIndex: match.index + match[0].length - 1,
-        // Store HTML directly in prop to prevent unnecessary, primevue-enforced re-renders during hover
-        html: renderHtml(match),
-      });
-    });
-  } catch (error) {
-    console.error('Error during regex search:', error);
-    textSearchObject.value.fetchedItems = [];
-
-    return;
-  }
-
-  textSearchObject.value.fetchedItems = searchResults;
-}
+async function searchTextMatches(searchString: string): Promise<void> {}
 
 function setIsSearchActive(mode: boolean): void {
   isSearchActive.value = mode;
@@ -142,18 +108,6 @@ function handleResultItemSelect(item: SearchResult): void {
       return;
     }
   }
-
-  jumpToSnippetByIndex(item.startIndex);
-
-  extractSnippetAnnotations();
-  updateTruncationStatus();
-
-  // TODO: This works when the user decides to jump to a new snippet despite the confirmation windows
-  // warns him not to (since he/she has unsaved changes). Maybe find a more elegant way, but currently
-  // this is the best solution
-  setNewRangeAnchorUuid(totalCharacters.value[item.endIndex].data.uuid);
-
-  initializeHistory();
 
   resetSearch();
 

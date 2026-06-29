@@ -4,6 +4,8 @@ import ICharacter from './ICharacter';
 import { ICollection } from './ICollection';
 import { IEntity } from './IEntity';
 import { IText } from './IText';
+import type { BuiltinEditorAttribute } from '../config/editor';
+import type { AnnotationMapping } from '../config/editor';
 
 export type AdditionalText = {
   annotation: IAnnotation;
@@ -28,16 +30,6 @@ export type NodeStatusObject<
  */
 export type NodeStatus = 'added' | 'removed' | 'created' | 'deleted' | 'modified' | 'unchanged';
 
-export type AnnotationOld = {
-  characterUuids: string[];
-  data: AnnotationData;
-  endUuid: string;
-  initialData: AnnotationData;
-  isTruncated: boolean;
-  startUuid: string;
-  status: 'existing' | 'created' | 'deleted' | 'edited';
-};
-
 export type Annotation = NodeStatusObject<AnnotationNode>;
 
 export type AnnotationNode = Node<IAnnotation>;
@@ -57,22 +49,20 @@ export interface AnnotationData {
 }
 
 export type AnnotationType = {
-  category: string;
-  defaultSelected: boolean;
-  isSeparator?: boolean;
-  isZeroPoint?: boolean;
-  hasAdditionalTexts?: boolean;
-  hasEntities?: boolean;
-  entityNodes?: string[];
-  properties?: PropertyConfig[];
-  shortcut: string[];
-  text: string;
-  type: string;
-  isBlock?: boolean;
-  contains?: string[];
-  topLevel?: boolean;
-  priority?: number;
-  editorRole?: BuiltinStructuralType;
+  category: string; // CAMI
+  defaultSelected: boolean; // CAMI
+  isZeroPoint?: boolean; // CAMI and NORI
+  hasAdditionalTexts?: boolean; // Derived from NORI
+  hasEntities?: boolean; // Derived from NORI
+  entityNodes?: string[]; // Derived from NORI
+  properties?: PropertyConfig[]; // NORI
+  shortcut: string[]; // CAMI
+  text: string; // CAMI
+  type: string; // NORI -> discriminator, also property there
+  isBlock?: boolean; // CAMI
+  contains?: string[]; // CAMI -> only for builtin structural elements
+  topLevel?: boolean; // CAMI -> deprecated, but keep for now
+  priority?: number; // CAMI
 };
 
 export type AnnotationReference = {
@@ -103,6 +93,11 @@ export type BuiltinStructuralType =
   | 'tableHeader'
   | 'bulletList'
   | 'listItem';
+
+// Editor-framework facts live in `config/editor` (imported above). Re-exported here for convenience
+// so existing model-type importers keep working.
+export type { BuiltinEditorAttribute };
+export type { AnnotationMapping };
 
 export type TiptapMark = {
   type: string;
@@ -198,33 +193,6 @@ export type NodeSearchParams = {
   sortDirection?: 'asc' | 'desc';
 };
 
-export type Command = {
-  command: CommandType;
-  data: CommandData;
-};
-
-export type CommandData = {
-  annotation?: AnnotationOld;
-  characters?: Character[];
-  leftUuid?: string | null;
-  rightUuid?: string | null;
-  uuid?: string;
-};
-
-export type CommandType =
-  | 'createAnnotation'
-  | 'deleteAnnotation'
-  | 'deleteText'
-  | 'deleteWordAfter'
-  | 'deleteWordBefore'
-  | 'expandAnnotation'
-  | 'insertText'
-  | 'redrawAnnotation'
-  | 'replaceText'
-  | 'shiftAnnotationLeft'
-  | 'shiftAnnotationRight'
-  | 'shrinkAnnotation';
-
 export type EntityNode = Node<IEntity>;
 
 export type HistoryStack = HistoryRecord[];
@@ -234,7 +202,7 @@ export type HistoryRecord = {
   timestamp: Date;
   data: {
     afterEndCharacter: Character | null;
-    annotations: AnnotationOld[];
+    annotations: Annotation[];
     beforeStartCharacter: Character | null;
     characters: Character[];
   };
@@ -292,11 +260,19 @@ export type PaginationResult<T> = {
 };
 
 export type PropertyConfig = {
-  name: string /* folioEnd, label, websiteUrl */;
-  type: PropertyConfigDataType /* raw string, dropdown, multiple options */;
-  required: boolean /* required or optional */;
-  editable: boolean /* Editable by user */;
-  visible: boolean /* Visible by user */;
+  /** folioEnd, label, websiteUrl */
+  name: string; // CAMI -> name to display. Or remove kompletely, type is type
+  /** data type (raw string, dropdown, multiple options) */
+  type: PropertyConfigDataType; // NORI
+  /** required or optional */
+  required: boolean; // NORI
+  /** Editable by user */
+  editable: boolean; // CAMI
+  /** Visible by user */
+  visible: boolean; // CAMI;
+  /** Render as normal input or textarea? */
+  template?: PropertyConfigStringTemplate; // CAMI;
+  // The rest here is cami
   /* Only relevant if type is "array" */
   items?: Partial<PropertyConfig>;
   minItems?: number;
@@ -310,7 +286,6 @@ export type PropertyConfig = {
   minLength?: number;
   maxLength?: number;
   options?: string[] | number[] /* Options if type is dropdown */;
-  template?: PropertyConfigStringTemplate /* Render as normal input or textarea? */;
 };
 
 export type PropertyConfigDataType =
@@ -373,6 +348,10 @@ export type ToCItem = TreeNode & {
   data: {
     nodeSize: number;
     nodeType: string;
+    /** Canonical (project-configured) annotation type, derived from the live node, not _annotationData. */
+    type: string;
+    /** Heading level when the node is a heading; read from the live native attr. */
+    level?: number;
     pos: number;
     text: string;
     _annotationData: Record<string, any>;

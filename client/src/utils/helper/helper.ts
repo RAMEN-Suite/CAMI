@@ -1,6 +1,5 @@
 import { Ref } from 'vue';
 import {
-  AnnotationOld,
   NodeDto,
   Character,
   PropertyConfigDataType,
@@ -12,9 +11,13 @@ import {
   EntityNode,
   CollectionNode,
   ToCItem,
+  Annotation,
 } from '../../models/types';
 import { EditorView } from '@tiptap/pm/view';
 import { Node } from '@tiptap/pm/model';
+import { useGuidelinesStore } from '../../store/guidelines';
+
+const { getAnnotationType } = useGuidelinesStore();
 
 /**
  * Recursively builds a tree of {@link ToCItem} nodes from a ProseMirror node's block children.
@@ -32,16 +35,19 @@ export function buildDocChildren(node: Node, contentStartPos: number): ToCItem[]
       return;
     }
 
+    const annotationType: string = getAnnotationType(child.type.name);
     const childPos: number = contentStartPos + offset;
 
     result.push({
       key: child.attrs.uuid ?? childPos.toString(),
-      label: child.attrs._annotationData?.type ?? child.type.name,
+      label: annotationType,
       data: {
         text: child.textContent ?? '',
         pos: childPos,
         nodeSize: child.nodeSize,
         nodeType: child.type.name,
+        type: annotationType,
+        level: child.attrs.level ?? null,
         _annotationData: child.attrs._annotationData,
         _semanticBlocks: child.attrs._semanticBlocks ?? [],
       },
@@ -76,10 +82,10 @@ export function buildDocStructure(doc: Node): ToCItem[] {
  */
 export function buildStandoffJson(
   characters: Character[],
-  annotations: AnnotationOld[],
+  annotations: Annotation[],
 ): StandoffJson {
   const text: string = characters.map(c => c.data.text).join('');
-  const standoffAnnotations: StandoffAnnotation[] = annotations.map(a => a.data.properties);
+  const standoffAnnotations: StandoffAnnotation[] = annotations.map(a => a.node.data);
 
   return {
     text,
@@ -608,13 +614,13 @@ export function isCaretAtEnd(
 /**
  * Toggles the text highlighting for the given annotation by adding CSS classes to annotated span elements.
  *
- * @param {AnnotationOld} annotation - The annotation for which to toggle highlighting.
+ * @param {Annotation} annotation - The annotation for which to toggle highlighting.
  * @param {'on' | 'off'} direction - The direction of the toggle operation.
  * @return {void}
  */
-export function toggleTextHightlighting(annotation: AnnotationOld, direction: 'on' | 'off'): void {
+export function toggleTextHightlighting(annotation: Annotation, direction: 'on' | 'off'): void {
   const annotatedSpans: NodeListOf<HTMLSpanElement> = document.querySelectorAll(
-    `#text > span:has(span[data-anno-uuid="${annotation.data.properties.uuid}"])`,
+    `#text > span:has(span[data-anno-uuid="${annotation.node.data.uuid}"])`,
   );
 
   if (annotatedSpans.length === 0) {

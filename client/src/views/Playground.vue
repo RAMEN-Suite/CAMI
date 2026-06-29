@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { EditorContent } from '@tiptap/vue-3';
-import { h, onMounted, onUnmounted } from 'vue';
+import { onMounted, onUnmounted } from 'vue';
 import EditorAnnotationButtonPane from '../components/EditorAnnotationButtonPane.vue';
 import EditorToC from '../components/EditorToC.vue';
-import { AnnotationOld, NodeStatusObject } from '../models/types';
+import { Annotation, NodeStatusObject } from '../models/types';
 import EditorAnnotationForm from '../components/EditorAnnotationForm.vue';
 import Button from 'primevue/button';
 import { useTiptapStore } from '../store/tiptap';
@@ -59,9 +59,9 @@ function handleClick() {
   });
 }
 
-function toggleTextHightlighting(annotation: AnnotationOld, direction: 'on' | 'off'): void {
+function toggleTextHightlighting(annotation: Annotation, direction: 'on' | 'off'): void {
   const annotatedSpans: NodeListOf<HTMLSpanElement> = document.querySelectorAll(
-    `#editor span[data-anno-uuid="${annotation.data.properties.uuid}"]`,
+    `#editor span[data-anno-uuid="${annotation.node.data.uuid}"]`,
   );
 
   if (annotatedSpans.length === 0) {
@@ -143,10 +143,7 @@ function toggleTextHightlighting(annotation: AnnotationOld, direction: 'on' | 'o
       <div>
         <h3>Annotations ({{ annotations?.size }})</h3>
 
-        <template
-          v-for="annotation in annotations?.values()"
-          :key="annotation.data.properties.uuid"
-        >
+        <template v-for="annotation in annotations?.values()" :key="annotation.node.data.uuid">
           <EditorAnnotationForm :annotation="annotation" />
         </template>
       </div>

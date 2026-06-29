@@ -34,6 +34,7 @@ import {
   BaseNodeData,
   TextUpdateDto,
   NodeStatus,
+  BuiltinStructuralType,
 } from '../models/types.ts';
 import { useEditorStore } from '../store/editor.ts';
 import { useShortcutsStore } from '../store/shortcuts.ts';
@@ -70,8 +71,12 @@ const {
   setNewInitialState,
 } = useTiptapStore();
 
-const { getStructuralAnnotationConfig, getTypeByEditorRole, isBuiltinStructuralType } =
-  useGuidelinesStore();
+const {
+  getStructuralAnnotationConfig,
+  getAnnotationType,
+  getEditorOwnedProperties,
+  isBuiltinStructuralType,
+} = useGuidelinesStore();
 
 onUnmounted(() => destroyTiptap());
 
@@ -94,35 +99,6 @@ const { api, addToastMessage } = useAppStore();
 
 const { isRedrawMode, redrawMode, toggleRedrawMode } = useEditorStore();
 const { error: textFetchError, text, initialText, fetchAndInitializeText } = useTextStore();
-// const {
-//   afterEndIndex,
-//   beforeStartIndex,
-//   error: charactersFetchError,
-//   initialAfterEndCharacter,
-//   initialBeforeStartCharacter,
-//   initialSnippetCharacters,
-//   snippetCharacters,
-//   totalCharacters,
-//   fetchAndInitializeCharacters,
-//   insertSnippetIntoChain,
-//   resetCharacters,
-//   resetInitialBoundaryCharacters,
-// } = useCharactersStore();
-// const {
-//   error: annotationFetchError,
-//   initialSnippetAnnotations,
-//   initialTotalAnnotations,
-//   snippetAnnotations,
-//   totalAnnotations,
-//   extractSnippetAnnotations,
-//   fetchAndInitializeAnnotations,
-//   insertSnippetIntoTotalAnnotations,
-//   getAnnotationsToSave,
-//   resetAnnotations,
-//   updateAnnotationsBeforeSave,
-//   updateAnnotationStatuses,
-//   updateTruncationStatus,
-// } = useAnnotationStore();
 const { shortcutMap, normalizeKeys } = useShortcutsStore();
 
 useTitle(computed(() => `Text | ${text.value?.nodeLabels.join(', ') ?? ''}`));
@@ -312,48 +288,51 @@ function findChangedAnnotations(indexMap: IndexMap, plainText: string): Annotati
   return affectedAnnos;
 }
 
-function getConfiguredNodeAttrs(node: DocNode, _tiptapType: string) {
-  // Base: all neo4j data stored in _annotationData at load time (uuid, type, custom properties, …)
+/**
+ * Collects and returns all properties for the neo4j payload of a structural annotation node.
+ *
+ * Single assembly point for a structural node's das which merges the different sources of truth:
+ * - Domain props from the tiptap node's `_annotationData` attribute,
+ * - Editor-owned props from the live tiptap-native attrs (e.g. `level` for headings),
+ * - uuid from the UniqueID extension
+ * - The annotation type itself from the node's editor role (if a mapping between built-in and custom name was configured)
+ *
+ * @param {DocNode} node The Tiptap node from where the data should be collected.
+ * @returns {Record<string, any>} The collected properties
+ */
+function assembleStructuralAnnotationData(node: DocNode): Record<string, any> {
   const neo4jProperties: Record<string, any> = {};
 
-  // The Tiptap editor role (paragraph, heading, tableCell etc.) is the source of truth for the
-  // structural type. Map it through the guidelines to the project's configured type name so a
-  // renamed built-in is always saved canonically (e.g. role "paragraph" -> "p"), and nodes created
-  // in the editor (which have no `_annotationData`) never leak the raw editor role into the store.
-  const editorRole: string = node.type.name;
-  const canonicalType: string = getTypeByEditorRole(editorRole);
+  const editorRole: BuiltinStructuralType = node.type.name as BuiltinStructuralType;
+  const annotationType: string = getAnnotationType(editorRole);
   const annotationData = node.attrs._annotationData ?? {};
 
-  // 1. retrieve configured attributes from node (e.g. not "data-toc-id" or anything editor related)
-  const fields: PropertyConfig[] = getStructuralAnnotationConfig(canonicalType)?.properties ?? [];
+  const editorOwned = getEditorOwnedProperties(annotationType);
+
+  // 1. Domain properties: read from `_annotationData`, skipping the editor-owned ones.
+  const fields: PropertyConfig[] = getStructuralAnnotationConfig(annotationType)?.properties ?? [];
 
   fields.forEach((field: PropertyConfig) => {
+    if (editorOwned.some(map => map.property === field.name)) {
+      return;
+    }
+
     if (field.name in annotationData) {
       neo4jProperties[field.name] = annotationData[field.name];
     }
   });
 
-  // 2. Override properties that are handled by tiptap
+  // 2. Editor-owned properties: read the live native node's attribute (level/colspan/rowspan) and store it
+  // under its configured project property name (e.g. native `level` -> project `n`).
+  for (const { property, attribute } of editorOwned) {
+    if (node.attrs[attribute] !== undefined) {
+      neo4jProperties[property] = node.attrs[attribute];
+    }
+  }
 
-  // UUID is managed by the UniqueID extension — this is authoritative after
-  // any tiptap operations (e.g. copy-paste that assigns a fresh uuid to a duplicated block).
+  // 3. Authorative properties: type and uuid non-configurable, must always exist
   neo4jProperties.uuid = node.attrs.uuid;
-
-  // Type property: Essential for saving annotations. Always the canonical configured type.
-  neo4jProperties.type = canonicalType;
-
-  // tiptap-native attrs that may have been edited in the UI, override the
-  // stale _annotationData values with the current tiptap attr values.
-  if (editorRole === 'heading' && node.attrs.level !== undefined) {
-    neo4jProperties.level = node.attrs.level;
-  }
-
-  const isPartOfTable: boolean = editorRole === 'tableCell' || editorRole === 'tableHeader';
-
-  if (isPartOfTable && node.attrs.colspan !== undefined) {
-    neo4jProperties.colspan = node.attrs.colspan;
-    neo4jProperties.rowspan = node.attrs.rowspan;
-  }
+  neo4jProperties.type = annotationType;
 
   return neo4jProperties;
 }
@@ -390,7 +369,7 @@ function findChangedStructureElements(indexMap: IndexMap, plainText: string): An
     const annotation: Annotation = {
       node: {
         data: {
-          ...getConfiguredNodeAttrs(docNode, docNode.type.name),
+          ...assembleStructuralAnnotationData(docNode),
           startIndex,
           endIndex,
           text: textSlice,

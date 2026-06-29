@@ -3,6 +3,9 @@ import { Plugin, PluginKey, Transaction } from '@tiptap/pm/state';
 import { Node } from '@tiptap/pm/model';
 import { Decoration, DecorationSet } from '@tiptap/pm/view';
 import { EditorSettings } from '../../../models/types';
+import { useGuidelinesStore } from '../../../store/guidelines';
+
+const { getAnnotationType } = useGuidelinesStore();
 
 type BlockDecorationState = {
   decoSet: DecorationSet;
@@ -165,10 +168,8 @@ function getBaseLabel(node: Node): string {
     return 'table';
   }
 
-  // Return type as fallback
-  const type: string = node.attrs._annotationData?.type ?? role;
-
-  return type;
+  // Return the canonical configured type as fallback, derived from the live node's editor role.
+  return getAnnotationType(role);
 }
 
 /**

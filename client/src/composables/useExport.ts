@@ -1,6 +1,4 @@
 import { ref, readonly, Ref, DeepReadonly } from 'vue';
-import { useAnnotationStore } from '../store/annotations';
-import { useCharactersStore } from '../store/characters';
 import { StandoffJson } from '../models/types';
 import { buildStandoffJson } from '../utils/helper/helper';
 
@@ -32,8 +30,8 @@ export type UseExportReturn = {
  * @returns {UseExportReturn}
  */
 export function useExport(): UseExportReturn {
-  const { totalAnnotations } = useAnnotationStore();
-  const { totalCharacters } = useCharactersStore();
+  const totalCharacters = ref([]);
+  const totalAnnotations = ref([]);
 
   const jsonToExport = ref<string>('');
   const status = ref<ExportStatus>('idle');

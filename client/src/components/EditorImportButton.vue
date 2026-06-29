@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useCharactersStore } from '../store/characters';
 import Button from 'primevue/button';
 import { useDialog } from 'primevue';
 import ImportModal from './ImportModal.vue';
@@ -9,29 +8,9 @@ import { useAppStore } from '../store/app';
 const dialog = useDialog();
 
 const { createModalInstance, destroyModalInstance } = useAppStore();
-const { afterEndIndex, beforeStartIndex, initialSnippetCharacters, snippetCharacters } =
-  useCharactersStore();
 
 const editorContainsText = computed<boolean>(() => {
-  const snippetContainsText: boolean = snippetCharacters.value.length > 0;
-  const textBeforeOrAfter: boolean =
-    beforeStartIndex.value !== null || afterEndIndex.value !== null;
-  // Allow import only when text was loaded empty from the database
-  const hasInitialText: boolean = initialSnippetCharacters.value.length > 0;
-
-  if (snippetContainsText) {
-    return true;
-  }
-
-  if (!snippetContainsText && textBeforeOrAfter) {
-    return true;
-  }
-
-  if (hasInitialText) {
-    return true;
-  }
-
-  return false;
+  return true;
 });
 
 function openImportModal(): void {

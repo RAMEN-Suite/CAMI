@@ -131,6 +131,14 @@ function handleShrink(): void {
   // execCommand('shrinkAnnotation', { annotation });
 }
 
+function handleSpyHover(direction: 'on' | 'off'): void {
+  const renderType = config.isZeroPoint ? 'zeroPoint' : 'range';
+
+  tiptap.value?.commands.toggleAnnotationHighlight(direction, props.annotation.node.data.uuid, {
+    displayType: renderType,
+  });
+}
+
 function toggleCollapsed(newState?: boolean): void {
   isCollapsed.value = newState ?? !isCollapsed.value;
 }
@@ -190,7 +198,12 @@ function updateData(): void {
         <span class="font-italic text-xs text-color-secondary" :title="workingData.node.data.text">
           {{ previewText }}
         </span>
-        <!-- <div class="spy pi pi-eye cursor-pointer" title="Show annotated text"></div> -->
+        <div
+          class="spy pi pi-eye cursor-pointer"
+          title="Show annotated text"
+          @mouseover="handleSpyHover('on')"
+          @mouseleave="handleSpyHover('off')"
+        ></div>
       </div>
       <NodeStatusBadge :status="workingData.meta.status" />
       <Button
@@ -223,7 +236,6 @@ function updateData(): void {
         />
       </Fieldset>
       <AnnotationFormAdditionalNodesSection
-        v-if="config.hasEntities === true"
         v-model="workingData.connectedNodes"
         :mode="mode"
         :annotation-config="config"

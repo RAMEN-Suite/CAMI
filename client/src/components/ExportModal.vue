@@ -1,22 +1,21 @@
 <script setup lang="ts">
-import { inject, watch, computed } from 'vue';
+import { inject, watch, computed, ref } from 'vue';
 import Button from 'primevue/button';
 import ButtonGroup from 'primevue/buttongroup';
 import Message from 'primevue/message';
 import Textarea from 'primevue/textarea';
 import { useExport } from '../composables/useExport';
 import { RouteLocationNormalizedLoaded, useRoute } from 'vue-router';
-import { useEditorStore } from '../store/editor';
-import { useCharactersStore } from '../store/characters';
-import { useAnnotationStore } from '../store/annotations';
+import { useTiptapStore } from '../store/tiptap';
 
 const route: RouteLocationNormalizedLoaded = useRoute();
 
 const { jsonToExport, status, errorMessages, buildJson, copyToClipboard, downloadJson, reset } =
   useExport();
-const { hasUnsavedChanges } = useEditorStore();
-const { totalCharacters } = useCharactersStore();
-const { totalAnnotations } = useAnnotationStore();
+const { hasUnsavedChanges } = useTiptapStore();
+
+const totalCharacters = ref([]);
+const totalAnnotations = ref([]);
 
 const textHasUnsavedChanges = hasUnsavedChanges();
 

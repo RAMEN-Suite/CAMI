@@ -30,6 +30,7 @@ import { CustomBlock } from '../editors/text/extensions/customBlock';
 import { BlockDecorations } from '../editors/text/extensions/blockDecorations';
 import { history } from 'prosemirror-history';
 import { useEditorSettingsStore } from './editorSettings';
+import { AnnotationHighlight } from '../editors/text/extensions/annotationHighlight';
 
 const { selectedOptions } = useFilterStore();
 const { settings } = useEditorSettingsStore();
@@ -73,6 +74,7 @@ function getConfiguredExtensions(): any[] {
       generateID: () => crypto.randomUUID(),
     }),
     AnnotationAttributes,
+    AnnotationHighlight,
   ];
 }
 

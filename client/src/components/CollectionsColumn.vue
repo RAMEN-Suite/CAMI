@@ -42,7 +42,12 @@ const addMenu = useTemplateRef('add-menu');
 
 const addMenuItems: MenuItem[] = [
   { label: 'New', icon: 'pi pi-file-plus', command: () => openCreateCollectionModal('new') },
-  { label: 'Existing', icon: 'pi pi-search', command: () => openCreateCollectionModal('existing') },
+  {
+    label: 'Existing',
+    icon: 'pi pi-search',
+    command: () => openCreateCollectionModal('existing'),
+    visible: props.index !== 0,
+  },
 ];
 
 const availableCollectionLabels = getAvailableCollectionLabels();

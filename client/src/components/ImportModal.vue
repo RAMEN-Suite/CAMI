@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, useTemplateRef, inject, watch } from 'vue';
 import { useEventListener } from '@vueuse/core';
-import { useAnnotationStore } from '../store/annotations';
-import { useCharactersStore } from '../store/characters';
 import { formatFileSize } from '../utils/helper/helper';
 import ProgressBar from 'primevue/progressbar';
 import Button from 'primevue/button';
@@ -16,15 +14,6 @@ import { RouteLocationNormalizedLoaded, useRoute } from 'vue-router';
 
 const route: RouteLocationNormalizedLoaded = useRoute();
 
-const { totalAnnotations } = useAnnotationStore();
-const {
-  afterEndIndex,
-  beforeStartIndex,
-  initialSnippetCharacters,
-  snippetCharacters,
-  totalCharacters,
-} = useCharactersStore();
-
 const {
   currentStep,
   errorMessages,
@@ -34,6 +23,9 @@ const {
   finish: finishImport,
   importJson,
 } = useImport();
+
+const totalCharacters = ref([]);
+const totalAnnotations = ref([]);
 
 const dialogRef: any = inject('dialogRef');
 const fileupload = useTemplateRef('fileupload');
@@ -49,25 +41,7 @@ const inputIsValid = computed<boolean>(() => {
 });
 
 const editorContainsText = computed<boolean>(() => {
-  const snippetContainsText: boolean = snippetCharacters.value.length > 0;
-  const textBeforeOrAfter: boolean =
-    beforeStartIndex.value !== null || afterEndIndex.value !== null;
-  // Allow import only when text was loaded empty from the database
-  const hasInitialText: boolean = initialSnippetCharacters.value.length > 0;
-
-  if (snippetContainsText) {
-    return true;
-  }
-
-  if (!snippetContainsText && textBeforeOrAfter) {
-    return true;
-  }
-
-  if (hasInitialText) {
-    return true;
-  }
-
-  return false;
+  return true;
 });
 
 // Needs to be instantiated at top-level to make Vue track changes better
