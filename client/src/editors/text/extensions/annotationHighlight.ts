@@ -6,20 +6,20 @@ import { Node } from "@tiptap/pm/model";
 
 type ToggleDirection = "on" | "off";
 
-type HighlightOptions = {
+interface HighlightOptions {
   displayType: "range" | "zeroPoint" | "block" | "semanticBlock";
-};
+}
 
-type HighlightMeta = {
+interface HighlightMeta {
   uuid: string;
   options: HighlightOptions;
   direction: ToggleDirection;
-};
+}
 
-type Range = {
+interface Range {
   from: number;
   to: number;
-};
+}
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {

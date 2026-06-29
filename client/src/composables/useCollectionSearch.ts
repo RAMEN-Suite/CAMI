@@ -35,7 +35,7 @@ export function useCollectionSearch(rowCount?: number) {
     searchInput: "",
     nodeLabels: availableCollectionLabels.value,
     rowCount: DEFAULT_ROW_COUNT,
-    sortDirection: "asc" as "asc" | "desc",
+    sortDirection: "asc",
   });
 
   /**

@@ -9,10 +9,11 @@ import CollectionBreadcrumbs from "../components/CollectionBreadcrumbs.vue";
 import CollectionsColumn from "../components/CollectionsColumn.vue";
 import CollectionEditPane from "../components/CollectionEditPane.vue";
 import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from "vue-router";
-import { CollectionNode } from "../models/types";
+import { CollectionNode, NodeDto } from "../models/types";
 import CollectionPathError from "../components/CollectionPathError.vue";
 import { useAppStore } from "../store/app";
 import PageOverlay from "../components/PageOverlay.vue";
+import { LocationQueryValue } from "vue-router";
 
 // Initial pageload
 const isLoading = ref<boolean>(true);
@@ -35,13 +36,17 @@ const router = useRouter();
 
 watch(
   () => route.query.path,
-  async (newValue: string) => {
+  async (newValue: LocationQueryValue | LocationQueryValue[]) => {
+    if (typeof newValue !== "string") {
+      return;
+    }
+
     // TODO: This can be refactored...
     // On first page load
     if (isLoading.value) {
       try {
         // If path exists on page load, validate it. Else, just fetch top-level collections
-        const newPath: CollectionNode[] = newValue ? await validatePath(newValue) : [];
+        const newPath: NodeDto<CollectionNode>[] = newValue ? await validatePath(newValue) : [];
         updateLevelsAndFetchData(newPath);
 
         isPathValid.value = true;
@@ -61,7 +66,7 @@ watch(
     }
 
     try {
-      const newPath: CollectionNode[] = await validatePath(newValue as string);
+      const newPath: CollectionNode[] = await validatePath(newValue);
       updateLevelsAndFetchData(newPath);
 
       isPathValid.value = true;

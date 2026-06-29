@@ -65,12 +65,12 @@ useInfiniteScroll(scrollPane, fetchMoreData, {
   distance: searchParams.value.rowCount,
   canLoadMore: () => {
     // Prevent parallel loading
-    if (isLoading.value === true) {
+    if (isLoading.value) {
       return false;
     }
 
     // Initial data fetching should come from the component lifecycle
-    if (initialDataAreFetched.value === false) {
+    if (!initialDataAreFetched.value) {
       return false;
     }
 
@@ -154,7 +154,7 @@ function openCreateCollectionModal(mode: "new" | "existing") {
   }
 
   const parentCollection: CollectionNode | null =
-    props.index > 0 ? (levels.value[props.index - 1]?.activeCollection?.node ?? null) : null;
+    props.index > 0 ? levels.value[props.index - 1]?.activeCollection?.node ?? null : null;
 
   //TODO: this is a hack, should be removed
   if (parentCollection && !parentCollection.nodeLabels.includes("Collection")) {
@@ -251,7 +251,7 @@ function handleNodeLabelsChange(selectedLabels: string[]) {
 }
 
 async function handleRefreshClick() {
-  if (isLoading.value === true) {
+  if (isLoading.value) {
     return;
   }
 
@@ -295,9 +295,7 @@ async function handleSearchParamsChange() {
  * @returns {NodeDto<CollectionNode>[]} The filtered data.
  */
 function removeDuplicatesAfterFetching(data: NodeDto<CollectionNode>[]): NodeDto<CollectionNode>[] {
-  const existingUuids: Set<string> = new Set(
-    levels.value[props.index].collections.map((c: ColumnEntry) => c.data.node.data.uuid),
-  );
+  const existingUuids = new Set<string>(levels.value[props.index].collections.map((c: ColumnEntry) => c.data.node.data.uuid));
 
   const filteredData: NodeDto<CollectionNode>[] = data.filter((c) => !existingUuids.has(c.node.data.uuid));
 

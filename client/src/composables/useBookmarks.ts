@@ -4,11 +4,11 @@ import type { Bookmark } from "../models/types";
 
 type BookmarkParams = Omit<Bookmark, "createdAt" | "updatedAt">;
 
-type UseBookmarksReturnType = {
+interface UseBookmarksReturnType {
   bookmarks: DeepReadonly<Ref<Bookmark[]>>;
   removeBookmark: (uuid: string) => void;
   toggleBookmark: (params: BookmarkParams) => void;
-};
+}
 
 /**
  * A composable function that provides a way to manage bookmarks in the browser's local storage.

@@ -28,15 +28,15 @@ interface DataDump {
   };
 }
 
-type ErrorMessage = {
+interface ErrorMessage {
   severity: string;
   content: string;
   id: number;
-};
+}
 
 type PipelineStep = null | "validating" | "importing" | "finishing";
 
-export type UseImportReturn = {
+export interface UseImportReturn {
   currentStep: Readonly<Ref<PipelineStep, PipelineStep>>;
   errorMessages: DeepReadonly<Ref<ErrorMessage[], ErrorMessage[]>>;
   rawJson: Ref<string, string>;
@@ -45,7 +45,7 @@ export type UseImportReturn = {
   finish: () => void;
   importJson: () => Promise<void>;
   setPipelineStep: (step: PipelineStep) => void;
-};
+}
 
 /**
  * A composable function that provides a pipeline for importing JSON data into the Editor.
@@ -289,7 +289,7 @@ export function useImport(): UseImportReturn {
           if (field.name in a) {
             newAnnotationProperties[field.name] = a[field.name];
           } else {
-            newAnnotationProperties[field.name] = field?.required === true ? getDefaultValueForProperty(field.type) : null;
+            newAnnotationProperties[field.name] = (field?.required) ? getDefaultValueForProperty(field.type) : null;
           }
         });
 
@@ -341,7 +341,7 @@ export function useImport(): UseImportReturn {
           `Some annotations are not correct. ` +
           `${invalidIndicesAnnotations.length} annotations because of invalid indices, ` +
           `${unconfiguredTypeAnnotations.length} annotations because of unconfigured types` +
-          `${unconfiguredTypesList.length > 0 ? `(${unconfiguredTypesList})` : ""}` +
+          (unconfiguredTypesList.length > 0 ? `(${unconfiguredTypesList})` : "") +
           `.`;
 
         throw new MalformedAnnotationsError(message);

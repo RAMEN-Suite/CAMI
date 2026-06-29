@@ -28,7 +28,7 @@ export const CustomBlock = Node.create({
         getAttrs: (el) => ({
           _annotationData: (() => {
             try {
-              return JSON.parse((el as HTMLElement).getAttribute("data-block") ?? "null");
+              return JSON.parse((el).getAttribute("data-block") ?? "null");
             } catch {
               return null;
             }

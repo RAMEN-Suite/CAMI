@@ -122,7 +122,7 @@ function hasUnsavedChanges(): boolean {
 }
 
 function initializeTiptap(standoffObject: { text: string; annotations: NodeDto[] }): void {
-  const converter: StandoffConverter = new StandoffConverter(standoffObject as ApiJson);
+  const converter: StandoffConverter = new StandoffConverter(standoffObject);
   const { tipTapJson, annotations, structuralAnnotations } = converter.getData();
 
   setAnnotations({ annotations, structuralAnnotations });

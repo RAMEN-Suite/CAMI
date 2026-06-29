@@ -9,10 +9,10 @@ declare module "@tiptap/core" {
   }
 }
 
-type ZeroPointAttributes = {
+interface ZeroPointAttributes {
   uuid: string;
   annotationData: AnnotationNode;
-};
+}
 
 export const ZeroPointAnnotation = Node.create({
   name: "zeroPointAnnotation",

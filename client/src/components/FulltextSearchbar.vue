@@ -8,13 +8,13 @@ import { useTiptapStore } from "../store/tiptap";
 /**
  *  Enriches Search with an html key that contains the formatted search result
  */
-type SearchResult = {
+interface SearchResult {
   index: number;
   match: string;
   startIndex: number;
   endIndex: number;
   html: string;
-};
+}
 
 /**
  * Interface for relevant state information about the text search
@@ -51,7 +51,7 @@ async function searchTextMatches(searchString: string): Promise<void> {}
 function setIsSearchActive(mode: boolean): void {
   isSearchActive.value = mode;
 
-  if (mode === false) {
+  if (!mode) {
     return;
   }
 

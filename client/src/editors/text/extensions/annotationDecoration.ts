@@ -30,39 +30,39 @@ declare module "@tiptap/core" {
   }
 }
 
-type AnnotationDecorationState = {
+interface AnnotationDecorationState {
   all: DecorationSet;
   filtered: DecorationSet;
   visibleFrom: number;
   visibleTo: number;
   selectedTypes: string[];
-};
+}
 
 type TransactionMeta = InitMeta | FilterUpdateMeta | ViewportMeta | undefined;
 
-type InitMeta = {
+interface InitMeta {
   type: "initialize";
   annotations: Map<string, AnnotationNode>;
   visibleFrom: number;
   visibleTo: number;
   selectedTypes: string[];
-};
+}
 
-type FilterUpdateMeta = {
+interface FilterUpdateMeta {
   type: "filterUpdated";
   selectedTypes: string[];
-};
+}
 
-type ViewportMeta = {
+interface ViewportMeta {
   type: "viewportChanged";
   visibleFrom: number;
   visibleTo: number;
-};
+}
 
-type AnnotationDecorationSpec = {
+interface AnnotationDecorationSpec {
   _type: string;
   _uuid: string;
-};
+}
 
 function createDecoration(from: number, to: number, annotation: AnnotationNode): Decoration {
   return Decoration.inline(

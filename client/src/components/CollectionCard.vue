@@ -11,9 +11,7 @@ const props = defineProps<{
   mode: "edit" | "view";
 }>();
 
-const emit = defineEmits<{
-  (e: "remove-node"): void;
-}>();
+const emit = defineEmits<(e: "remove-node") => void>();
 
 const node = defineModel<NodeStatusObject<CollectionNode>>();
 

@@ -87,7 +87,7 @@ nodes.value.forEach((node) => {
 });
 
 function expandAll(): void {
-  for (let node of nodes.value) {
+  for (const node of nodes.value) {
     expandNode(node);
   }
 
@@ -99,10 +99,10 @@ function collapseAll(): void {
 }
 
 function expandNode(node: TreeNode): void {
-  if (node.children && node.children.length) {
+  if (node.children?.length) {
     expandedKeys.value[node.key] = true;
 
-    for (let child of node.children) {
+    for (const child of node.children) {
       expandNode(child);
     }
   }

@@ -7,10 +7,10 @@ import { IAnnotation } from "../models/IAnnotation";
  * Return type for the `useCreateAnnotation` hook.
  * Provides factory functions for creating different types of annotations.
  */
-type UseCreateAnnotationReturnType = {
+interface UseCreateAnnotationReturnType {
   createCollectionAnnotation: (params: { nodeLabels: string[]; subType?: string | number; type: string }) => Annotation;
   createTextAnnotation: (params: { selectedText: string; subType?: string | number; type: string }) => Annotation;
-};
+}
 
 /**
  * A composable function that is used to create annotations for collections and texts.
@@ -68,7 +68,7 @@ export function useCreateAnnotation(scope: "Content" | "Collection"): UseCreateA
     const baseNodeData: IAnnotation = {} as IAnnotation;
 
     fields.forEach((field: PropertyConfig) => {
-      baseNodeData[field.name] = field?.required === true ? getDefaultValueForProperty(field.type) : null;
+      baseNodeData[field.name] = field?.required ? getDefaultValueForProperty(field.type) : null;
     });
 
     // Set explicitly after the fields are set to override default values if necessary

@@ -197,7 +197,7 @@ function enrichCollectionData(): void {
   allPossibleFields.forEach((field) => {
     if (!(field.name in temporaryWorkData.value.collection.node.data)) {
       temporaryWorkData.value.collection.node.data[field.name] =
-        field?.required === true ? getDefaultValueForProperty(field.type) : null;
+        (field?.required) ? getDefaultValueForProperty(field.type) : null;
     }
   });
 }

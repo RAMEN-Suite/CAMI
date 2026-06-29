@@ -4,11 +4,11 @@ import { useGuidelinesStore } from "../store/guidelines";
 import { useTimeoutFn } from "@vueuse/core";
 import { FETCH_DELAY } from "../config/constants";
 
-export type UseSearchParamsReturn = {
+export interface UseSearchParamsReturn {
   searchParams: DeepReadonly<Ref<NodeSearchParams>>;
   resetSearchParams: () => void;
   updateSearchParams: (params: NodeSearchParams, options?: { immediate: boolean }) => void;
-};
+}
 
 /**
  * Composable function for managing search parameters for fetching node data.
@@ -42,7 +42,7 @@ export function useSearchParams(options: {
     nodeLabels: availableNodeLabels,
     offset: 0,
     rowCount: DEFAULT_ROW_COUNT,
-    sortDirection: "asc" as "asc" | "desc",
+    sortDirection: "asc",
   });
 
   /**

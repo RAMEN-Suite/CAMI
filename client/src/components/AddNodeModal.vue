@@ -44,7 +44,7 @@ function handleFinishClick(): void {
     return;
   }
 
-  emit("submit", toValue(nodeToAdd) as NodeStatusObject);
+  emit("submit", toValue(nodeToAdd.value));
 
   finishProcess();
   closeModal();

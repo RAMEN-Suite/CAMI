@@ -73,7 +73,7 @@ function resetSearch(): void {
 function setIsSearchActive(mode: boolean): void {
   isSearchActive.value = mode;
 
-  if (mode === false) {
+  if (!mode) {
     return;
   }
 }

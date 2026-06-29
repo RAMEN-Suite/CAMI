@@ -18,7 +18,7 @@ const home = ref<MenuItem>({
 const breadcrumbItems = computed<MenuItem[]>(() =>
   props.path.map((item, index) => ({
     index,
-    label: (item.node as CollectionNode).data.label,
+    label: (item.node).data.label,
     command: () => emit("itemClicked", { index, uuid: item.node.data.uuid }),
   })),
 );

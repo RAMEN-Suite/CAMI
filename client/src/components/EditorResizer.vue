@@ -26,7 +26,7 @@ const arrowDirection: ComputedRef<string> = computed(() => {
 });
 
 const resizerClasses: ComputedRef<string> = computed(() => {
-  return ["resizer", `resizer-${position}`, `${isActive.value ? "active" : ""}`].join(" ");
+  return ["resizer", `resizer-${position}`, isActive.value ? "active" : ""].join(" ");
 });
 
 function toggleSidebar() {

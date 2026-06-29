@@ -120,7 +120,7 @@ export function capitalize(inputString: string): string {
  */
 export function cloneDeep<T>(input: T): T {
   if (input instanceof Map) {
-    const clonedMap: Map<any, any> = new Map() as Map<any, any>;
+    const clonedMap = new Map<any, any>();
 
     // new Map(input) would not work since the reference to nested objects would still be the same
     input.forEach((value, key) => {
@@ -282,7 +282,7 @@ export function areSetsEqual(setA: Set<string>, setB: Set<string>): boolean {
     return false;
   }
 
-  for (let item of setA) {
+  for (const item of setA) {
     if (!setB.has(item)) {
       return false;
     }

@@ -1,15 +1,15 @@
 import { ref, readonly, Ref, DeepReadonly } from "vue";
 import { NodeStatusObject } from "../models/types";
 
-type ErrorMessage = {
+interface ErrorMessage {
   severity: string;
   content: string;
   id: number;
-};
+}
 
 type PipelineStep = null | "choosing" | "editing" | "finishing";
 
-export type UseAddNodeReturn = {
+export interface UseAddNodeReturn {
   currentStep: Readonly<Ref<PipelineStep, PipelineStep>>;
   errorMessages: DeepReadonly<Ref<ErrorMessage[], ErrorMessage[]>>;
   node: Ref<NodeStatusObject | null>;
@@ -19,7 +19,7 @@ export type UseAddNodeReturn = {
   init: () => Promise<void>;
   setNode: (node: NodeStatusObject | null) => void;
   setPipelineStep: (step: PipelineStep) => void;
-};
+}
 
 /**
  * A composable function that provides a pipeline for importing JSON data into the Editor.

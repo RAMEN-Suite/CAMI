@@ -17,15 +17,13 @@ type EntityEntry = EntityNode & { html: string };
 /**
  * Interface for relevant state information about each entities category
  */
-interface EntitiesSearchObject {
-  [key: string]: {
+type EntitiesSearchObject = Record<string, {
     fetchedItems: EntityEntry[] | string[];
     nodeLabel: string;
     currentItem: EntityEntry | null;
     mode: "edit" | "view";
-    elm: Ref<any>;
-  };
-}
+    elm: Ref;
+  }>;
 
 const entities = defineModel<EntityNode[]>();
 

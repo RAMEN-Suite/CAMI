@@ -7,22 +7,22 @@ import { useGuidelinesStore } from "../../../store/guidelines";
 
 const { getAnnotationType } = useGuidelinesStore();
 
-type BlockDecorationState = {
+interface BlockDecorationState {
   decoSet: DecorationSet;
   settings: EditorSettings | null;
-};
+}
 
-type SettingsChangedMeta = {
+interface SettingsChangedMeta {
   type: "settingsChanged";
   settings: EditorSettings;
-};
+}
 
-type TagData = {
+interface TagData {
   kind: "base" | "semantic";
   label: string;
   type: string;
   uuid: string;
-};
+}
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {

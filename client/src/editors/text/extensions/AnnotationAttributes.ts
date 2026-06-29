@@ -43,12 +43,12 @@ function createDefaultAttrs(defaultType: string | null): Record<string, Attribut
  * @returns
  */
 function createCustomAttributes(config: AnnotationType): Record<string, Attribute> {
-  let nodeAttrs: Record<string, Attribute> = {};
+  const nodeAttrs: Record<string, Attribute> = {};
 
   const configuredFields: PropertyConfig[] = config?.properties ?? [];
 
   configuredFields.forEach((field: PropertyConfig) => {
-    const defaultValue: any = field.required === true ? getDefaultValueForProperty(field.type) : null;
+    const defaultValue: any = field.required ? getDefaultValueForProperty(field.type) : null;
 
     const htmlDataKey: string = `data-${[field.name]}`;
 

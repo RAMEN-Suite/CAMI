@@ -215,6 +215,7 @@ const displayedLabel = computed<string>(() => {
   <Popover ref="block-info-popover" dismissable closeOnEscape>
     <pre
       >{{ JSON.stringify(props.item.data, null, 2) }}
-  </pre>
+  </pre
+    >
   </Popover>
 </template>

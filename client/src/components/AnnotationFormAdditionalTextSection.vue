@@ -7,9 +7,8 @@ import Fieldset from "primevue/fieldset";
 import Select from "primevue/select";
 import { AdditionalText } from "../models/types";
 import InputGroup from "primevue/inputgroup";
-import IText from "../models/IText";
 import NodeTag from "./NodeTag.vue";
-import IAnnotation from "../models/IAnnotation";
+import { IAnnotation } from "../models/IAnnotation";
 import Tag from "primevue/tag";
 
 /**
@@ -81,7 +80,7 @@ watch(
 function addAdditionalText(): void {
   const annotationType: string = inputObject.value.input.annotationType;
 
-  additionalTexts.value.push({
+  additionalTexts.value?.push({
     annotation: {
       type: annotationType ?? "commentary",
       uuid: crypto.randomUUID(),
@@ -91,7 +90,7 @@ function addAdditionalText(): void {
       data: {
         uuid: crypto.randomUUID(),
         text: inputObject.value.input.text,
-      } as IText,
+      },
     },
   });
 

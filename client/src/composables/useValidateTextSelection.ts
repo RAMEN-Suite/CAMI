@@ -5,9 +5,9 @@ import AnnotationRangeError from "../utils/errors/annotationRange.error";
 /**
  * Return type for the `useValidateTextSelection` composable.
  */
-type UseValidateTextSelectionReturnType = {
+interface UseValidateTextSelectionReturnType {
   isValid: (selection: Selection | undefined, config: AnnotationType) => boolean;
-};
+}
 
 /**
  * A composable that validates the currently selected text in the editor.

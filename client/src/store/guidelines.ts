@@ -110,7 +110,7 @@ export function useGuidelinesStore() {
    */
   function annotationHasConstraints(config: AnnotationType): boolean {
     // TODO: The subType field requires a lot of hacks -> Refactor later
-    if (config.properties?.some((p) => p.required === true && p.name !== "subType")) {
+    if (config.properties?.some((p) => p.required && p.name !== "subType")) {
       return true;
     }
 

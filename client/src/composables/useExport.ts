@@ -4,13 +4,13 @@ import { buildStandoffJson } from "../utils/helper/helper";
 
 type ExportStatus = "idle" | "copied" | "error";
 
-type ErrorMessage = {
+interface ErrorMessage {
   severity: string;
   content: string;
   id: number;
-};
+}
 
-export type UseExportReturn = {
+export interface UseExportReturn {
   jsonToExport: Readonly<Ref<string>>;
   status: Readonly<Ref<ExportStatus>>;
   errorMessages: DeepReadonly<Ref<ErrorMessage[]>>;
@@ -18,7 +18,7 @@ export type UseExportReturn = {
   copyToClipboard: () => Promise<void>;
   downloadJson: (filename?: string) => void;
   reset: () => void;
-};
+}
 
 /**
  * A composable that handles exporting editor data (text and annotations) as Standoff JSON.

@@ -9,8 +9,8 @@ const route: RouteLocationNormalized = useRoute();
 const uuid: string = route.params.uuid as string;
 
 // These two are added to the route in the beforeEnter navigation guard
-const collection: NodeDto<CollectionNode> = route.meta.collection as NodeDto<CollectionNode>;
-const ancestryPaths: NodeAncestry[] = route.meta.ancestryPaths as NodeAncestry[];
+const collection: NodeDto<CollectionNode> = route.meta.collection!;
+const ancestryPaths: NodeAncestry[] = route.meta.ancestryPaths!;
 </script>
 <template>
   <div class="container text-center">

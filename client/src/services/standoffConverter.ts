@@ -6,7 +6,7 @@ type Anno = NodeStatusObject<AnnotationNode>;
 /** Helper for text ranges, used during creation of gap paragraphs when indices are orphaned
  * (not part of any block annotation)
  */
-type Range = { start: number; end: number };
+interface Range { start: number; end: number }
 
 const {
   getStructuralAnnotationConfigs,
@@ -20,17 +20,17 @@ const {
 
 export default class StandoffConverter {
   // Built-in structural annotations (paragraph, heading, table, …) — form the TipTap tree.
-  private structuralAnnotations: Map<string, Anno> = new Map();
+  private structuralAnnotations = new Map<string, Anno>();
   // Custom structural annotations (closer, address, addrLine, …) — attached as _semanticBlocks
   // Semantic blocks on the built-in nodes that contain them (e.g. closer, div, ...), never form tree nodes.
-  private semanticBlockAnnotations: Map<string, Anno> = new Map();
+  private semanticBlockAnnotations = new Map<string, Anno>();
   // Content annotations (person, place, …) — rendered as decorations.
-  private inlineAnnotations: Map<string, Anno> = new Map();
+  private inlineAnnotations = new Map<string, Anno>();
 
   private standoffJson: ApiJson;
   private tiptapJson: TiptapJson | null = null;
   private structuralAnnotationTypes: Set<string>;
-  private usedUuids: Set<string> = new Set();
+  private usedUuids = new Set<string>();
 
   /** Leaf block types: always produce inline content, never recurse into structural children.*/
   private static readonly LEAF_BLOCK_TYPES = new Set(["paragraph", "heading"]);
@@ -58,7 +58,7 @@ export default class StandoffConverter {
     return {
       annotations: this.inlineAnnotations,
       structuralAnnotations: allStructural,
-      tipTapJson: this.tiptapJson as TiptapJson,
+      tipTapJson: this.tiptapJson!,
     };
   }
 
@@ -241,7 +241,7 @@ export default class StandoffConverter {
    * @returns {TiptapNode[]} An array of Tiptap inline nodes (hard breaks, zero point annotations, text nodes)
    */
   private createLeafContent(startIndex: number, endIndex: number): TiptapNode[] {
-    type InlineEntry = { pos: number; node: TiptapNode };
+    interface InlineEntry { pos: number; node: TiptapNode }
 
     function inRange(a: Anno): boolean {
       return a.node.data.startIndex >= startIndex && a.node.data.startIndex <= endIndex;

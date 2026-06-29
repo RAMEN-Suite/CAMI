@@ -13,7 +13,7 @@ const { selectedOptions } = useFilterStore();
 
 // TODO: A max number of annotations should be shown to keep UI from freezing
 const annotationsInSelection = computed<Annotation[]>(() => {
-  if (!tiptap.value || !tiptap.value.state.selection) {
+  if (!tiptap.value?.state.selection) {
     return [];
   }
 
