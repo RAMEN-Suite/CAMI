@@ -85,7 +85,7 @@ jobs:
         run: npm run format
         continue-on-error: true
       - name: Build
-        run: npm run build
+        run: npm run compile
   dev-container:
     name: dev container
     needs: [node-ci]
