@@ -6,6 +6,7 @@ services:
     build:
       context: ./client
       dockerfile: Dockerfile
+      target: dev
     volumes:
       - ./client:/app
     restart: on-failure
@@ -23,6 +24,7 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile
+      target: dev
     #  TODO: Remove ports as soon as nginx setup works?
     ports:
       - "8080:8080"
