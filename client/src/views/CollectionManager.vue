@@ -37,16 +37,12 @@ const router = useRouter();
 watch(
   () => route.query.path,
   async (newValue: LocationQueryValue | LocationQueryValue[]) => {
-    if (typeof newValue !== "string") {
-      return;
-    }
-
     // TODO: This can be refactored...
     // On first page load
     if (isLoading.value) {
       try {
         // If path exists on page load, validate it. Else, just fetch top-level collections
-        const newPath: NodeDto<CollectionNode>[] = newValue ? await validatePath(newValue) : [];
+        const newPath: NodeDto<CollectionNode>[] = newValue ? await validatePath(newValue as string) : [];
         updateLevelsAndFetchData(newPath);
 
         isPathValid.value = true;
@@ -66,7 +62,7 @@ watch(
     }
 
     try {
-      const newPath: CollectionNode[] = await validatePath(newValue);
+      const newPath: NodeDto<CollectionNode>[] = await validatePath(newValue as string);
       updateLevelsAndFetchData(newPath);
 
       isPathValid.value = true;
@@ -166,7 +162,7 @@ function showUnsavedChangesWarning() {
           >
             <SplitterPanel class="overflow-y-auto">
               <div class="columns-container h-full flex overflow-x-scroll">
-                <CollectionsColumn v-for="(_, index) in levels" :index="index" :parentUuid="levels[index].parentUuid" />
+                <CollectionsColumn v-for="(_, index) in levels" :index="index" :parent-uuid="levels[index].parentUuid" />
               </div>
             </SplitterPanel>
             <SplitterPanel :size="20" class="overflow-y-auto">

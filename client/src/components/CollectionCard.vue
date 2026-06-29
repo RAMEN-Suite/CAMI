@@ -54,7 +54,7 @@ const tableData = Object.entries(node.value!.node.data).map(([property, value]) 
 </script>
 
 <template>
-  <div class="node-card-container" @click="handleClickContainer" title="Open collection in Editor">
+  <div class="node-card-container" title="Open collection in Editor" @click="handleClickContainer">
     <NodeCardHeader :node="node!" :mode="props.mode" @remove="handleRemoveNode" />
     <span>
       {{ node!.node.data.label }}
@@ -82,10 +82,10 @@ const tableData = Object.entries(node.value!.node.data).map(([property, value]) 
       <DataTable
         :value="tableData"
         scrollable
-        scrollHeight="flex"
-        resizableColumns
-        rowHover
-        tableStyle="table-layout: fixed;"
+        scroll-height="flex"
+        resizable-columns
+        row-hover
+        table-style="table-layout: fixed;"
         size="small"
       >
         <Column field="property" header="Property">

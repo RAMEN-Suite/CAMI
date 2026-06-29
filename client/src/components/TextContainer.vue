@@ -92,18 +92,18 @@ function handleClickContainer(event: PointerEvent): void {
           <NodeStatusBadge :status="props.text.meta.status" :style="{ marginRight: 'auto' }" />
 
           <Button
+            v-if="props.status === 'existing'"
             type="button"
             severity="secondary"
-            v-if="props.status === 'existing'"
             :icon="`pi pi-bookmark${isBookmarked ? '-fill' : ''}`"
             size="small"
             :title="isBookmarked ? 'Remove text from bookmarks' : 'Add text to bookmarks'"
-            @click.stop="handleBookmarkAction"
             :pt="{
               icon: {
                 style: isBookmarked ? { color: 'var(--p-primary-color)' } : {},
               },
             }"
+            @click.stop="handleBookmarkAction"
           />
           <Button
             v-if="mode === 'edit' && props.status !== 'temporary'"
@@ -123,8 +123,8 @@ function handleClickContainer(event: PointerEvent): void {
 
           <template v-if="mode === 'edit'">
             <MultiSelect
-              size="small"
               v-model="text.node.nodeLabels"
+              size="small"
               :options="getAvailableTextLabels()"
               display="chip"
               placeholder="Text labels"

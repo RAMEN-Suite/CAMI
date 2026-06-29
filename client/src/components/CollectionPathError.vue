@@ -24,8 +24,8 @@ function goHome() {
   <div class="error-container flex flex-column justify-content-center align-items-center gap-4">
     <div class="text">The provided path does not exist in the database :/</div>
     <div class="flex gap-2">
-      <Button v-if="hasHistory" @click="goBack" icon="pi pi-arrow-left" label="Go back" />
-      <Button @click="goHome" icon="pi pi-home" label="Go to home" />
+      <Button v-if="hasHistory" icon="pi pi-arrow-left" label="Go back" @click="goBack" />
+      <Button icon="pi pi-home" label="Go to home" @click="goHome" />
     </div>
   </div>
 </template>

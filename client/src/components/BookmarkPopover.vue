@@ -113,7 +113,6 @@ function toggleBookmarkTypeView(direction: "collection" | "text"): void {
 <template>
   <Popover
     ref="popover"
-    @show="onShowPopover"
     :auto-z-index="false"
     :pt="{
       root: {
@@ -123,22 +122,23 @@ function toggleBookmarkTypeView(direction: "collection" | "text"): void {
         },
       },
     }"
+    @show="onShowPopover"
   >
     <div class="tab-buttons mb-2">
       <ButtonGroup class="w-full flex">
         <ToggleButton
           :model-value="selectedBookmarkType === 'collection'"
           class="w-full"
-          :onLabel="`Collections (${collectionCount})`"
-          :offLabel="`Collections (${collectionCount})`"
+          :on-label="`Collections (${collectionCount})`"
+          :off-label="`Collections (${collectionCount})`"
           title="Show collections"
           @change="toggleBookmarkTypeView('collection')"
         />
         <ToggleButton
           :model-value="selectedBookmarkType === 'text'"
           class="w-full"
-          :onLabel="`Texts (${textCount})`"
-          :offLabel="`Texts (${textCount})`"
+          :on-label="`Texts (${textCount})`"
+          :off-label="`Texts (${textCount})`"
           title="Show texts"
           @change="toggleBookmarkTypeView('text')"
         />
@@ -147,7 +147,7 @@ function toggleBookmarkTypeView(direction: "collection" | "text"): void {
     <div class="search-bar mb-3 w-full">
       <IconField>
         <InputIcon class="pi pi-search" size="small" :style="searchBarStylingOptions" />
-        <InputText v-model="searchValue" ref="searchbar" type="text" size="small" placeholder="Filter bookmarks" class="w-full" />
+        <InputText ref="searchbar" v-model="searchValue" type="text" size="small" placeholder="Filter bookmarks" class="w-full" />
         <InputIcon
           v-if="searchValue !== ''"
           class="pi pi-delete-left cursor-pointer"
@@ -168,9 +168,9 @@ function toggleBookmarkTypeView(direction: "collection" | "text"): void {
       </div>
       <BookmarkItem
         v-for="item in displayedItems"
-        :bookmarkData="item as Bookmark"
-        :type="item.type"
         :key="item.data.data.uuid"
+        :bookmark-data="item as Bookmark"
+        :type="item.type"
       />
 
       <div v-if="displayedItems.length > 0" class="disclaimer mt-4 text-xs font-italic flex align-items-center gap-2">

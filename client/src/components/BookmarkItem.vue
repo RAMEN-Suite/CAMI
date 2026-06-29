@@ -42,6 +42,7 @@ const displayedText = computed<string>(
         <div class="data flex-grow-1">
           <div class="labels">
             <NodeTag
+              v-for="label in props.bookmarkData.data.nodeLabels"
               :style="{
                 fontSize: '0.7rem',
                 backgroundColor: 'white',
@@ -52,7 +53,6 @@ const displayedText = computed<string>(
                 border: '1px solid black',
               }"
               class="test mr-1"
-              v-for="label in props.bookmarkData.data.nodeLabels"
               :content="label"
               type="Collection"
             />

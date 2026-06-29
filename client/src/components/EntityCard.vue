@@ -11,9 +11,7 @@ const props = defineProps<{
   mode: "edit" | "view";
 }>();
 
-const emit = defineEmits<{
-  (e: "remove-node"): void;
-}>();
+const emit = defineEmits<(e: "remove-node") => void>();
 
 const node = defineModel<NodeStatusObject<EntityNode>>();
 
@@ -70,10 +68,10 @@ const tableData = Object.entries(node.value!.node.data).map(([property, value]) 
       <DataTable
         :value="tableData"
         scrollable
-        scrollHeight="flex"
-        resizableColumns
-        rowHover
-        tableStyle="table-layout: fixed;"
+        scroll-height="flex"
+        resizable-columns
+        row-hover
+        table-style="table-layout: fixed;"
         size="small"
       >
         <Column field="property" header="Property">

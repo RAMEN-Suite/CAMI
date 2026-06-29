@@ -124,23 +124,23 @@ function handleResultItemSelect(item: SearchResult): void {
   <InputGroup class="mr-1" :pt="{ root: { style: { width: 'auto' } } }">
     <AutoComplete
       v-if="isSearchActive"
-      :class="isSearchActive ? 'active' : 'inactive'"
+      ref="searchbar"
       v-model="textSearchObject.searchStr"
+      :class="isSearchActive ? 'active' : 'inactive'"
       :placeholder="`Search for text`"
       :suggestions="textSearchObject.fetchedItems"
       class="searchbar h-2rem"
       variant="filled"
-      ref="searchbar"
       title="Enter search term"
       @complete="searchTextMatches($event.query)"
       @option-select="handleResultItemSelect($event.value)"
       @blur="isSearchActive = textSearchObject.searchStr === '' ? false : true"
     >
-      <template #header v-if="textSearchObject.fetchedItems.length > 0">
+      <template v-if="textSearchObject.fetchedItems.length > 0" #header>
         <div class="font-medium px-3 py-2">{{ textSearchObject.fetchedItems.length }} Results</div>
       </template>
       <template #option="slotProps">
-        <span v-html="slotProps.option.html" :title="slotProps.option.match"></span>
+        <span :title="slotProps.option.match" v-html="slotProps.option.html"></span>
       </template>
     </AutoComplete>
     <Button
@@ -148,8 +148,8 @@ function handleResultItemSelect(item: SearchResult): void {
       severity="secondary"
       size="small"
       icon="pi pi-search"
-      @click="setIsSearchActive(true)"
       title="Open search bar"
+      @click="setIsSearchActive(true)"
     />
     <Button
       v-if="isSearchActive"

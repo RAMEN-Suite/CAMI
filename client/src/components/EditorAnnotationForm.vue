@@ -170,7 +170,7 @@ function updateData(): void {
     <div class="annotation-card-header">
       <div class="flex items-center gap-1 align-items-center">
         <div class="icon-container">
-          <AnnotationTypeIcon :annotationType="workingData.node.data.subType ?? workingData.node.data.type" />
+          <AnnotationTypeIcon :annotation-type="workingData.node.data.subType ?? workingData.node.data.type" />
         </div>
         <span class="font-bold">{{ workingData.node.data.subType ?? workingData.node.data.type }}</span>
         <span class="font-italic text-xs text-color-secondary" :title="workingData.node.data.text">
@@ -275,8 +275,8 @@ function updateData(): void {
           severity="danger"
           icon="pi pi-trash"
           size="small"
-          @click="handleDeleteAnnotation"
           :style="{ width: '25px', height: '25px' }"
+          @click="handleDeleteAnnotation"
         />
         <Button
           v-if="mode === 'view'"
@@ -284,8 +284,8 @@ function updateData(): void {
           severity="contrast"
           icon="pi pi-pencil"
           size="small"
-          @click="handleEditAnnotation"
           :style="{ width: '25px', height: '25px' }"
+          @click="handleEditAnnotation"
         />
         <Button
           v-if="mode === 'edit'"

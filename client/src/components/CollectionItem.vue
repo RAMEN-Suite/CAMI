@@ -28,6 +28,7 @@ function handleItemClick(): void {
   >
     <div class="labels">
       <NodeTag
+        v-for="label in nodeLabels"
         :style="{
           fontSize: '0.7rem',
           backgroundColor: 'white',
@@ -38,7 +39,6 @@ function handleItemClick(): void {
           border: '1px solid black',
         }"
         class="test mr-1"
-        v-for="label in nodeLabels"
         :content="label"
         type="Collection"
       />

@@ -7,9 +7,7 @@ const props = defineProps<{
   mode: "edit" | "view";
 }>();
 
-const emit = defineEmits<{
-  (e: "remove-node"): void;
-}>();
+const emit = defineEmits<(e: "remove-node") => void>();
 
 const node = defineModel<NodeStatusObject<TextNode>>();
 
@@ -48,7 +46,7 @@ function setNodeStatus(status: NodeStatus): void {
 </script>
 
 <template>
-  <div class="node-card-container" @click="handleClickContainer" title="Open text in Editor">
+  <div class="node-card-container" title="Open text in Editor" @click="handleClickContainer">
     <NodeCardHeader :node="node!" :mode="props.mode" @remove="handleRemoveNode" />
     <div class="text-xs">
       {{ displayedText }}

@@ -75,7 +75,7 @@ async function handleCopy(): Promise<void> {
         <span :class="`pi pi-chevron-${collapsed ? 'down' : 'up'}`"></span>
       </template>
       <div class="flex gap-2">
-        <div v-if="text.nodeLabels.length > 0" v-for="label in text.nodeLabels" :key="label">
+        <div v-for="label in text.nodeLabels" v-if="text.nodeLabels.length > 0" :key="label">
           <NodeTag :content="label" type="Text" class="mr-1" />
         </div>
         <div v-else>
@@ -102,8 +102,8 @@ async function handleCopy(): Promise<void> {
             </div>
             <div v-else class="text-labels">
               <NodeTag
-                v-if="item.labels.length > 0"
                 v-for="label in item.labels"
+                v-if="item.labels.length > 0"
                 :content="label"
                 type="Text"
                 class="mr-1 mb-1"
@@ -118,12 +118,12 @@ async function handleCopy(): Promise<void> {
           :icon="`pi pi-bookmark${isBookmarked ? '-fill' : ''}`"
           size="small"
           :title="isBookmarked ? 'Remove text from bookmarks' : 'Add text to bookmarks'"
-          @click="handleBookmarkAction"
           :pt="{
             icon: {
               style: isBookmarked ? { color: 'var(--p-primary-color)' } : {},
             },
           }"
+          @click="handleBookmarkAction"
         />
       </div>
     </Fieldset>

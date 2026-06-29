@@ -9,9 +9,7 @@ import { onMounted, ref } from "vue";
 
 const props = defineProps<{ type: string; disabled: boolean; config: AnnotationType }>();
 
-const emit = defineEmits<{
-  (e: "clicked", data: { type: string; subType?: string | number }): void;
-}>();
+const emit = defineEmits<(e: "clicked", data: { type: string; subType?: string | number }) => void>();
 
 const { getAnnotationFields } = useGuidelinesStore();
 const { normalizeKeys, registerShortcut } = useShortcutsStore();
@@ -95,19 +93,19 @@ function handleClick(dropdownOption?: string | number): void {
 <template>
   <Button
     v-if="!subTypeField"
-    severity="secondary"
     ref="buttonElm"
+    v-tooltip.hover.top="{ value: props.type, showDelay: 50 }"
+    severity="secondary"
     outlined
     raised
     :style="{ height: '35px', width: '35px' }"
     :class="hasIcon ? '' : 'button-empty'"
     :disabled="disabled"
     :data-annotation-type="props.type"
-    v-tooltip.hover.top="{ value: props.type, showDelay: 50 }"
     @click="handleButtonClick"
   >
     <template #icon>
-      <AnnotationTypeIcon v-if="hasIcon" :annotationType="props.type" />
+      <AnnotationTypeIcon v-if="hasIcon" :annotation-type="props.type" />
     </template>
     <template #default>
       <span v-if="!hasIcon"> {{ props.type }} </span>
@@ -115,16 +113,15 @@ function handleClick(dropdownOption?: string | number): void {
   </Button>
   <SplitButton
     v-else
+    ref="buttonElm"
+    v-tooltip.hover.top="{ value: props.type, showDelay: 50 }"
     severity="secondary"
     outlined
     raised
-    ref="buttonElm"
     :style="{ height: '35px' }"
     :class="hasIcon ? '' : 'w-auto'"
     :model="dropdownOptions"
     :disabled="disabled"
-    v-tooltip.hover.top="{ value: props.type, showDelay: 50 }"
-    @click="handleButtonClick"
     :pt="{
       pcMenu: {
         root: {
@@ -134,9 +131,10 @@ function handleClick(dropdownOption?: string | number): void {
         },
       },
     }"
+    @click="handleButtonClick"
   >
     <template #icon>
-      <AnnotationTypeIcon :annotationType="props.type" />
+      <AnnotationTypeIcon :annotation-type="props.type" />
     </template>
     <template #default>
       <span v-if="!hasIcon"> {{ props.type }} </span>
@@ -145,7 +143,7 @@ function handleClick(dropdownOption?: string | number): void {
     <template #item="{ label }">
       <div class="flex p-1 gap-1 align-items-center select-none cursor-pointer">
         <span :style="{ display: 'block', width: '20px', height: '20px' }">
-          <AnnotationTypeIcon :annotationType="label as string" />
+          <AnnotationTypeIcon :annotation-type="label as string" />
         </span>
         <span>{{ label }}</span>
       </div>

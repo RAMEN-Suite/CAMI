@@ -10,9 +10,7 @@ const props = defineProps<{
   node: NodeStatusObject;
 }>();
 
-const emit = defineEmits<{
-  (e: "remove"): void;
-}>();
+const emit = defineEmits<(e: "remove") => void>();
 
 const filteredLabels: string[] = filterDefaultLabels(props.node.node.nodeLabels);
 const baseNodeLabel: BaseNodeLabel = getBaseNodeLabel(props.node.node.nodeLabels);
@@ -44,7 +42,7 @@ function handleRemoveClick(): void {
 <template>
   <div class="button-pane flex justify-content-between">
     <div class="node-labels-pane flex">
-      <NodeTag class="test mr-1" v-for="label in filteredLabels" :content="label" :type="baseNodeLabel" />
+      <NodeTag v-for="label in filteredLabels" class="test mr-1" :content="label" :type="baseNodeLabel" />
     </div>
     <NodeStatusBadge :status="node.meta.status" />
     <Button

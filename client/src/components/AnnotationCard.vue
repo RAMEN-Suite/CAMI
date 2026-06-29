@@ -40,9 +40,9 @@ function togglePopover(event: MouseEvent): void {
   <div class="node-card-container">
     <div class="button-pane flex justify-content-between">
       <div class="node-labels-pane flex">
-        <NodeTag class="test mr-1" v-for="label in filteredLabels" :content="label" type="Annotation" />
+        <NodeTag v-for="label in filteredLabels" class="test mr-1" :content="label" type="Annotation" />
         <div class="icon-container">
-          <AnnotationTypeIcon :annotationType="node!.node.data.subType ?? node!.node.data.type" />
+          <AnnotationTypeIcon :annotation-type="node!.node.data.subType ?? node!.node.data.type" />
         </div>
         <div class="annotation-type-container">
           <small class="font-bold">{{ node!.node.data.subType ?? node!.node.data.type }}</small>
@@ -83,10 +83,10 @@ function togglePopover(event: MouseEvent): void {
       <DataTable
         :value="tableData"
         scrollable
-        scrollHeight="flex"
-        resizableColumns
-        rowHover
-        tableStyle="table-layout: fixed;"
+        scroll-height="flex"
+        resizable-columns
+        row-hover
+        table-style="table-layout: fixed;"
         size="small"
       >
         <Column field="property" header="Property">

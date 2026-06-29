@@ -72,7 +72,7 @@ function handleSubmitClick(): void {
       Add new <span class="font-italic">{{ annotationTemplate.node.data.type }}</span> Annotation
     </h2>
 
-    <div class="content mb-2" v-if="annotationTemplate">
+    <div v-if="annotationTemplate" class="content mb-2">
       <Fieldset
         legend="Properties"
         :toggle-button-props="{
@@ -87,9 +87,9 @@ function handleSubmitClick(): void {
         <FormPropertiesSection v-model="annotationTemplate.node.data" :fields="propertyFields" mode="edit" />
       </Fieldset>
       <AnnotationFormAdditionalNodesSection
+        v-model="annotationTemplate.connectedNodes"
         :mode="'edit'"
         :annotation-config="config"
-        v-model="annotationTemplate.connectedNodes"
       />
     </div>
 

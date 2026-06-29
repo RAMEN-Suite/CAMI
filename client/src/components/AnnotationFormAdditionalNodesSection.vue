@@ -138,26 +138,26 @@ function toggleMenu(event: PointerEvent) {
         <EntityCard
           v-if="isEntityNode(node)"
           v-model="nodes![index] as NodeStatusObject<EntityNode>"
-          @remove-node="handleRemoveNode(node)"
           :mode="props.mode"
+          @remove-node="handleRemoveNode(node)"
         />
         <TextCard
           v-else-if="isContentNode(node)"
           v-model="nodes![index] as NodeStatusObject<TextNode>"
-          @remove-node="handleRemoveNode(node)"
           :mode="props.mode"
+          @remove-node="handleRemoveNode(node)"
         />
         <CollectionCard
           v-else-if="isCollectionNode(node)"
           v-model="nodes![index] as NodeStatusObject<CollectionNode>"
-          @remove-node="handleRemoveNode(node)"
           :mode="props.mode"
+          @remove-node="handleRemoveNode(node)"
         />
         <AnnotationCard
           v-else-if="isAnnotationNode(node)"
           v-model="nodes![index] as NodeStatusObject<AnnotationNode>"
-          @remove-node="handleRemoveNode(node)"
           mode="view"
+          @remove-node="handleRemoveNode(node)"
         />
 
         <div v-else>
@@ -172,11 +172,11 @@ function toggleMenu(event: PointerEvent) {
       icon="pi pi-plus"
       class="w-full"
       severity="secondary"
-      @click="toggleMenu"
       aria-haspopup="true"
       aria-controls="overlay_menu"
+      @click="toggleMenu"
     />
-    <Menu ref="menu" id="overlay_menu" :model="nodeOptions" :popup="true" />
+    <Menu id="overlay_menu" ref="menu" :model="nodeOptions" :popup="true" />
   </Fieldset>
 </template>
 

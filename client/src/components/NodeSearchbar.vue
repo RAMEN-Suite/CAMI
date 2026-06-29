@@ -29,9 +29,7 @@ const { searchParams, updateSearchParams, resetSearchParams } = useSearchParams(
   rowCount: 50,
 });
 
-const emit = defineEmits<{
-  (e: "itemSelected", item: CollectionNode | TextNode | EntityNode): void;
-}>();
+const emit = defineEmits<(e: "itemSelected", item: CollectionNode | TextNode | EntityNode) => void>();
 
 const PREVIEW_CHARACTER_SIZE: number = 25;
 
@@ -134,30 +132,30 @@ async function handleSearchParamsChange() {
 <template>
   <div class="flex gap-1">
     <MultiSelect
-      :modelValue="searchParams.nodeLabels"
+      :model-value="searchParams.nodeLabels"
       :options="availableNodeLabels"
       :filter="false"
       display="chip"
-      :maxSelectedLabels="2"
-      :selectedItemsLabel="`${searchParams.nodeLabels?.length ?? 0} labels selected`"
+      :max-selected-labels="2"
+      :selected-items-label="`${searchParams.nodeLabels?.length ?? 0} labels selected`"
       title="Select node labels to filter"
       class="flex-shrink-0 w-12rem"
-      @update:modelValue="handleNodeLabelsChange"
+      @update:model-value="handleNodeLabelsChange"
     />
     <AutoComplete
+      ref="searchbar"
       :class="isSearchActive ? 'active' : 'inactive'"
-      :modelValue="searchParams.searchInput"
+      :model-value="searchParams.searchInput"
       :placeholder="placeHolder"
       :suggestions="fetchedItems"
-      inputClass="w-full"
+      input-class="w-full"
       class="searchbar h-3rem flex-grow-1"
       variant="filled"
-      ref="searchbar"
       :title="placeHolder"
       @complete="handleSearchInputChange($event.query)"
       @option-select="handleResultItemSelect($event.value)"
     >
-      <template #header v-if="fetchedItems.length > 0">
+      <template v-if="fetchedItems.length > 0" #header>
         <div class="font-medium px-3 py-2">{{ fetchedItems.length }} Results</div>
       </template>
       <template #option="{ option }">

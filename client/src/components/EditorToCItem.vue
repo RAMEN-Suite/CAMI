@@ -17,9 +17,7 @@ const props = defineProps<{
   item: ToCItem;
 }>();
 
-const emit = defineEmits<{
-  (e: "itemClick", node: ToCItem): void;
-}>();
+const emit = defineEmits<(e: "itemClick", node: ToCItem) => void>();
 
 const { addToastMessage, createModalInstance, destroyModalInstance } = useAppStore();
 const { tiptap, structuralAnnotations } = useTiptapStore();
@@ -209,10 +207,10 @@ const displayedLabel = computed<string>(() => {
       ></Button>
     </div>
   </div>
-  <Menu ref="menu" id="overlay_menu" :model="structureBlockMenuItems" :popup="true" dismissable closeOnEscape />
-  <Menu ref="pill-menu" :model="semanticBlockMenuItems" :popup="true" dismissable closeOnEscape />
+  <Menu id="overlay_menu" ref="menu" :model="structureBlockMenuItems" :popup="true" dismissable close-on-escape />
+  <Menu ref="pill-menu" :model="semanticBlockMenuItems" :popup="true" dismissable close-on-escape />
   <ConfirmPopup />
-  <Popover ref="block-info-popover" dismissable closeOnEscape>
+  <Popover ref="block-info-popover" dismissable close-on-escape>
     <pre
       >{{ JSON.stringify(props.item.data, null, 2) }}
   </pre

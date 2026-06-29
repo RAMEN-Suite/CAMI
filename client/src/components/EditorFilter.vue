@@ -41,9 +41,9 @@ function toggleDropdown(): void {
       icon="pi pi-filter-fill"
       label="Filter"
       :title="isCollapsed ? 'Show filter pane' : 'Hide filter pane'"
-      @click="toggleDropdown"
       :badge="badgeContent"
-      :badgeSeverity="badgeSeverity"
+      :badge-severity="badgeSeverity"
+      @click="toggleDropdown"
     />
     <Card v-if="!isCollapsed" id="overlay_menu" class="dropdown absolute w-full z-1">
       <template #content>
@@ -60,7 +60,7 @@ function toggleDropdown(): void {
                 {{ capitalize(category) }}
               </div>
               <div v-for="annotationType of annotationTypes" :key="annotationType.type">
-                <Checkbox v-model="selectedOptions" :inputId="annotationType.type" :value="annotationType.type" />
+                <Checkbox v-model="selectedOptions" :input-id="annotationType.type" :value="annotationType.type" />
                 <label :for="annotationType.type" class="ml-2 cursor-pointer">
                   {{ annotationType.type }}
                 </label>

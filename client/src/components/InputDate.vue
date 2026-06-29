@@ -222,16 +222,16 @@ watch(internalDate, (newLocalDate: Date | null) => updateModelValue(newLocalDate
     :disabled="!config.editable || mode === 'view'"
     :required="config.required"
     :invalid="config.required && !modelValue"
-    :showTime="showTime"
-    :timeOnly="timeOnly"
-    :dateFormat="dateFormat"
-    hourFormat="24"
-    :showIcon="true"
+    :show-time="showTime"
+    :time-only="timeOnly"
+    :date-format="dateFormat"
+    hour-format="24"
+    :show-icon="true"
     :icon="inputIconClass"
-    :showSeconds="true"
+    :show-seconds="true"
     :placeholder="inputPlaceholder"
     style="width: 100%"
-    :showOnFocus="false"
+    :show-on-focus="false"
     :pt="{
       pcInputText: {
         root: {

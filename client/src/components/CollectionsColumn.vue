@@ -96,17 +96,17 @@ onMounted(() => {
 });
 
 function addData(data: NodeDto<CollectionNode>[]) {
-  levels.value[props.index].collections.push(
-    ...data.map((c) => {
-      return {
-        data: {
-          node: c.node,
-          connectedNodes: [],
-        },
-        status: "existing",
-      } as ColumnEntry;
-    }),
-  );
+  const columnEntries: ColumnEntry[] = data.map((c) => {
+    return {
+      data: {
+        node: c.node,
+        connectedNodes: [],
+      },
+      status: "existing",
+    };
+  });
+
+  levels.value[props.index].collections.push(...columnEntries);
 }
 
 function endResize() {
@@ -272,9 +272,9 @@ function handleResize(event: MouseEvent) {
   column.value!.style.width = `${newWidth}px`;
 }
 
-function handleSearchInputChange(newInput: string) {
+function handleSearchInputChange(newInput: string | undefined) {
   const data: NodeSearchParams = {
-    searchInput: newInput,
+    searchInput: newInput ?? "",
   };
 
   updateSearchParams(data, { immediate: false });

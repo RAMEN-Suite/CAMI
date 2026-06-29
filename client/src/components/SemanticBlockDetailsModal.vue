@@ -19,7 +19,7 @@ const propertyFields: PropertyConfig[] = getAnnotationFields(annotation.node.dat
   <div class="semantic-block-details">
     <div class="flex items-center gap-2 mb-3">
       <div class="icon-container">
-        <AnnotationTypeIcon :annotationType="annotation.node.data.subType ?? annotation.node.data.type" />
+        <AnnotationTypeIcon :annotation-type="annotation.node.data.subType ?? annotation.node.data.type" />
       </div>
       <span class="font-bold">{{ annotation.node.data.subType ?? annotation.node.data.type }}</span>
     </div>

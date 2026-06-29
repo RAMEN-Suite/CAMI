@@ -258,29 +258,29 @@ async function searchEntitiesOptions(searchString: string, category: string): Pr
         @click="changeEntitiesSelectionMode(category, 'edit')"
       />
       <AutoComplete
-        :default-value="props.defaultSearchValue"
-        :complete-on-focus="props.defaultSearchValue ? true : false"
         v-if="props.mode === 'edit'"
         v-show="entitiesSearchObject[category].mode === 'edit'"
         v-model="entitiesSearchObject[category].currentItem"
+        :ref="`input-${category}`"
+        :default-value="props.defaultSearchValue"
+        :complete-on-focus="props.defaultSearchValue ? true : false"
         dropdown
-        dropdownMode="current"
+        dropdown-mode="current"
         :placeholder="`Type to see suggestions`"
         :suggestions="entitiesSearchObject[category].fetchedItems"
-        :overlayClass="entitiesSearchObject[category].mode === 'view' ? 'hidden' : ''"
-        optionLabel="label"
+        :overlay-class="entitiesSearchObject[category].mode === 'view' ? 'hidden' : ''"
+        option-label="label"
         class="mt-2 w-full h-2rem"
         variant="filled"
-        :ref="`input-${category}`"
         input-class="w-full"
         @complete="searchEntitiesOptions($event.query, category)"
         @option-select="handleEntityItemSelect($event.value, category)"
       >
-        <template #header v-if="entitiesSearchObject[category].fetchedItems.length > 0">
+        <template v-if="entitiesSearchObject[category].fetchedItems.length > 0" #header>
           <div class="font-medium px-3 py-2">{{ entitiesSearchObject[category].fetchedItems.length }} Results</div>
         </template>
         <template #option="slotProps">
-          <span v-html="slotProps.option.html" :title="slotProps.option.label"></span>
+          <span :title="slotProps.option.label" v-html="slotProps.option.html"></span>
         </template>
         <template #empty>
           <div class="font-italic text-center mb-1">No results found</div>

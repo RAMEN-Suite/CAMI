@@ -106,8 +106,8 @@ function closeModal(): void {
       <ToggleButton
         :model-value="chooseOption === 'file'"
         class="w-full"
-        onLabel="File"
-        offLabel="File"
+        on-label="File"
+        off-label="File"
         title="Import JSON file"
         badge="2"
         @change="toggleViewMode('file')"
@@ -115,8 +115,8 @@ function closeModal(): void {
       <ToggleButton
         :model-value="chooseOption === 'raw'"
         class="w-full"
-        onLabel="Raw"
-        offLabel="Raw"
+        on-label="Raw"
+        off-label="Raw"
         title="Import raw JSON"
         badge="2"
         @change="toggleViewMode('raw')"
@@ -133,17 +133,17 @@ function closeModal(): void {
           placeholder="Enter some valid JSON"
           spellcheck="false"
         />
-        <FileUpload v-else name="import" ref="fileupload" :file-limit="1" :multiple="false" accept=".json,.txt">
+        <FileUpload v-else ref="fileupload" name="import" :file-limit="1" :multiple="false" accept=".json,.txt">
           <template #header="{ chooseCallback }">
             <div class="flex justify-content-center w-full">
               <Button
                 v-if="!inputIsValid"
-                @click="chooseCallback()"
                 label="Browse files"
                 icon="pi pi-plus"
                 severity="contrast"
                 title="Choose file to import (.json or .txt)"
                 :disabled="inputIsValid"
+                @click="chooseCallback()"
               ></Button>
             </div>
           </template>

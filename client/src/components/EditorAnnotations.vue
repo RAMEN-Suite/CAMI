@@ -151,7 +151,7 @@ function toggleViewMode(direction: "current" | "all"): void {
     </div>
     <div class="tree">
       <div class="flex justify-center">
-        <Tree v-model:expandedKeys="expandedKeys" :value="nodes" selectionMode="single" :metaKeySelection="false" class="w-full">
+        <Tree v-model:expanded-keys="expandedKeys" :value="nodes" selection-mode="single" :meta-key-selection="false" class="w-full">
           <template #default="slotProps">
             <div v-if="slotProps.node.type === 'category'">
               <div class="name-container ml-2 font-bold">
@@ -166,10 +166,10 @@ function toggleViewMode(direction: "current" | "all"): void {
             </div>
             <div
               v-else
+              :style="{ 'text-wrap': 'nowrap' }"
               @mouseover="toggleTextHightlighting(slotProps.node.data, 'on')"
               @mouseout="toggleTextHightlighting(slotProps.node.data, 'off')"
               @click="handleAnnotationClick"
-              :style="{ 'text-wrap': 'nowrap' }"
             >
               <div class="ml-2 anno-entry preview" :data-annotation-uuid="slotProps.node.data.node.data.uuid">
                 {{ slotProps.node.data.node.data.text }}

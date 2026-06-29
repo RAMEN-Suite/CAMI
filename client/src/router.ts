@@ -25,7 +25,7 @@ const usedRoutes = import.meta.env.DEV ? allRoutes : prodRoutes;
 
 const router: Router = createRouter({
   history: createWebHistory(),
-  routes: usedRoutes as RouteRecordRaw[],
+  routes: usedRoutes,
 });
 
 router.beforeEach(() => hasOpenModal());

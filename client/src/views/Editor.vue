@@ -228,9 +228,9 @@ function findChangedAnnotations(indexMap: IndexMap, plainText: string): Annotati
     const { startIndex, endIndex } = value;
     const textSlice: string = plainText.slice(startIndex, endIndex + 1);
 
-    const hasNewStart: boolean = !initialEntry || initialEntry.node.data.startIndex !== startIndex;
-    const hasNewEnd: boolean = !initialEntry || initialEntry.node.data.endIndex !== endIndex;
-    const hasChangedText: boolean = !initialEntry || initialEntry.node.data.text !== textSlice;
+    const hasNewStart: boolean = initialEntry?.node.data.startIndex !== startIndex;
+    const hasNewEnd: boolean = initialEntry?.node.data.endIndex !== endIndex;
+    const hasChangedText: boolean = initialEntry?.node.data.text !== textSlice;
     const isEditedOrDeleted: boolean = ["created", "deleted", "modified"].includes(currentEntry.meta.status);
 
     if (hasNewStart || hasNewEnd || hasChangedText || isEditedOrDeleted) {
@@ -415,7 +415,7 @@ function findChangedSemanticBlocks(indexMap: IndexMap, plainText: string): Annot
           startIndex,
           endIndex,
           text: plainText.slice(startIndex, endIndex + 1),
-        } as IAnnotation,
+        },
         nodeLabels: ["Annotation"],
       },
       connectedNodes: [...storeEntry.connectedNodes],
@@ -444,14 +444,11 @@ function getAffectedAnnotations(): { annotations: Annotation[]; structureElement
     useCreateIndexMaps().buildIndexMaps();
 
   // Zero point and range annotation are stored in the same store and can therefore share the same index map
-  const changedAnnotations = findChangedAnnotations(
-    new Map([...decorationIndexMap, ...zeroPointIndexMap]) as IndexMap,
-    plainText,
-  );
+  const changedAnnotations = findChangedAnnotations(new Map([...decorationIndexMap, ...zeroPointIndexMap]), plainText);
 
   // hardBreaks and blocks are stored in the same store and can therefore share the same index map
   const affectedStructureBlocks = findChangedStructureElements(
-    new Map([...structureBlockIndexMap, ...hardBreakIndexMap]) as IndexMap,
+    new Map([...structureBlockIndexMap, ...hardBreakIndexMap]),
     plainText,
   );
 
@@ -464,15 +461,15 @@ function getAffectedAnnotations(): { annotations: Annotation[]; structureElement
   };
 }
 
-export type EdgeDescriptor = {
+export interface EdgeDescriptor {
   type: string;
   startUuid: string;
   endUuid: string;
-};
+}
 
 function inferRelationship(parent: Node<BaseNodeData>, child: Node<BaseNodeData>): EdgeDescriptor {
-  const parentUuid: string = (parent.data as BaseNodeData).uuid;
-  const childUuid: string = (child.data as BaseNodeData).uuid;
+  const parentUuid: string = parent.data.uuid;
+  const childUuid: string = child.data.uuid;
 
   const p: string[] = parent.nodeLabels;
   const c: string[] = child.nodeLabels;
@@ -500,13 +497,13 @@ function inferRelationship(parent: Node<BaseNodeData>, child: Node<BaseNodeData>
   throw new Error(`Cannot infer relationship between [${p.join(", ")}] and [${c.join(", ")}]`);
 }
 
-type UpdateObject = {
+interface UpdateObject {
   create: (AnnotationNode | CollectionNode | EntityNode | TextNode)[];
   delete: (AnnotationNode | CollectionNode | EntityNode | TextNode)[];
   update: (AnnotationNode | CollectionNode | EntityNode | TextNode)[];
   remove: { startUuid: string; endUuid: string }[];
   attach: { startUuid: string; endUuid: string }[];
-};
+}
 
 /** Temporary, used in backend */
 function insertNodeIntoObject(parent: NodeStatusObject | null, node: NodeStatusObject, obj: UpdateObject): UpdateObject {
@@ -587,7 +584,7 @@ async function handleSaveChanges(): Promise<void> {
     node: {
       data: {
         uuid: text.value.data.uuid,
-        text: tiptap.value!.state.doc.textContent,
+        text: tiptap.value.state.doc.textContent,
       },
       nodeLabels: [...text.value.nodeLabels],
     },
@@ -865,16 +862,16 @@ watch(
       </div>
     </PageOverlay>
 
-    <EditorSidebar position="left" :isCollapsed="sidebars['left'].isCollapsed === true" :width="sidebars['left'].width">
+    <EditorSidebar position="left" :is-collapsed="sidebars['left'].isCollapsed === true" :width="sidebars['left'].width">
       <EditorMetadata />
       <EditorToC />
       <EditorAnnotations />
     </EditorSidebar>
     <EditorResizer
       position="left"
-      :isActive="activeResizer === 'left'"
-      :defaultWidth="resizerWidth"
-      :sidebarIsCollapsed="sidebars['left'].isCollapsed === true"
+      :is-active="activeResizer === 'left'"
+      :default-width="resizerWidth"
+      :sidebar-is-collapsed="sidebars['left'].isCollapsed === true"
       @toggle-sidebar="toggleSidebar"
     />
     <section class="main flex flex-column flex-grow-1 px-3 pb-0 pt-3" :style="{ width: mainWidth + 'px' }">
@@ -891,12 +888,12 @@ watch(
     </section>
     <EditorResizer
       position="right"
-      :isActive="activeResizer === 'right'"
-      :defaultWidth="resizerWidth"
-      :sidebarIsCollapsed="sidebars['right'].isCollapsed === true"
+      :is-active="activeResizer === 'right'"
+      :default-width="resizerWidth"
+      :sidebar-is-collapsed="sidebars['right'].isCollapsed === true"
       @toggle-sidebar="toggleSidebar"
     />
-    <EditorSidebar position="right" :isCollapsed="sidebars['right'].isCollapsed === true" :width="sidebars['right'].width">
+    <EditorSidebar position="right" :is-collapsed="sidebars['right'].isCollapsed === true" :width="sidebars['right'].width">
       <EditorFilter />
       <EditorAnnotationPanel />
     </EditorSidebar>

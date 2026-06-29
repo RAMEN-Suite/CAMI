@@ -53,10 +53,10 @@ function handleNodeClick(node: ToCItem) {
         </template>
         <template v-else>
           <Tree
-            v-model:expandedKeys="expandedKeys"
+            v-model:expanded-keys="expandedKeys"
             :value="tableOfContent"
-            selectionMode="single"
-            :metaKeySelection="false"
+            selection-mode="single"
+            :meta-key-selection="false"
             class="w-full"
             :pt="{
               root: {

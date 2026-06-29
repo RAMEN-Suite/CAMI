@@ -36,15 +36,15 @@ defineExpose({ toggle });
     <div class="flex flex-col gap-4 w-[25rem]">
       <div class="flex-auto w-6rem">
         <label for="columns" class="font-bold block mb-2"> Columns </label>
-        <InputNumber v-model="columns" inputId="columns" fluid :min="1" :max="10" showButtons />
+        <InputNumber v-model="columns" input-id="columns" fluid :min="1" :max="10" show-buttons />
       </div>
       <div class="flex-auto w-6rem">
         <label for="rows" class="font-bold block mb-2"> Rows </label>
-        <InputNumber v-model="rows" inputId="rows" fluid :min="1" :max="10" showButtons />
+        <InputNumber v-model="rows" input-id="rows" fluid :min="1" :max="10" show-buttons />
       </div>
     </div>
     <div class="flex items-center gap-2 mt-2 justify-content-center">
-      <Checkbox v-model="hasHeaderRow" inputId="header-row" name="header-row" binary />
+      <Checkbox v-model="hasHeaderRow" input-id="header-row" name="header-row" binary />
       <label for="header-row"> Add header row </label>
     </div>
     <div class="mt-2 text-center">

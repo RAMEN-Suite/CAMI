@@ -50,7 +50,7 @@ const dialog: ReturnType<typeof useDialog> = useDialog();
 // Project-defined custom block types: isBlock:true entries that are not pre-configured built-ins.
 // These get a generic wrapIn/lift toggle button rather than a dedicated tiptap command button.
 const customStructureTypes = computed(() =>
-  (groupedAnnotationTypes.value?.["structure"] ?? []).filter((t) => t.isBlock && !isBuiltinStructuralType(t.type)),
+  (groupedAnnotationTypes.value?.structure ?? []).filter((t) => t.isBlock && !isBuiltinStructuralType(t.type)),
 );
 
 /**
@@ -250,8 +250,8 @@ function handleBlockAnnotationClick(data: { type: string; subType?: string | num
               <div class="buttons">
                 <AnnotationButton
                   v-for="type in types"
-                  :type="type.type"
                   :key="type.type"
+                  :type="type.type"
                   :disabled="!selectedOptions.includes(type.type)"
                   :config="getAnnotationConfig(type.type)"
                   @clicked="handleInlineAnnotationButtonClick($event)"
@@ -264,41 +264,41 @@ function handleBlockAnnotationClick(data: { type: string; subType?: string | num
       <TabPanel value="structure">
         <div class="flex flex-wrap gap-3">
           <Button
-            severity="secondary"
             v-tooltip.hover.top="{ value: 'h1', showDelay: 50 }"
-            @click="tiptap?.chain().focus().toggleHeading({ level: 1 }).run()"
+            severity="secondary"
             :class="{ 'is-active': tiptap?.isActive('heading', { level: 1 }) }"
+            @click="tiptap?.chain().focus().toggleHeading({ level: 1 }).run()"
           >
             H1
           </Button>
           <Button
-            severity="secondary"
             v-tooltip.hover.top="{ value: 'h2', showDelay: 50 }"
-            @click="tiptap?.chain().focus().toggleHeading({ level: 2 }).run()"
+            severity="secondary"
             :class="{ 'is-active': tiptap?.isActive('heading', { level: 2 }) }"
+            @click="tiptap?.chain().focus().toggleHeading({ level: 2 }).run()"
           >
             H2
           </Button>
           <Button
-            severity="secondary"
             v-tooltip.hover.top="{ value: 'h3', showDelay: 50 }"
-            @click="tiptap?.chain().focus().toggleHeading({ level: 3 }).run()"
+            severity="secondary"
             :class="{ 'is-active': tiptap?.isActive('heading', { level: 3 }) }"
+            @click="tiptap?.chain().focus().toggleHeading({ level: 3 }).run()"
           >
             H3
           </Button>
           <Button
+            v-tooltip.hover.top="{ value: 'paragraph', showDelay: 50 }"
             severity="secondary"
             icon="pi pi-align-justify"
-            v-tooltip.hover.top="{ value: 'paragraph', showDelay: 50 }"
-            @click="tiptap?.chain().focus().setNode('paragraph').run()"
             :class="{ 'is-active': tiptap?.isActive('paragraph') }"
+            @click="tiptap?.chain().focus().setNode('paragraph').run()"
           >
           </Button>
           <Button
+            v-tooltip.hover.top="{ value: 'table', showDelay: 50 }"
             severity="secondary"
             icon="pi pi-table"
-            v-tooltip.hover.top="{ value: 'table', showDelay: 50 }"
             :class="{ 'is-active': tiptap?.isActive('table') }"
             @click="tablePopover?.toggle($event)"
           >
@@ -306,8 +306,8 @@ function handleBlockAnnotationClick(data: { type: string; subType?: string | num
           <Button
             v-for="blockType in customStructureTypes"
             :key="blockType.type"
-            severity="secondary"
             v-tooltip.hover.top="{ value: blockType.type, showDelay: 50 }"
+            severity="secondary"
             :class="{ 'is-active': true }"
             @click="handleBlockAnnotationClick({ type: blockType.type })"
           >

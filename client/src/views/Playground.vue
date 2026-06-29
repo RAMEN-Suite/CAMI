@@ -82,31 +82,32 @@ function toggleTextHightlighting(annotation: Annotation, direction: "on" | "off"
     <div class="button-group text-center">
       <button @click="handleClick">Log stuff</button>
       <button
-        @click="tiptap?.chain().focus().toggleHeading({ level: 1 }).run()"
         :class="{ 'is-active': tiptap?.isActive('heading', { level: 1 }) }"
+        @click="tiptap?.chain().focus().toggleHeading({ level: 1 }).run()"
       >
         H1
       </button>
       <button
-        @click="tiptap?.chain().focus().toggleHeading({ level: 2 }).run()"
         :class="{ 'is-active': tiptap?.isActive('heading', { level: 2 }) }"
+        @click="tiptap?.chain().focus().toggleHeading({ level: 2 }).run()"
       >
         H2
       </button>
       <button
-        @click="tiptap?.chain().focus().toggleHeading({ level: 3 }).run()"
         :class="{ 'is-active': tiptap?.isActive('heading', { level: 3 }) }"
+        @click="tiptap?.chain().focus().toggleHeading({ level: 3 }).run()"
       >
         H3
       </button>
-      <button @click="tiptap?.chain().focus().setParagraph().run()" :class="{ 'is-active': tiptap?.isActive('paragraph') }">
+      <button :class="{ 'is-active': tiptap?.isActive('paragraph') }" @click="tiptap?.chain().focus().setParagraph().run()">
         Paragraph
       </button>
-      <button @click="tiptap?.chain().focus().insertTable().run()" :class="{ 'is-active': tiptap?.isActive('table') }">
+      <button :class="{ 'is-active': tiptap?.isActive('table') }" @click="tiptap?.chain().focus().insertTable().run()">
         ⋮⋮⋮ Table
       </button>
 
       <button
+        :class="{ 'is-active': tiptap?.isActive('zeroPointAnnotation') }"
         @click="
           tiptap
             ?.chain()
@@ -125,7 +126,6 @@ function toggleTextHightlighting(annotation: Annotation, direction: "on" | "off"
             })
             .run()
         "
-        :class="{ 'is-active': tiptap?.isActive('zeroPointAnnotation') }"
       >
         Zero point test
       </button>

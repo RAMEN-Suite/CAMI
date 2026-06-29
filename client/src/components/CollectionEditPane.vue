@@ -522,12 +522,12 @@ function toggleViewMode(direction: TabView): void {
           :icon="`pi pi-bookmark${isBookmarked ? '-fill' : ''}`"
           size="small"
           :title="isBookmarked ? 'Remove collection from bookmarks' : 'Add collection to bookmarks'"
-          @click="handleBookmarkAction"
           :pt="{
             icon: {
               style: isBookmarked ? { color: 'var(--p-primary-color)' } : {},
             },
           }"
+          @click="handleBookmarkAction"
         />
       </div>
       <div class="status-section h-2rem relative text-right">
@@ -546,30 +546,30 @@ function toggleViewMode(direction: TabView): void {
           <ToggleButton
             :model-value="isDetailsSelected"
             class="w-full"
-            onLabel="Details"
-            offLabel="Details"
-            onIcon="pi pi-info-circle"
-            offIcon="pi pi-info-circle"
+            on-label="Details"
+            off-label="Details"
+            on-icon="pi pi-info-circle"
+            off-icon="pi pi-info-circle"
             title="Show Collection details"
             @change="toggleViewMode('details')"
           />
           <ToggleButton
             :model-value="isAnnotationsSelected"
             class="w-full"
-            onLabel="Annotations"
-            offLabel="Annotations"
-            onIcon="pi pi-pencil"
-            offIcon="pi pi-pencil"
+            on-label="Annotations"
+            off-label="Annotations"
+            on-icon="pi pi-pencil"
+            off-icon="pi pi-pencil"
             title="Show Annotations"
             @change="toggleViewMode('annotations')"
           />
           <ToggleButton
             :model-value="isTextsSelected"
             class="w-full"
-            onLabel="Texts"
-            offLabel="Texts"
-            onIcon="pi pi-align-justify"
-            offIcon="pi pi-align-justify"
+            on-label="Texts"
+            off-label="Texts"
+            on-icon="pi pi-align-justify"
+            off-icon="pi pi-align-justify"
             title="Show Texts"
             @change="toggleViewMode('texts')"
           />
@@ -596,8 +596,8 @@ function toggleViewMode(direction: TabView): void {
           </div>
           <div v-else class="flex gap-2 justify-content-center">
             <template
-              v-if="temporaryWorkData.collection.node.nodeLabels.length > 0"
               v-for="label in temporaryWorkData.collection.node.nodeLabels"
+              v-if="temporaryWorkData.collection.node.nodeLabels.length > 0"
               :key="label"
             >
               <NodeTag :content="label" type="Collection" class="mr-1" />
@@ -609,7 +609,7 @@ function toggleViewMode(direction: TabView): void {
 
           <h3 class="text-center">Properties</h3>
           <form ref="form">
-            <div class="input-container" v-for="field in collectionFields">
+            <div v-for="field in collectionFields" class="input-container">
               <div class="flex align-items-center gap-3 mb-3">
                 <label :for="field.name" class="w-10rem font-semibold">{{ capitalize(field.name) }} </label>
                 <DataInputGroup
@@ -633,8 +633,8 @@ function toggleViewMode(direction: TabView): void {
           <div v-if="formMode === 'edit'" class="annotation-button-pane flex flex-wrap gap-3 py-3">
             <AnnotationButton
               v-for="type in availabeAnnotationTypes"
-              :type="type.type"
               :key="type.type"
+              :type="type.type"
               :disabled="(formMode as 'view' | 'edit') === 'view'"
               :config="getCollectionAnnotationConfig(temporaryWorkData.collection.node.nodeLabels, type.type)"
               @clicked="handleAnnotationButtonClick($event)"
@@ -661,7 +661,7 @@ function toggleViewMode(direction: TabView): void {
             <template #header>
               <div class="flex items-center gap-1 align-items-center">
                 <div class="icon-container">
-                  <AnnotationTypeIcon :annotationType="annotation.node.data.type" />
+                  <AnnotationTypeIcon :annotation-type="annotation.node.data.type" />
                 </div>
                 <div class="annotation-type-container">
                   <span class="font-bold">{{ annotation.node.data.type }}</span>
@@ -784,9 +784,9 @@ function toggleViewMode(direction: TabView): void {
     <ProgressSpinner
       class="loading-spinner"
       style="width: 80px; height: 80px"
-      strokeWidth="2"
+      stroke-width="2"
       fill="transparent"
-      animationDuration="1.5s"
+      animation-duration="1.5s"
       aria-label="Custom ProgressSpinner"
       :dt="{
         root: {

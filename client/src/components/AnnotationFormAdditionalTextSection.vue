@@ -270,8 +270,8 @@ function togglePreviewMode(uuid: string): void {
           />
           <InputText
             ref="additional-text-input"
-            required
             v-model="inputObject.input.text"
+            required
             placeholder="Enter text"
             title="Enter text"
           />
