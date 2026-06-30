@@ -37,21 +37,21 @@ const nodes: ComputedRef<TreeNode[]> = computed(() => {
   const nodes: TreeNode[] = [];
 
   Object.entries(groupedAndSortedAnnotationTypes.value).forEach(([category, annotationType], i: number) => {
-    const newCategory: TreeNode = {
+    const newCategory = {
       key: i.toString(),
       label: category,
       type: "category",
       children: [],
       annotationCount: 0,
-    };
+    } satisfies TreeNode;
 
     annotationType.forEach((annoType: AnnotationType, j: number) => {
-      const newAnnotationType: TreeNode = {
+      const newAnnotationType = {
         key: i.toString() + "-" + j.toString(),
         label: annoType.type,
         type: "type",
         children: [],
-      };
+      } satisfies TreeNode;
 
       const annos: NodeStatusObject[] = displayedAnnotations.value.filter((a) => a.node.data.type === annoType.type);
 

@@ -12,8 +12,6 @@ const isRedrawMode = computed<boolean>(() => redrawMode.value?.direction === "on
 /**
  * Deprecated store for editor state and operations (caret placement, change detection etc.). Currently only kept for
  * keeping redraw options here before moving them to Tiptap.
- *
- * @deprecated
  */
 export function useEditorStore() {
   /**
@@ -24,6 +22,7 @@ export function useEditorStore() {
    *
    * @return {void} No return value.
    */
+  // eslint-disable-next-line -- Default pattern, might be used later
   function initializeEditor(): void {}
 
   /**

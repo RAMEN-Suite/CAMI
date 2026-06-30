@@ -40,7 +40,7 @@ function togglePopover(event: MouseEvent): void {
   <div class="node-card-container">
     <div class="button-pane flex justify-content-between">
       <div class="node-labels-pane flex">
-        <NodeTag v-for="label in filteredLabels" class="test mr-1" :content="label" type="Annotation" />
+        <NodeTag v-for="label in filteredLabels" :key="label" class="test mr-1" :content="label" type="Annotation" />
         <div class="icon-container">
           <AnnotationTypeIcon :annotation-type="node!.node.data.subType ?? node!.node.data.type" />
         </div>

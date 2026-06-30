@@ -16,10 +16,7 @@ const props = defineProps<{
   mode: "view" | "edit";
 }>();
 
-const emit = defineEmits<{
-  (e: "textAdded", text: NodeDto<TextNode>): void;
-  (e: "textRemoved", text: NodeDto<TextNode>): void;
-}>();
+const emit = defineEmits<(e: "textAdded" | "textRemoved", text: NodeDto<TextNode>) => void>();
 
 const { getAvailableTextLabels } = useGuidelinesStore();
 const { bookmarks, toggleBookmark } = useBookmarks();
@@ -118,9 +115,9 @@ function handleClickContainer(event: PointerEvent): void {
         </div>
         <div class="node-labels-container">
           <template v-if="mode === 'view'">
-            <NodeTag v-for="label in props.text.node.nodeLabels" :content="label" type="Text" />
+            <NodeTag v-for="label in props.text.node.nodeLabels" :key="label" :content="label" type="Content" />
           </template>
-
+          <!-- eslint-disable vue/no-mutating-props -- TODO: Avoid working directly on props in template: Requires more refactoring though -->
           <template v-if="mode === 'edit'">
             <MultiSelect
               v-model="text.node.nodeLabels"

@@ -79,7 +79,7 @@ export function useCreateAnnotation(scope: "Content" | "Collection"): UseCreateA
     // (= the user clicked the button directly instead of selecting an entry from the dropdown),
     // set the first option as default value
     if (subTypeField) {
-      baseNodeData.subType = subType ?? (subTypeField.options || [])[0];
+      baseNodeData.subType = subType ?? (subTypeField.options ?? [])[0];
     }
 
     return baseNodeData;

@@ -70,9 +70,9 @@ async function handleCopy(): Promise<void> {
         <span :class="`pi pi-chevron-${collapsed ? 'down' : 'up'}`"></span>
       </template>
       <div class="flex gap-2">
-        <div v-for="label in text.nodeLabels" v-if="text.nodeLabels.length > 0" :key="label">
-          <NodeTag :content="label" type="Text" class="mr-1" />
-        </div>
+        <template v-if="text.nodeLabels.length > 0">
+          <NodeTag v-for="label in text.nodeLabels" :key="label" :content="label" type="Content" class="mr-1" />
+        </template>
         <div v-else>
           <i v-if="correspondingCollection"
             >This text has no labels yet. To add some, go to the
@@ -96,13 +96,9 @@ async function handleCopy(): Promise<void> {
               </RouterLink>
             </div>
             <div v-else class="text-labels">
-              <NodeTag
-                v-for="label in item.labels"
-                v-if="item.labels.length > 0"
-                :content="label"
-                type="Text"
-                class="mr-1 mb-1"
-              />
+              <template v-if="item.labels.length > 0">
+                <NodeTag v-for="label in item.labels" :key="label" :content="label" type="Content" class="mr-1 mb-1" />
+              </template>
               <span v-else class="font-italic" title="This Text has no labels yet">No Text labels yet</span>
             </div>
           </template>

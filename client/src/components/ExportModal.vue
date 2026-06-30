@@ -29,7 +29,7 @@ watch(() => route.path, closeModal);
 buildJson();
 
 function handleCopyClick(): void {
-  copyToClipboard();
+  void copyToClipboard();
 }
 
 function handleDownloadClick(): void {

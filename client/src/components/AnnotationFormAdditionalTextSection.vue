@@ -122,8 +122,8 @@ function changeSelectionMode(mode: "view" | "edit"): void {
   }
 
   // Wait for DOM to update before trying to focus the element
-  nextTick(() => {
-    inputElm.value.$el.focus();
+  void nextTick(() => {
+    inputElm.value?.$el.focus();
   });
 }
 

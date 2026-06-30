@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useBookmarks } from "../composables/useBookmarks";
-import { Bookmark, CollectionNode } from "../models/types";
+import { Bookmark, CollectionNode, TextNode } from "../models/types";
 import router from "../router";
 import NodeTag from "./NodeTag.vue";
 import Button from "primevue/button";
@@ -16,8 +16,8 @@ const { removeBookmark } = useBookmarks();
 const uuid: string = props.bookmarkData.data.data.uuid;
 const isCollection: boolean = props.bookmarkData.type === "collection";
 
-function handleItemClick(): void {
-  router.push(`/${props.bookmarkData.type}s/${uuid}`);
+async function handleItemClick(): Promise<void> {
+  await router.push(`/${props.bookmarkData.type}s/${uuid}`);
 }
 
 const htmlTitle = computed<string>(
@@ -28,11 +28,15 @@ const htmlTitle = computed<string>(
 // TODO: This should be in a helper function
 const PREVIEW_LENGTH: number = 120;
 
-const displayedText = computed<string>(
-  () =>
-    props.bookmarkData.data.data?.text.slice(0, PREVIEW_LENGTH) +
-    (props.bookmarkData.data.data?.text.length > PREVIEW_LENGTH ? "..." : ""),
-);
+const displayedText = computed<string>(() => {
+  const text: string | undefined = (props.bookmarkData.data as TextNode).data.text;
+
+  if (!text) {
+    return "";
+  } else {
+    return text.slice(0, PREVIEW_LENGTH) + (text.length > PREVIEW_LENGTH ? "..." : "");
+  }
+});
 </script>
 
 <template>
@@ -43,6 +47,7 @@ const displayedText = computed<string>(
           <div class="labels">
             <NodeTag
               v-for="label in props.bookmarkData.data.nodeLabels"
+              :key="label"
               :style="{
                 fontSize: '0.7rem',
                 backgroundColor: 'white',

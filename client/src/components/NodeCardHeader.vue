@@ -42,7 +42,7 @@ function handleRemoveClick(): void {
 <template>
   <div class="button-pane flex justify-content-between">
     <div class="node-labels-pane flex">
-      <NodeTag v-for="label in filteredLabels" class="test mr-1" :content="label" :type="baseNodeLabel" />
+      <NodeTag v-for="label in filteredLabels" :key="label" class="test mr-1" :content="label" :type="baseNodeLabel" />
     </div>
     <NodeStatusBadge :status="node.meta.status" />
     <Button

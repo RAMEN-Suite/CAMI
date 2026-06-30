@@ -47,9 +47,10 @@ const editorContainsText = computed<boolean>(() => {
 // Needs to be instantiated at top-level to make Vue track changes better
 const reader: FileReader = new FileReader();
 
-useEventListener(reader, "load", () => {
+// eslint-disable-next-line @typescript-eslint/no-misused-promises -- TODO: Apparently useEventListener can not handle asyncs -> fix later
+useEventListener(reader, "load", async () => {
   rawJson.value = reader.result as string;
-  importJson();
+  await importJson();
 });
 
 useEventListener(reader, "error", (event: ProgressEvent) => {
@@ -69,11 +70,11 @@ function handleFinishClick(): void {
  * Handles the import of the chosen file or raw JSON input. If the option is `raw`, the import process is started directly.
  * If the option is `file`, the chosen file is read which triggers the "load" event where the import logic is handled.
  *
- * @return {void} This function does not return any value.
+ * @return {Promise<void>} This function does not return any value.
  */
-function handleImport(): void {
+async function handleImport(): Promise<void> {
   if (chooseOption.value === "raw") {
-    importJson();
+    await importJson();
   } else {
     const file: File = fileupload.value.files[0];
 
@@ -82,7 +83,7 @@ function handleImport(): void {
   }
 }
 
-async function handleCancelClick(): Promise<void> {
+function handleCancelClick(): void {
   cancelImport();
   closeModal();
 }

@@ -51,7 +51,7 @@ function setIsSearchActive(mode: boolean): void {
     return;
   }
 
-  nextTick(() => {
+  void nextTick(() => {
     const inputElm: HTMLInputElement = textSearchObject.value.elm?.$el?.querySelector("input");
 
     inputElm?.focus();
@@ -67,7 +67,7 @@ function handleResultItemSelect(item: SearchResult): void {
     if (!answer) {
       // Next tick necessary to prevent race conditions between state updates of this component and
       // PrimeVue's component
-      nextTick(() => {
+      void nextTick(() => {
         textSearchObject.value.searchStr = item.match;
       });
       return;

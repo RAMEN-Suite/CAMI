@@ -214,7 +214,7 @@ function handleAddText(newText: NodeStatusObject<TextNode>) {
   temporaryWorkData.value.texts.push(newText);
 }
 
-async function handleAddTextClick(): Promise<void> {
+function handleAddTextClick(): void {
   const newText: NodeStatusObject<TextNode> = createNodeStatusObjectFromRawData(
     createNodeDtoFromNode(createTextNode()),
   ) as NodeStatusObject<TextNode>;
@@ -238,7 +238,7 @@ async function handleDiscardChanges(): Promise<void> {
 
   if (globalMode.value === "create") {
     restorePath();
-    updateLevelsAndFetchData(pathToActiveCollection.value);
+    await updateLevelsAndFetchData(pathToActiveCollection.value);
   }
 
   removeTemporaryCollectionItems();
@@ -264,7 +264,6 @@ function handleDeleteAnnotation(event: MouseEvent, uuid: string): void {
       title: "Delete annotation",
     },
     accept: () => deleteAnnotation(uuid),
-    reject: () => {},
   });
 }
 
@@ -345,7 +344,7 @@ async function handleApplyChanges(): Promise<void> {
 
     // Update route when new collection was created (created collection must be in focus and children displayed)
     if (operationType === "create") {
-      router.push({ query: { path: createNewUrlPath(result.data.uuid, pathIndex) } });
+      await router.push({ query: { path: createNewUrlPath(result.data.uuid, pathIndex) } });
     }
 
     showMessage("success");
@@ -362,7 +361,7 @@ function handleBookmarkAction(): void {
   toggleBookmark({ data: temporaryWorkData.value.collection.node, type: "collection" });
 }
 
-async function handleDeleteColletion() {
+function handleDeleteColletion(): void {
   createModalInstance(
     dialog.open(CollectionDeleteModal, {
       props: {
@@ -383,20 +382,20 @@ async function handleDeleteColletion() {
   );
 }
 
-function handleSuccessfullDeletion() {
+async function handleSuccessfullDeletion() {
   showMessage("success");
   destroyModalInstance();
-  updateView();
+  await updateView();
 }
 
-function updateView() {
+async function updateView() {
   const currentUuids: string[] = getUrlPath();
 
   // Set returned collection data to column list item
   const pathIndex: number = pathToActiveCollection.value.length - 1;
   const newUuids: string[] = currentUuids.slice(0, pathIndex);
 
-  router.push({ query: { path: newUuids.join(",") } });
+  await router.push({ query: { path: newUuids.join(",") } });
 
   // Remove collection from level explicitly. This is not handled by the watcher since the watcher
   // either refetches completely or keeps the last level.
@@ -570,12 +569,14 @@ function toggleViewMode(direction: TabView): void {
             </MultiSelect>
           </div>
           <div v-else class="flex gap-2 justify-content-center">
-            <template
-              v-for="label in temporaryWorkData.collection.node.nodeLabels"
-              v-if="temporaryWorkData.collection.node.nodeLabels.length > 0"
-              :key="label"
-            >
-              <NodeTag :content="label" type="Collection" class="mr-1" />
+            <template v-if="temporaryWorkData.collection.node.nodeLabels.length > 0">
+              <NodeTag
+                v-for="label in temporaryWorkData.collection.node.nodeLabels"
+                :key="label"
+                :content="label"
+                type="Collection"
+                class="mr-1"
+              />
             </template>
             <div v-else>
               <i>This Collection has no labels yet.</i>
@@ -584,7 +585,7 @@ function toggleViewMode(direction: TabView): void {
 
           <h3 class="text-center">Properties</h3>
           <form ref="form">
-            <div v-for="field in collectionFields" class="input-container">
+            <div v-for="field in collectionFields" :key="field.name" class="input-container">
               <div class="flex align-items-center gap-3 mb-3">
                 <label :for="field.name" class="w-10rem font-semibold">{{ capitalize(field.name) }} </label>
                 <DataInputGroup
@@ -622,6 +623,7 @@ function toggleViewMode(direction: TabView): void {
 
           <Panel
             v-for="annotation in temporaryWorkData.annotations"
+            :key="annotation.node.data.uuid"
             class="annotation-form mb-3"
             :data-annotation-uuid="annotation.node.data.uuid"
             toggleable
@@ -691,6 +693,7 @@ function toggleViewMode(direction: TabView): void {
           </div>
           <TextContainer
             v-for="text in temporaryWorkData.texts"
+            :key="text.node.data.uuid"
             :text="text"
             :mode="formMode"
             status="existing"
@@ -698,6 +701,7 @@ function toggleViewMode(direction: TabView): void {
           />
           <TextContainer
             v-for="text in temporaryTexts"
+            :key="text.node.data.uuid"
             :text="text"
             :mode="formMode"
             status="temporary"

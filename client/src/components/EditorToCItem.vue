@@ -140,7 +140,6 @@ function handleDeleteClick(e: MenuItemCommandEvent): void {
     accept: () => {
       tiptap.value?.commands.removeSemanticBlock(uuid);
     },
-    reject: () => {},
   });
 }
 

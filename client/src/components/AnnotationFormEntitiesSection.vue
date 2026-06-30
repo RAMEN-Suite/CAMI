@@ -112,7 +112,7 @@ function changeEntitiesSelectionMode(category: string, mode: "view" | "edit"): v
   }
 
   // Wait for DOM to update before trying to focus the element
-  nextTick(() => {
+  void nextTick(() => {
     // TODO: A bit hacky, replace this when upgraded to Vue 3.5?
     // The entitiesSearchObject's "elm" property is an one-entry-array with the referenced primevue components
     // that holds the component. Is an array because since the refs are set in a loop in the template
@@ -240,7 +240,7 @@ async function searchEntitiesOptions(searchString: string, category: string): Pr
       <span :class="`pi pi-chevron-${entitiesAreCollapsed ? 'down' : 'up'}`"></span>
     </template>
 
-    <div v-for="category in visibleEntityCategories">
+    <div v-for="category in visibleEntityCategories" :key="category">
       <p class="font-bold">{{ camelCaseToTitleCase(category) }}:</p>
       <EntityItem
         v-for="entry in categorizedEntities[category]"
@@ -263,8 +263,8 @@ async function searchEntitiesOptions(searchString: string, category: string): Pr
       <AutoComplete
         v-if="props.mode === 'edit'"
         v-show="entitiesSearchObject[category].mode === 'edit'"
-        v-model="entitiesSearchObject[category].currentItem"
         :ref="`input-${category}`"
+        v-model="entitiesSearchObject[category].currentItem"
         :default-value="props.defaultSearchValue"
         :complete-on-focus="props.defaultSearchValue ? true : false"
         dropdown
