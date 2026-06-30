@@ -29,8 +29,6 @@ export interface TextInterval {
   endIndex: number;
 }
 
-type Source = StructuredAnnotation | StructureNode;
-
 interface StructureNode {
   annotation: IAnnotation;
   children: StructureNode[];
@@ -215,7 +213,7 @@ export class StructureParser {
 
   private getParent(nodes: StructureNode[], annotation: StructuredAnnotation): StructureNode | undefined {
     const node: StructureNode | undefined = nodes.find((c: StructureNode): boolean => this.contains(c.annotation, annotation));
-    return node ? (this.getParent(node.children, annotation) ?? node) : undefined;
+    return node ? this.getParent(node.children, annotation) ?? node : undefined;
   }
 
   private sortTree(nodes: StructureNode[]): void {

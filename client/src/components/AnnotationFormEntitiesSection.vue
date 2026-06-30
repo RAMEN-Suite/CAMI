@@ -17,13 +17,16 @@ type EntityEntry = EntityNode & { html: string };
 /**
  * Interface for relevant state information about each entities category
  */
-type EntitiesSearchObject = Record<string, {
+type EntitiesSearchObject = Record<
+  string,
+  {
     fetchedItems: EntityEntry[] | string[];
     nodeLabel: string;
     currentItem: EntityEntry | null;
     mode: "edit" | "view";
     elm: Ref;
-  }>;
+  }
+>;
 
 const entities = defineModel<EntityNode[]>();
 
@@ -84,9 +87,9 @@ const entitiesSearchObject = ref<EntitiesSearchObject>(
  * @param {EntityEntry} item - The entity item to be added.
  */
 function addEntityItem(item: EntityEntry): void {
-  // Omit 'html' property from entry since it was only created for rendering purposes
-  const { html, ...rest } = item;
-  entities.value.push(rest);
+  const nodeData: EntityNode = { data: item.data, nodeLabels: item.nodeLabels };
+
+  entities.value?.push(nodeData);
 }
 
 /**

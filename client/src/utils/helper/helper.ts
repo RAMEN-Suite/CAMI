@@ -612,7 +612,11 @@ export function toggleTextHightlighting(annotation: Annotation, direction: "on" 
   scrollIntoViewIfNeeded(annotatedSpans[0]);
 
   annotatedSpans.forEach((span: HTMLSpanElement) => {
-    direction === "on" ? span.classList.add("highlight") : span.classList.remove("highlight");
+    if (direction === "on") {
+      span.classList.add("highlight");
+    } else {
+      span.classList.remove("highlight");
+    }
   });
 }
 
@@ -628,7 +632,9 @@ export function scrollIntoViewIfNeeded(span: HTMLSpanElement): void {
 
   const isOutsideViewport: boolean = spanRect.top <= containerRect.top || spanRect.bottom >= containerRect.bottom;
 
-  isOutsideViewport && span.scrollIntoView({ behavior: "smooth" });
+  if (isOutsideViewport) {
+    span.scrollIntoView({ behavior: "smooth" });
+  }
 }
 
 /**

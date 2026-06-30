@@ -148,19 +148,7 @@ function toggleBlockDataPopover(event: MouseEvent): void {
   infoIcon.value?.toggle(event);
 }
 
-function toggleSemanticBlockDataPopover(index: number, event: MouseEvent): void {
-  const clickedData = props.item.data._semanticBlocks[index];
-
-  if (clickedData.uuid !== currentSemanticBlockData.value?.uuid) {
-    currentSemanticBlockData.value = clickedData;
-    semanticBlockPills.value?.show(event);
-  } else {
-    semanticBlockPills.value?.toggle(event);
-  }
-}
-
 const infoIcon = useTemplateRef("block-info-popover");
-const semanticBlockPills = useTemplateRef("semantic-block-popover");
 
 const displayedLabel = computed<string>(() => {
   const item: ToCItem = props.item;

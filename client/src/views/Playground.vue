@@ -3,7 +3,7 @@ import { EditorContent } from "@tiptap/vue-3";
 import { onMounted, onUnmounted } from "vue";
 import EditorAnnotationButtonPane from "../components/EditorAnnotationButtonPane.vue";
 import EditorToC from "../components/EditorToC.vue";
-import { Annotation, NodeStatusObject } from "../models/types";
+import { NodeStatusObject } from "../models/types";
 import EditorAnnotationForm from "../components/EditorAnnotationForm.vue";
 import Button from "primevue/button";
 import { useTiptapStore } from "../store/tiptap";
@@ -12,7 +12,7 @@ import AddNodeModal from "../components/AddNodeModal.vue";
 import { useAppStore } from "../store/app";
 
 const { createModalInstance, destroyModalInstance } = useAppStore();
-const { tiptap, initializeTiptap, destroyTiptap, annotations } = useTiptapStore();
+const { tiptap, destroyTiptap, annotations } = useTiptapStore();
 
 const dialog: ReturnType<typeof useDialog> = useDialog();
 
@@ -56,22 +56,6 @@ onUnmounted(() => destroyTiptap());
 function handleClick() {
   tiptap.value.state.doc.descendants((node, pos) => {
     console.log(pos, node);
-  });
-}
-
-function toggleTextHightlighting(annotation: Annotation, direction: "on" | "off"): void {
-  const annotatedSpans: NodeListOf<HTMLSpanElement> = document.querySelectorAll(
-    `#editor span[data-anno-uuid="${annotation.node.data.uuid}"]`,
-  );
-
-  if (annotatedSpans.length === 0) {
-    return;
-  }
-
-  // scrollIntoViewIfNeeded(annotatedSpans[0]);
-
-  annotatedSpans.forEach((span: HTMLSpanElement) => {
-    direction === "on" ? span.classList.add("highlight") : span.classList.remove("highlight");
   });
 }
 </script>

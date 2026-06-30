@@ -57,7 +57,7 @@ export function useExport(): UseExportReturn {
       const standoff: StandoffJson = buildStandoffJson(totalCharacters.value, totalAnnotations.value);
 
       jsonToExport.value = JSON.stringify(standoff, null, 2);
-    } catch (e: unknown) {
+    } catch {
       addErrorMessage("Failed to build JSON. Please check the editor data and try again.");
       setPipelineStatus("error");
     }
@@ -81,7 +81,7 @@ export function useExport(): UseExportReturn {
       await navigator.clipboard.writeText(jsonToExport.value);
 
       setPipelineStatus("copied");
-    } catch (e: unknown) {
+    } catch {
       addErrorMessage("Failed to copy to clipboard.");
       setPipelineStatus("error");
     }
@@ -110,7 +110,7 @@ export function useExport(): UseExportReturn {
       anchor.click();
 
       URL.revokeObjectURL(url);
-    } catch (e: unknown) {
+    } catch {
       addErrorMessage("Failed to download file.");
       setPipelineStatus("error");
     }

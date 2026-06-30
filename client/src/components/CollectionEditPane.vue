@@ -7,12 +7,8 @@ import { useCollectionManagerStore } from "../store/collectionManager";
 import NodeTag from "./NodeTag.vue";
 import { useGuidelinesStore } from "../store/guidelines";
 import {
-  AnnotationData,
   AnnotationType,
   CollectionNode,
-  CollectionAccessObject,
-  CollectionCreationData,
-  CollectionPostData,
   ColumnEntry,
   PropertyConfig,
   TextNode,
@@ -196,8 +192,7 @@ function enrichCollectionData(): void {
 
   allPossibleFields.forEach((field) => {
     if (!(field.name in temporaryWorkData.value.collection.node.data)) {
-      temporaryWorkData.value.collection.node.data[field.name] =
-        (field?.required) ? getDefaultValueForProperty(field.type) : null;
+      temporaryWorkData.value.collection.node.data[field.name] = field?.required ? getDefaultValueForProperty(field.type) : null;
     }
   });
 }
@@ -285,26 +280,6 @@ function handleRemoveText(text: NodeDto<TextNode>, status: "existing" | "tempora
   } else {
     temporaryTexts.value = temporaryTexts.value.filter((t) => t.node.data.uuid !== text.node.data.uuid);
   }
-}
-
-async function createCollection(): Promise<CollectionNode> {
-  const parentCollection: CollectionNode | null = pathToActiveCollection.value[pathToActiveCollection.value.length - 2] ?? null;
-
-  const creationData: CollectionCreationData = {
-    ...temporaryWorkData.value,
-    parentCollection,
-  };
-
-  await api.createOrAddCollection(creationData);
-
-  const updateData: CollectionPostData = {
-    data: temporaryWorkData.value,
-    initialData: initialTemporaryWorkData.value,
-  };
-
-  const updated: CollectionNode = await api.updateCollection(temporaryWorkData.value.collection.node.data.uuid, updateData);
-
-  return updated;
 }
 
 function transferDataToListItem(uuid: string, index: number, data: NodeDto<CollectionNode>): void {
@@ -441,19 +416,19 @@ function updateView() {
  *
  * @returns {void} This function does not return any value.
  */
-function removeUnnecessaryDataBeforeSave(): void {
-  // Get configured field names that are allowed to be saved
-  const configuredFieldNames: string[] = getCollectionConfigFields(temporaryWorkData.value.collection.node.nodeLabels).map(
-    (f) => f.name,
-  );
+// function removeUnnecessaryDataBeforeSave(): void {
+//   // Get configured field names that are allowed to be saved
+//   const configuredFieldNames: string[] = getCollectionConfigFields(temporaryWorkData.value.collection.node.nodeLabels).map(
+//     (f) => f.name,
+//   );
 
-  // Remove data entries that are not configured
-  Object.keys(temporaryWorkData.value.collection.node.data).forEach((key) => {
-    if (!configuredFieldNames.includes(key) && key !== "uuid") {
-      delete temporaryWorkData.value.collection.node.data[key];
-    }
-  });
-}
+//   // Remove data entries that are not configured
+//   Object.keys(temporaryWorkData.value.collection.node.data).forEach((key) => {
+//     if (!configuredFieldNames.includes(key) && key !== "uuid") {
+//       delete temporaryWorkData.value.collection.node.data[key];
+//     }
+//   });
+// }
 
 function wrapDataInSingleStructure(data: CollectionAccessStatusObject) {
   const { collection, texts, annotations } = data;

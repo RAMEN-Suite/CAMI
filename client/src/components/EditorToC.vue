@@ -5,7 +5,6 @@ import Tree from "primevue/tree";
 import Panel from "primevue/panel";
 import { ToCItem } from "../models/types.ts";
 import EditorToCItem from "./EditorToCItem.vue";
-import Button from "primevue/button";
 
 const { tiptap, tableOfContent } = useTiptapStore();
 

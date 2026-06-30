@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, inject, watch, toValue } from "vue";
+import { computed, inject, watch, toValue } from "vue";
 import Button from "primevue/button";
 import { useAddNode } from "../composables/useAddNode";
 import { RouteLocationNormalizedLoaded, useRoute } from "vue-router";
@@ -12,7 +12,7 @@ import EntityCard from "./EntityCard.vue";
 const dialogRef: any = inject("dialogRef");
 const route: RouteLocationNormalizedLoaded = useRoute();
 
-const { currentStep, node: nodeToAdd, setPipelineStep, setNode, cancel: cancelProcess, finish: finishProcess } = useAddNode();
+const { currentStep, node: nodeToAdd, setPipelineStep, setNode, finish: finishProcess } = useAddNode();
 
 const baseNodeLabel: BaseNodeLabel = dialogRef.value.data.baseNodeLabel;
 
@@ -20,18 +20,6 @@ const emit = defineEmits<{
   (e: "close"): void;
   (e: "submit", node: NodeStatusObject): void;
 }>();
-
-// well with the initial data fetching logic. Therefore, an component wide loading state is used.
-const isLoading = ref<boolean>(false);
-
-const inputIsValid = computed<boolean>(() => {
-  // if (chooseOption.value === 'raw') {
-  //   return rawJson.value.length > 0;
-  // } else {
-  //   return fileupload.value?.files.length === 1;
-  // }
-  return false;
-});
 
 const nodeAsCollection = computed(() => (nodeToAdd.value ?? undefined) as NodeStatusObject<CollectionNode> | undefined);
 const nodeAsText = computed(() => (nodeToAdd.value ?? undefined) as NodeStatusObject<TextNode> | undefined);
