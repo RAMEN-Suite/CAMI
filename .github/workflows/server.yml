@@ -180,3 +180,39 @@ jobs:
               | "| \(.license) | \(.count) | \(.risk) |"
             ' licenses.json
           } >> "$GITHUB_STEP_SUMMARY"
+  deploy:
+    name: dev deploy
+    runs-on: ubuntu-latest
+    needs: [dev-container]
+    environment: development
+    permissions:
+      contents: read # required for actions/checkout to fetch repo contents if this repo is private
+      packages: read # required for docker login + docker compose pull to authenticate against and pull from the registry
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Install SSH Key
+        env:
+          KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+          PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          HOST: ${{ secrets.SSH_HOST }}
+          USER: ${{ secrets.SSH_USER }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+          printf '%s\n' "$PRIVATE_KEY" > ~/.ssh/staging.key
+          chmod 600 ~/.ssh/staging.key
+          cat >>~/.ssh/config <<END
+          Host staging
+            HostName $HOST
+            User $USER
+            IdentityFile ~/.ssh/staging.key
+          END
+      - name: Start Container
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: printf '%s' "$GH_TOKEN" | ssh staging deploy-cami-server
