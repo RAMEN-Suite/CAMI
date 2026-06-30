@@ -176,6 +176,10 @@ function addAnnotation(annotation: Annotation, selection: { from: number; to: nu
 function handleBlockAnnotationClick(data: { type: string; subType?: string | number }): void {
   const selection: Selection | undefined = tiptap.value?.state.selection;
 
+  if (!selection) {
+    return;
+  }
+
   try {
     const config: AnnotationType = getAnnotationConfig(data.type);
 
@@ -185,7 +189,7 @@ function handleBlockAnnotationClick(data: { type: string; subType?: string | num
     isSelectionValid(selection, config);
 
     // Needs to be captured since modal opening collapses editor selection
-    const capturedSelection = { from: selection!.from, to: selection!.to };
+    const capturedSelection = { from: selection.from, to: selection.to };
 
     const textInSelection: string = tiptap.value?.state.doc.textBetween(capturedSelection.from, capturedSelection.to) ?? "";
 

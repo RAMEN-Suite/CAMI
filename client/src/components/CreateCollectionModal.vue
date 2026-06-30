@@ -84,7 +84,11 @@ function wrapDataForCreation(
 }
 
 async function handleSubmit() {
-  const collectionNode = mode === "new" ? { ...newCollectionNode.value, nodeLabels: allLabels.value } : selectedCollection.value!;
+  if (!selectedCollection.value) {
+    return;
+  }
+
+  const collectionNode = mode === "new" ? { ...newCollectionNode.value, nodeLabels: allLabels.value } : selectedCollection.value;
   const status = mode === "new" ? "created" : "added";
 
   isLoading.value = true;

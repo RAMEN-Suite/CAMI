@@ -21,7 +21,7 @@ import AddNodeModal from "./AddNodeModal.vue";
 import { useAppStore } from "../store/app";
 import { useDialog } from "primevue/usedialog";
 
-const nodes = defineModel<NodeStatusObject[]>();
+const nodes = defineModel<NodeStatusObject[]>({ required: true });
 
 const props = defineProps<{
   mode: "edit" | "view";
@@ -73,7 +73,7 @@ function startAddingNode(nodeLabel: BaseNodeLabel): void {
 function addNode(node: NodeStatusObject) {
   console.log("Node added: ", node);
 
-  nodes.value!.push(node);
+  nodes.value.push(node);
 }
 
 /**
@@ -84,7 +84,7 @@ function addNode(node: NodeStatusObject) {
  * @param {NodeStatusObject<CollectionNode | EntityNode | TextNode>} node - The node to be removed.
  */
 function handleRemoveNode(node: NodeStatusObject<CollectionNode | EntityNode | TextNode>): void {
-  nodes.value = nodes.value!.filter((n) => n.node.data.uuid !== node.node.data.uuid);
+  nodes.value = nodes.value.filter((n) => n.node.data.uuid !== node.node.data.uuid);
 }
 
 /**
@@ -116,7 +116,7 @@ const nodeOptions = ref([
 ]);
 
 function toggleMenu(event: PointerEvent) {
-  menu.value!.toggle(event);
+  menu.value?.toggle(event);
 }
 </script>
 

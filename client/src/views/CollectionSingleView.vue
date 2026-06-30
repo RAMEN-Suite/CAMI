@@ -9,12 +9,12 @@ const route: RouteLocationNormalized = useRoute();
 const uuid: string = route.params.uuid as string;
 
 // These two are added to the route in the beforeEnter navigation guard
-const collection: NodeDto<CollectionNode> = route.meta.collection!;
-const ancestryPaths: NodeAncestry[] = route.meta.ancestryPaths!;
+const collection: NodeDto<CollectionNode> | undefined = route.meta.collection;
+const ancestryPaths: NodeAncestry[] = route.meta.ancestryPaths ?? [];
 </script>
 <template>
   <div class="container text-center">
-    <h2>Collection "{{ collection.node.data.label }}"</h2>
+    <h2>Collection "{{ collection?.node.data.label }}"</h2>
 
     <p>This collection is part of {{ ancestryPaths.length }} hierarchies. Select one of them:</p>
 

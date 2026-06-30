@@ -6,7 +6,10 @@ type Anno = NodeStatusObject<AnnotationNode>;
 /** Helper for text ranges, used during creation of gap paragraphs when indices are orphaned
  * (not part of any block annotation)
  */
-interface Range { start: number; end: number }
+interface Range {
+  start: number;
+  end: number;
+}
 
 const {
   getStructuralAnnotationConfigs,
@@ -58,7 +61,7 @@ export default class StandoffConverter {
     return {
       annotations: this.inlineAnnotations,
       structuralAnnotations: allStructural,
-      tipTapJson: this.tiptapJson!,
+      tipTapJson: this.tiptapJson,
     };
   }
 
@@ -241,7 +244,10 @@ export default class StandoffConverter {
    * @returns {TiptapNode[]} An array of Tiptap inline nodes (hard breaks, zero point annotations, text nodes)
    */
   private createLeafContent(startIndex: number, endIndex: number): TiptapNode[] {
-    interface InlineEntry { pos: number; node: TiptapNode }
+    interface InlineEntry {
+      pos: number;
+      node: TiptapNode;
+    }
 
     function inRange(a: Anno): boolean {
       return a.node.data.startIndex >= startIndex && a.node.data.startIndex <= endIndex;
@@ -721,7 +727,7 @@ export default class StandoffConverter {
           .sort((a, b) => b.node.data.endIndex - b.node.data.startIndex - (a.node.data.endIndex - a.node.data.startIndex))
           .map((a) => ({ uuid: a.node.data.uuid, type: a.node.data.type }));
 
-        node.attrs!._semanticBlocks = labelsSortedBySize;
+        node.attrs = { ...node.attrs, _semanticBlocks: labelsSortedBySize };
       }
 
       if (node.content?.length) {

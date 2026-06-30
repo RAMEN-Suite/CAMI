@@ -453,7 +453,7 @@ function wrapDataInSingleStructure(data: CollectionAccessStatusObject) {
 }
 
 async function updateCollection(): Promise<NodeDto<CollectionNode>> {
-  const updateObj = wrapDataInSingleStructure(temporaryWorkData.value!);
+  const updateObj = wrapDataInSingleStructure(temporaryWorkData.value);
 
   // console.log(flattenNodeTree(updateObj));
   // TODO: Include this step

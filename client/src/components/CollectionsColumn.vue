@@ -268,8 +268,12 @@ async function handleRefreshClick() {
 }
 
 function handleResize(event: MouseEvent) {
-  const newWidth: number = event.clientX - column.value!.getBoundingClientRect().left;
-  column.value!.style.width = `${newWidth}px`;
+  if (!column.value) {
+    return;
+  }
+
+  const newWidth: number = event.clientX - column.value.getBoundingClientRect().left;
+  column.value.style.width = `${newWidth}px`;
 }
 
 function handleSearchInputChange(newInput: string | undefined) {
@@ -333,7 +337,7 @@ async function updateUrlPath(uuid: string, index: number): Promise<void> {
 }
 
 function scrollToColumn() {
-  column.value!.scrollIntoView({ behavior: "smooth" });
+  column.value?.scrollIntoView({ behavior: "smooth" });
 }
 
 function setIsLoading(state: boolean) {

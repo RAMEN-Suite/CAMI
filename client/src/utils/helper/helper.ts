@@ -418,7 +418,11 @@ export function getSpansToAnnotate(): HTMLSpanElement[] {
  */
 export function getVisibleDocRange(editorView: EditorView): { from: number; to: number } {
   // TODO: Add viewport buffer so that annotation directly above/below are included...
-  const rect: DOMRect | undefined = editorView.dom.parentElement!.getBoundingClientRect();
+  const rect: DOMRect | undefined = editorView.dom.parentElement?.getBoundingClientRect();
+
+  if (!rect) {
+    return { from: 0, to: editorView.state.doc.content.size };
+  }
 
   const { top: parentTopOffset, left: parentLeftOffset, height } = rect;
 

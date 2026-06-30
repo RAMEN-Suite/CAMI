@@ -13,13 +13,13 @@ const props = defineProps<{
   mode: "view";
 }>();
 
-const node = defineModel<NodeStatusObject<AnnotationNode>>();
+const node = defineModel<NodeStatusObject<AnnotationNode>>({ required: true });
 
 const infoIcon = useTemplateRef("info-icon");
 
-const filteredLabels: string[] = filterDefaultLabels(node.value!.node.nodeLabels);
+const filteredLabels: string[] = filterDefaultLabels(node.value.node.nodeLabels);
 
-const tableData = Object.entries(node.value!.node.data).map(([property, value]) => {
+const tableData = Object.entries(node.value.node.data).map(([property, value]) => {
   return { property, value };
 });
 
@@ -28,7 +28,7 @@ function handleRemoveNode(): void {
 }
 
 function setNodeStatus(status: NodeStatus): void {
-  node.value!.meta.status = status;
+  node.value.meta.status = status;
 }
 
 function togglePopover(event: MouseEvent): void {

@@ -71,7 +71,11 @@ function getConfiguredExtensions(): any[] {
 }
 
 function handleScroll() {
-  const { from, to } = getVisibleDocRange(tiptap.value!.view);
+  if (!tiptap.value) {
+    return;
+  }
+
+  const { from, to } = getVisibleDocRange(tiptap.value.view);
 
   tiptap.value?.commands.applyViewportUpdates({ from, to });
 }
@@ -168,7 +172,11 @@ function initializeEventListeners(): void {
 }
 
 function initializeDecorationView(annotations: Map<string, NodeStatusObject<AnnotationNode>>): void {
-  const { from, to } = getVisibleDocRange(tiptap.value!.view);
+  if (!tiptap.value) {
+    console.error("Could not initialize decorations since no tiptap instance was found");
+    return;
+  }
+  const { from, to } = getVisibleDocRange(tiptap.value.view);
 
   tiptap.value?.commands.initializeDecorations(annotations, selectedOptions.value, from, to);
 }
@@ -197,7 +205,7 @@ watch(
 );
 
 function resetToInitialState(): void {
-  if (!tiptap.value || !initialDoc || !initialPlainText) {
+  if (!tiptap.value || !initialDoc || !initialPlainText || !initialAnnotations.value || !initialStructuralAnnotations.value) {
     return;
   }
 
@@ -208,16 +216,19 @@ function resetToInitialState(): void {
   // setContent goes through TipTap's dispatchTransaction, keeping internal state in sync.
   tiptap.value.commands.setContent(initialDoc);
 
-  initializeDecorationView(annotations.value!);
+  initializeDecorationView(annotations.value);
 
   resetHistory();
 }
 
 function setNewInitialDocState() {
-  // Annotations and structural annotations are already reset in the editor's cleanup function
+  if (!tiptap.value) {
+    return;
+  }
 
-  initialDoc = tiptap.value!.getJSON();
-  initialPlainText = tiptap.value!.state.doc.textContent;
+  // Annotations and structural annotations are already reset in the editor's cleanup function
+  initialDoc = tiptap.value.getJSON();
+  initialPlainText = tiptap.value.state.doc.textContent;
 }
 
 /**

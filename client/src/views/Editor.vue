@@ -194,7 +194,11 @@ function isStructureElement(node: DocNode): boolean {
 function getEmptyNodes(): DocNode[] {
   const emptyNodes: DocNode[] = [];
 
-  tiptap.value!.state.doc.descendants((node: DocNode) => {
+  if (!tiptap.value) {
+    return emptyNodes;
+  }
+
+  tiptap.value.state.doc.descendants((node: DocNode) => {
     if (node.type.name === "zeroPointAnnotation" || node.type.name === "hardBreak") {
       return false;
     }
@@ -445,7 +449,7 @@ function findChangedSemanticBlocks(indexMap: IndexMap, plainText: string): Annot
 }
 
 function getAffectedAnnotations(): { annotations: Annotation[]; structureElements: Annotation[] } {
-  const plainText: string = tiptap.value!.state.doc.textContent;
+  const plainText: string = tiptap.value?.state.doc.textContent ?? "";
 
   const { decorationIndexMap, structureBlockIndexMap, semanticBlockIndexMap, zeroPointIndexMap, hardBreakIndexMap } =
     useCreateIndexMaps().buildIndexMaps();

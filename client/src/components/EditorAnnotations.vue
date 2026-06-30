@@ -28,7 +28,11 @@ const expandedKeys = ref<Record<string, boolean>>({});
 watch(
   () => annotations.value?.size,
   () => {
-    displayedAnnotations.value = [...annotations.value!.values()].filter((a: NodeStatusObject) => a.meta.status !== "deleted");
+    if (!annotations.value) {
+      displayedAnnotations.value = [];
+    } else {
+      displayedAnnotations.value = [...annotations.value.values()].filter((a: NodeStatusObject) => a.meta.status !== "deleted");
+    }
   },
   { deep: false, immediate: true },
 );
