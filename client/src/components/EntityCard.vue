@@ -13,13 +13,13 @@ const props = defineProps<{
 
 const emit = defineEmits<(e: "remove-node") => void>();
 
-const node = defineModel<NodeStatusObject<EntityNode>>();
+const node = defineModel<NodeStatusObject<EntityNode>>({ required: true });
 
 const infoIcon = useTemplateRef("info-icon");
 
 function handleRemoveNode(): void {
   console.log("handle remove :)");
-  if (node.value!.meta.status === "added") {
+  if (node.value.meta.status === "added") {
     emit("remove-node");
   } else {
     setNodeStatus("removed");
@@ -27,14 +27,14 @@ function handleRemoveNode(): void {
 }
 
 function setNodeStatus(status: NodeStatus): void {
-  node.value!.meta.status = status;
+  node.value.meta.status = status;
 }
 
 function togglePopover(event: MouseEvent): void {
   infoIcon.value?.toggle(event);
 }
 
-const tableData = Object.entries(node.value!.node.data).map(([property, value]) => {
+const tableData = Object.entries(node.value.node.data).map(([property, value]) => {
   return { property, value };
 });
 </script>

@@ -171,7 +171,7 @@ function openCreateCollectionModal(mode: "new" | "existing") {
       },
       data: { mode, parentCollection },
       emits: {
-        onSuccess: (createdCollection: NodeDto<CollectionNode>) => {
+        onSuccess: async (createdCollection: NodeDto<CollectionNode>) => {
           // Should not be the case, but still
           if (!createdCollection) {
             return;
@@ -186,7 +186,7 @@ function openCreateCollectionModal(mode: "new" | "existing") {
           levels.value[props.index].collections.unshift(columnItem);
 
           // Update route when new collection was created (created collection must be in focus and children displayed)
-          router.push({
+          await router.push({
             query: { path: createNewUrlPath(createdCollection.node.data.uuid, props.index) },
           });
 
@@ -239,7 +239,7 @@ async function handleItemSelected(uuid: string): Promise<void> {
     return;
   }
 
-  updateUrlPath(uuid, props.index);
+  await updateUrlPath(uuid, props.index);
 }
 
 function handleNodeLabelsChange(selectedLabels: string[]) {
@@ -268,8 +268,12 @@ async function handleRefreshClick() {
 }
 
 function handleResize(event: MouseEvent) {
-  const newWidth: number = event.clientX - column.value!.getBoundingClientRect().left;
-  column.value!.style.width = `${newWidth}px`;
+  if (!column.value) {
+    return;
+  }
+
+  const newWidth: number = event.clientX - column.value.getBoundingClientRect().left;
+  column.value.style.width = `${newWidth}px`;
 }
 
 function handleSearchInputChange(newInput: string | undefined) {
@@ -280,9 +284,9 @@ function handleSearchInputChange(newInput: string | undefined) {
   updateSearchParams(data, { immediate: false });
 }
 
-async function handleSearchParamsChange() {
+async function handleSearchParamsChange(): Promise<void> {
   resetPagination();
-  fetchInitialData();
+  await fetchInitialData();
 }
 
 /**
@@ -328,12 +332,12 @@ function showUnsavedChangesWarning() {
   });
 }
 
-function updateUrlPath(uuid: string, index: number): void {
-  router.push({ query: { path: createNewUrlPath(uuid, index) } });
+async function updateUrlPath(uuid: string, index: number): Promise<void> {
+  await router.push({ query: { path: createNewUrlPath(uuid, index) } });
 }
 
 function scrollToColumn() {
-  column.value!.scrollIntoView({ behavior: "smooth" });
+  column.value?.scrollIntoView({ behavior: "smooth" });
 }
 
 function setIsLoading(state: boolean) {
@@ -346,25 +350,24 @@ function startResize() {
 </script>
 
 <template>
-  <div class="column flex flex-column p-1" ref="column">
+  <div ref="column" class="column flex flex-column p-1">
     <div class="header flex gap-1">
       <InputText
         size="small"
         class="w-full"
-        :modelValue="searchParams.searchInput"
+        :model-value="searchParams.searchInput"
         spellcheck="false"
         placeholder="Filter by label"
         title="Filter Collections by label"
         @update:model-value="handleSearchInputChange"
       />
       <MultiSelect
-        :modelValue="searchParams.nodeLabels"
+        :model-value="searchParams.nodeLabels"
         :options="availableCollectionLabels"
-        dropdownIcon="pi pi-filter"
+        dropdown-icon="pi pi-filter"
         :filter="false"
         title="Select node labels to filter"
         class="flex-shrink-0"
-        @update:modelValue="handleNodeLabelsChange"
         :pt="{
           root: {
             style: {
@@ -378,6 +381,7 @@ function startResize() {
             },
           },
         }"
+        @update:model-value="handleNodeLabelsChange"
       >
         <template #dropdownicon>
           <OverlayBadge v-if="!areAllLabelsSelected" severity="danger">
@@ -394,15 +398,15 @@ function startResize() {
         @click="handleChangeSortOrderClick"
       />
     </div>
-    <div class="content" ref="scroll-pane">
+    <div ref="scroll-pane" class="content">
       <CollectionItem
         v-for="collection of levels[props.index].collections"
         :key="collection.data.node.data.uuid"
         :collection="collection"
-        :isActive="levels[props.index].activeCollection?.node.data.uuid === collection.data.node.data.uuid"
+        :is-active="levels[props.index].activeCollection?.node.data.uuid === collection.data.node.data.uuid"
         @item-selected="handleItemSelected"
       ></CollectionItem>
-      <div class="text-center" v-if="isLoading && levels[props.index].collections.length > 0" title="More data are loading...">
+      <div v-if="isLoading && levels[props.index].collections.length > 0" class="text-center" title="More data are loading...">
         <span class="pi pi-spin pi-spinner"></span>
       </div>
     </div>
@@ -422,7 +426,7 @@ function startResize() {
       <Menu ref="add-menu" :model="addMenuItems" :popup="true" />
     </div>
   </div>
-  <div class="resizer" ref="resizer" title="Hold down mouse and drag to resize column">
+  <div ref="resizer" class="resizer" title="Hold down mouse and drag to resize column">
     <div class="handle"></div>
   </div>
 </template>

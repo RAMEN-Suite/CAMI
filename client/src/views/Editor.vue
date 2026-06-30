@@ -194,7 +194,11 @@ function isStructureElement(node: DocNode): boolean {
 function getEmptyNodes(): DocNode[] {
   const emptyNodes: DocNode[] = [];
 
-  tiptap.value!.state.doc.descendants((node: DocNode) => {
+  if (!tiptap.value) {
+    return emptyNodes;
+  }
+
+  tiptap.value.state.doc.descendants((node: DocNode) => {
     if (node.type.name === "zeroPointAnnotation" || node.type.name === "hardBreak") {
       return false;
     }
@@ -262,7 +266,12 @@ function findChangedAnnotations(indexMap: IndexMap, plainText: string): Annotati
   const deletedUuids = initialUuids.difference(uuidsInEditor);
 
   deletedUuids.forEach((uuid) => {
-    const annoEntry: Annotation = initialAnnotations.value?.get(uuid)!;
+    const annoEntry: Annotation | undefined = initialAnnotations.value?.get(uuid);
+
+    if (!annoEntry) {
+      console.error(`The annotation with uuid ${uuid} could not be found in the initial annotations`);
+      return;
+    }
 
     const cloned: Annotation = { ...cloneDeep(annoEntry), meta: { status: "deleted" } };
 
@@ -382,7 +391,12 @@ function findChangedStructureElements(indexMap: IndexMap, plainText: string): An
   const deletedUuids: Set<string> = initialUuids.difference(uuidsInEditor);
 
   deletedUuids.forEach((uuid) => {
-    const annoEntry: Annotation = initialStructuralAnnotations.value?.get(uuid)!;
+    const annoEntry: Annotation | undefined = initialStructuralAnnotations.value?.get(uuid);
+
+    if (!annoEntry) {
+      console.error(`The annotation with uuid ${uuid} could not be found in the initial structural annotations`);
+      return;
+    }
 
     const cloned: Annotation = { ...cloneDeep(annoEntry), meta: { status: "deleted" } };
 
@@ -435,7 +449,7 @@ function findChangedSemanticBlocks(indexMap: IndexMap, plainText: string): Annot
 }
 
 function getAffectedAnnotations(): { annotations: Annotation[]; structureElements: Annotation[] } {
-  const plainText: string = tiptap.value!.state.doc.textContent;
+  const plainText: string = tiptap.value?.state.doc.textContent ?? "";
 
   const { decorationIndexMap, structureBlockIndexMap, semanticBlockIndexMap, zeroPointIndexMap, hardBreakIndexMap } =
     useCreateIndexMaps().buildIndexMaps();
@@ -558,14 +572,15 @@ async function handleSaveChanges(): Promise<void> {
   // }
 
   const nodesWithoutChildrenOrText = getEmptyNodes();
+  const joined: string = nodesWithoutChildrenOrText.map((n) => n.type.name).join(",");
 
   if (nodesWithoutChildrenOrText.length > 0) {
-    console.warn("Some nodes have no text: ", nodesWithoutChildrenOrText);
+    console.warn("Some nodes have no text: ", joined);
 
     addToastMessage({
       severity: "warn",
       summary: "Empty block",
-      detail: "Some nodes do not contain text or children. Please delete them or add text: " + nodesWithoutChildrenOrText,
+      detail: "Some nodes do not contain text or children. Please delete them or add text: " + joined,
       life: 3000,
     });
 
@@ -623,7 +638,7 @@ function traverseNodeTreeAndSetToCreated(node: NodeStatusObject) {
   node.connectedNodes.forEach((child) => traverseNodeTreeAndSetToCreated(child));
 }
 
-async function handleCancelChanges(): Promise<void> {
+function handleCancelChanges(): void {
   text.value = cloneDeep(initialText.value);
 
   resetToInitialState();
@@ -707,59 +722,7 @@ function showMessage(result: "success" | "error", error?: Error) {
   });
 }
 
-// function findChangesetBoundaries(): {
-//   uuidStart: string | null;
-//   uuidEnd: string | null;
-// } {
-//   let uuidStart: string | null = beforeStartIndex.value
-//     ? totalCharacters.value[beforeStartIndex.value].data.uuid
-//     : null;
-
-//   let uuidEnd: string | null = afterEndIndex.value
-//     ? totalCharacters.value[afterEndIndex.value].data.uuid
-//     : null;
-
-//   for (let index = 0; index < snippetCharacters.value.length; index++) {
-//     if (
-//       snippetCharacters.value[index].data.uuid !== initialSnippetCharacters.value[index]?.data.uuid
-//     ) {
-//       break;
-//     }
-
-//     uuidStart = snippetCharacters.value[index].data.uuid;
-
-//     if (
-//       index === snippetCharacters.value.length - 1 &&
-//       snippetCharacters.value.length >= initialSnippetCharacters.value.length
-//     ) {
-//       uuidStart = beforeStartIndex.value
-//         ? totalCharacters.value[beforeStartIndex.value].data.uuid
-//         : null;
-//     }
-//   }
-
-//   const reversedCharacters: Character[] = [...snippetCharacters.value].reverse();
-//   const reversedInitialCharacters: Character[] = [...initialSnippetCharacters.value].reverse();
-
-//   for (let index = 0; index < reversedCharacters.length; index++) {
-//     if (reversedCharacters[index].data.uuid !== reversedInitialCharacters[index]?.data.uuid) {
-//       break;
-//     }
-
-//     uuidEnd = reversedCharacters[index].data.uuid;
-
-//     if (
-//       index === reversedCharacters.length - 1 &&
-//       reversedCharacters.length >= reversedInitialCharacters.length
-//     ) {
-//       uuidEnd = afterEndIndex.value ? totalCharacters.value[afterEndIndex.value].data.uuid : null;
-//     }
-//   }
-
-//   return { uuidStart, uuidEnd };
-// }
-
-function preventUserFromPageLeaving(event: BeforeUnloadEvent): string {
+function preventUserFromPageLeaving(event: BeforeUnloadEvent): void {
   if (!isValidText.value) {
     return;
   }
@@ -769,11 +732,6 @@ function preventUserFromPageLeaving(event: BeforeUnloadEvent): string {
   }
 
   event.preventDefault();
-
-  const confirmationMessage = "Do you really want to leave? You have unsaved changes.";
-  event.returnValue = confirmationMessage;
-
-  return confirmationMessage;
 }
 
 function preventUserFromRouteLeaving(): boolean {

@@ -1,4 +1,4 @@
-import { computed, readonly, ref } from "vue";
+import { readonly, ref } from "vue";
 import { useTiptapStore } from "../store/tiptap";
 import { ANNOTATION_DECORATION_KEY } from "../editors/text/extensions/annotationDecoration";
 import { IndexMap } from "../models/types";
@@ -20,9 +20,14 @@ import { Node } from "@tiptap/pm/model";
  */
 export function useCreateIndexMaps() {
   const { tiptap } = useTiptapStore();
-  const doc = computed<Node>(() => tiptap.value!.state.doc);
 
-  const decorations: Decoration[] = ANNOTATION_DECORATION_KEY.getState(tiptap.value!.state)?.all.find() ?? [];
+  if (!tiptap.value) {
+    throw new Error("useCreateIndexMaps() requires an initialised tiptap editor.");
+  }
+
+  const doc: Node = tiptap.value.state.doc;
+
+  const decorations: Decoration[] = ANNOTATION_DECORATION_KEY.getState(tiptap.value.state)?.all.find() ?? [];
 
   // Maps for standoff indices
   const decorationIndexMap = ref<IndexMap>(new Map());
@@ -60,7 +65,7 @@ export function useCreateIndexMaps() {
    */
   function buildStructureIndexMap(): IndexMap {
     const map: IndexMap = new Map();
-    traverseNode(doc.value, 0, map);
+    traverseNode(doc, 0, map);
     structureBlockIndexMap.value = map;
 
     return map;
@@ -107,7 +112,7 @@ export function useCreateIndexMaps() {
       return current;
     }
 
-    walk(doc.value, 0);
+    walk(doc, 0);
 
     semanticBlockIndexMap.value = map;
 
@@ -121,7 +126,7 @@ export function useCreateIndexMaps() {
    */
   function buildZeroPointIndexMap(): IndexMap {
     const map: IndexMap = new Map();
-    traverseForInlineNode(doc.value, 0, "zeroPointAnnotation", map);
+    traverseForInlineNode(doc, 0, "zeroPointAnnotation", map);
     zeroPointIndexMap.value = map;
 
     return map;
@@ -134,7 +139,7 @@ export function useCreateIndexMaps() {
    */
   function buildHardBreakIndexMap(): IndexMap {
     const map: IndexMap = new Map();
-    traverseForInlineNode(doc.value, 0, "hardBreak", map);
+    traverseForInlineNode(doc, 0, "hardBreak", map);
     hardBreakIndexMap.value = map;
 
     return map;
@@ -158,7 +163,7 @@ export function useCreateIndexMaps() {
     // Loop index for sortedPositions array
     let i: number = 0;
 
-    doc.value.descendants((node: Node, nodePos: number) => {
+    doc.descendants((node: Node, nodePos: number) => {
       if (i >= sortedPositions.length) {
         return false;
       }
@@ -180,9 +185,16 @@ export function useCreateIndexMaps() {
     const map: IndexMap = new Map();
 
     for (const deco of decorations) {
+      const startIndex: number | undefined = positionMap.get(deco.from);
+      const endIndex: number | undefined = positionMap.get(deco.to);
+
+      if (!startIndex || !endIndex) {
+        console.error("Decoration position not found in position map:", deco);
+        continue;
+      }
       map.set(deco.spec._uuid, {
-        startIndex: positionMap.get(deco.from)!,
-        endIndex: positionMap.get(deco.to)! - 1,
+        startIndex,
+        endIndex: endIndex - 1,
       });
     }
 

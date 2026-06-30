@@ -50,6 +50,7 @@ export default class ApiService {
     if (!response.ok) {
       const body = await response.json().catch(() => null);
 
+      /* eslint-disable @typescript-eslint/prefer-nullish-coalescing -- empty message string should be handled */
       switch (response.status) {
         case 404:
           throw new NotFoundError(response.status, body?.message || "Not found");
@@ -62,6 +63,7 @@ export default class ApiService {
         default:
           throw new ApiError(response.status, body?.message || "API response was not ok");
       }
+      /* eslint-enable*/
     }
   }
 

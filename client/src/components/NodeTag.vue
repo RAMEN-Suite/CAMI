@@ -20,7 +20,7 @@ const config = {
     severity: "contrast",
   },
   Content: {
-    severity: "contrast",
+    severity: "secondary",
   },
   Entity: {
     severity: "info",

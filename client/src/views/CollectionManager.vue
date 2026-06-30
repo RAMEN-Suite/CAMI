@@ -43,7 +43,7 @@ watch(
       try {
         // If path exists on page load, validate it. Else, just fetch top-level collections
         const newPath: NodeDto<CollectionNode>[] = newValue ? await validatePath(newValue as string) : [];
-        updateLevelsAndFetchData(newPath);
+        await updateLevelsAndFetchData(newPath);
 
         isPathValid.value = true;
       } catch {
@@ -57,13 +57,13 @@ watch(
 
     // Empty path query -> Restore default view
     if (!newValue || newValue === "") {
-      await restoreDefaultView();
+      restoreDefaultView();
       return;
     }
 
     try {
       const newPath: NodeDto<CollectionNode>[] = await validatePath(newValue as string);
-      updateLevelsAndFetchData(newPath);
+      await updateLevelsAndFetchData(newPath);
 
       isPathValid.value = true;
     } catch {
@@ -93,7 +93,7 @@ onBeforeRouteUpdate(() => {
   return true;
 });
 
-function handleBreadcrumbItemClick(data: { index: number; uuid: string }): void {
+async function handleBreadcrumbItemClick(data: { index: number; uuid: string }): Promise<void> {
   if (!canNavigate.value) {
     showUnsavedChangesWarning();
     return;
@@ -101,16 +101,16 @@ function handleBreadcrumbItemClick(data: { index: number; uuid: string }): void 
 
   const { index, uuid } = data;
 
-  router.push({ query: { path: createNewUrlPath(uuid, index) } });
+  await router.push({ query: { path: createNewUrlPath(uuid, index) } });
 }
 
-function handleBreadcrumbHomeClick(): void {
+async function handleBreadcrumbHomeClick(): Promise<void> {
   if (!canNavigate.value) {
     showUnsavedChangesWarning();
     return;
   }
 
-  router.push({ query: {} });
+  await router.push({ query: {} });
 }
 
 function showUnsavedChangesWarning() {

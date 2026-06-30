@@ -16,7 +16,7 @@ const asyncOperationRunning = ref<boolean>(false);
 
 // Must be computed since PrimeVue's Dialog Service does not allow custom props for components
 const collection = computed<CollectionAccessObject>(() => {
-  return dialogRef?.value?.data?.collection || null;
+  return dialogRef?.value?.data?.collection ?? null;
 });
 
 const deleteMessage = computed<string>(() => {
@@ -72,7 +72,7 @@ function showMessage(result: "success" | "error", error?: Error) {
   });
 }
 
-async function handleCancelClick(): Promise<void> {
+function handleCancelClick(): void {
   closeModal();
 }
 </script>

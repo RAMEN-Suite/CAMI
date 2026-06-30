@@ -9,12 +9,12 @@ const props = defineProps<{
 
 const emit = defineEmits<(e: "remove-node") => void>();
 
-const node = defineModel<NodeStatusObject<TextNode>>();
+const node = defineModel<NodeStatusObject<TextNode>>({ required: true });
 
 const PREVIEW_LENGTH: number = 100;
 
 const displayedText = computed<string>(
-  () => node.value!.node.data.text.slice(0, PREVIEW_LENGTH) + (node.value!.node.data.text.length > PREVIEW_LENGTH ? "..." : ""),
+  () => node.value.node.data.text.slice(0, PREVIEW_LENGTH) + (node.value.node.data.text.length > PREVIEW_LENGTH ? "..." : ""),
 );
 
 /**
@@ -29,11 +29,11 @@ function handleClickContainer(event: PointerEvent): void {
     return;
   }
 
-  window.open(`/editor/${node.value!.node.data.uuid}`, "_blank", "noopener noreferrer");
+  window.open(`/editor/${node.value.node.data.uuid}`, "_blank", "noopener noreferrer");
 }
 
 function handleRemoveNode(): void {
-  if (node.value!.meta.status === "added") {
+  if (node.value.meta.status === "added") {
     emit("remove-node");
   } else {
     setNodeStatus("removed");
@@ -41,7 +41,7 @@ function handleRemoveNode(): void {
 }
 
 function setNodeStatus(status: NodeStatus): void {
-  node.value!.meta.status = status;
+  node.value.meta.status = status;
 }
 </script>
 

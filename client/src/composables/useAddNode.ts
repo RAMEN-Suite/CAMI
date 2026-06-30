@@ -67,7 +67,7 @@ export function useAddNode(): UseAddNodeReturn {
     resetPipeline();
   }
 
-  async function init(): Promise<void> {
+  function init(): void {
     clearErrorMessages();
     setPipelineStep("choosing");
 

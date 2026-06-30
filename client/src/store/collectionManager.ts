@@ -130,9 +130,9 @@ export function useCollectionManagerStore() {
    *
    * Called when the user clicks on the home button of the breadcrumbs.
    *
-   * @returns {Promise<void>} A promise that resolves when the operation is complete.
+   * @returns {void} This function does not return a value
    */
-  async function restoreDefaultView(): Promise<void> {
+  function restoreDefaultView(): void {
     // Reset path selection (no selected item in column, nothing displayed in edit pane)
     levels.value[0].activeCollection = null;
     setPathToActiveCollection([]);
