@@ -16,10 +16,14 @@
   padding: 5px;
   /* outline: 1px solid var(--purple); */
   text-decoration-skip-ink: none;
+  /* Positioning context for the teleported semantic-block-lines overlay. */
+  position: relative;
 }
 
 .tiptap-editor-pane {
   width: 100%;
+  /* Reserve a left gutter for the semantic-block lines so they sit beside the text. */
+  padding-left: 1.75rem;
 }
 
 .tiptap-editor-pane:focus-visible {
@@ -134,4 +138,39 @@ ol {
   padding: 0 5px;
 
   /* background-color: rgb(213, 239, 248); */
+}
+
+/* ------------------ SEMANTIC BLOCK LINES ------------------ */
+
+/*
+ * Overlay teleported into #editor. It shares the scroll container's content
+ * origin, so it scrolls together with the text and needs no scroll recompute.
+ */
+.semantic-block-lines-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+/* A single vertical line spanning one semantic block's range. */
+.semantic-block-line {
+  position: absolute;
+  width: 0;
+  border-left: 2px solid var(--purple);
+  border-radius: 1px;
+  pointer-events: none;
+}
+/* Static type label (placeholder — sticky/hover behaviour comes later). */
+.semantic-block-line__label {
+  position: absolute;
+  top: 0;
+  left: 4px;
+  padding: 1px 3px;
+  border-radius: 0.25rem;
+  background-color: white;
+  font-size: 0.6rem;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--gray-5);
 }

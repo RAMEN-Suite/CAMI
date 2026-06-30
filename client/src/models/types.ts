@@ -80,7 +80,15 @@ export interface ApiJson {
 }
 
 export type BuiltinStructuralType =
-  "paragraph" | "heading" | "hardBreak" | "table" | "tableRow" | "tableCell" | "tableHeader" | "bulletList" | "listItem";
+  | "paragraph"
+  | "heading"
+  | "hardBreak"
+  | "table"
+  | "tableRow"
+  | "tableCell"
+  | "tableHeader"
+  | "bulletList"
+  | "listItem";
 
 // Editor-framework facts live in `config/editor` (imported above). Re-exported here for convenience
 // so existing model-type importers keep working.
@@ -284,6 +292,13 @@ export interface RedrawModeOptions {
   direction: "on" | "off";
   cause?: "success" | "cancel";
   annotationUuid?: string;
+}
+
+export interface SemanticBlockRange {
+  startPos: number;
+  endPos: number;
+  type: string;
+  uuid: string;
 }
 
 export interface StandoffAnnotation {

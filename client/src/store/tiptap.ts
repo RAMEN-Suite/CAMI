@@ -1,5 +1,5 @@
 import { ref, shallowRef, watch } from "vue";
-import { NodeDto, Annotation, NodeStatusObject, AnnotationNode, ToCItem } from "../models/types";
+import { NodeDto, Annotation, NodeStatusObject, AnnotationNode, ToCItem, SemanticBlockRange } from "../models/types";
 import { Editor } from "@tiptap/vue-3";
 import { Node } from "@tiptap/pm/model";
 import Heading from "@tiptap/extension-heading";
@@ -39,6 +39,7 @@ let initialDoc: ReturnType<Editor["getJSON"]> | null = null;
 let initialPlainText: string | null = null;
 
 const tableOfContent = ref<ToCItem[]>([]);
+const semanticBlockRanges = ref<SemanticBlockRange[]>([]);
 
 function getConfiguredExtensions(): any[] {
   return [
@@ -157,11 +158,36 @@ function initializeTiptap(standoffObject: { text: string; annotations: NodeDto[]
       initializeEventListeners();
 
       updateTableOfContent(editor.state.doc);
+      computeSemanticBlockRanges(tiptap.value);
     },
     onUpdate: ({ transaction }) => {
       updateTableOfContent(transaction.doc);
+      computeSemanticBlockRanges(tiptap.value);
     },
   });
+}
+
+function computeSemanticBlockRanges(editor: Editor | null): void {
+  if (!editor) {
+    semanticBlockRanges.value = [];
+    return;
+  }
+
+  const uuidMap = new Map<string, SemanticBlockRange>();
+
+  editor.state.doc.descendants((node, pos) => {
+    const semanticBlocks: { type: string; uuid: string }[] = node.attrs._semanticBlocks ?? [];
+
+    semanticBlocks.forEach(({ uuid, type }) => {
+      if (!uuidMap.has(uuid)) {
+        uuidMap.set(uuid, { startPos: pos, endPos: pos + node.nodeSize, type, uuid });
+      } else {
+        uuidMap.get(uuid)!.endPos = pos + node.nodeSize;
+      }
+    });
+  });
+
+  semanticBlockRanges.value = [...uuidMap.values()];
 }
 
 function initializeEventListeners(): void {
@@ -267,6 +293,7 @@ export function useTiptapStore() {
     annotations,
     initialAnnotations,
     initialStructuralAnnotations,
+    semanticBlockRanges,
     structuralAnnotations,
     tiptap,
     tableOfContent,

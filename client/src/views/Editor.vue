@@ -11,6 +11,7 @@ import EditorAnnotations from "../components/EditorAnnotations.vue";
 import EditorError from "../components/EditorError.vue";
 import EditorFilter from "../components/EditorFilter.vue";
 import EditorResizer from "../components/EditorResizer.vue";
+import SemanticBlockLines from "../components/SemanticBlockLines.vue";
 import EditorMetadata from "../components/EditorMetadata.vue";
 import LoadingSpinner from "../components/LoadingSpinner.vue";
 import Message from "primevue/message";
@@ -833,6 +834,8 @@ watch(
     <section class="main flex flex-column flex-grow-1 px-3 pb-0 pt-3" :style="{ width: mainWidth + 'px' }">
       <EditorHeader ref="labelInputRef" />
       <EditorAnnotationButtonPane />
+      <SemanticBlockLines />
+
       <editor-content id="editor" :editor="tiptap" spellcheck="false" />
 
       <EditorActionButtonsPane
