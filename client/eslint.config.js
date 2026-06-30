@@ -3,6 +3,7 @@ import globals from "globals";
 import pluginVue from "eslint-plugin-vue";
 import { defineConfigWithVueTs, vueTsConfigs } from "@vue/eslint-config-typescript";
 import prettier from "@vue/eslint-config-prettier/skip-formatting";
+import vueA11y from "eslint-plugin-vuejs-accessibility";
 
 export default defineConfigWithVueTs(
   {
@@ -12,6 +13,7 @@ export default defineConfigWithVueTs(
   pluginVue.configs["flat/recommended"],
   vueTsConfigs.strictTypeChecked,
   vueTsConfigs.stylisticTypeChecked,
+  vueA11y.configs["flat/recommended"],
   {
     files: ["**/*.{ts,vue}"],
     languageOptions: {
