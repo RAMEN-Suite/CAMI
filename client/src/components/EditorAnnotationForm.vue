@@ -13,6 +13,10 @@ import { useTiptapStore } from "../store/tiptap.ts";
 import AnnotationFormAdditionalNodesSection from "./AnnotationFormAdditionalNodesSection.vue";
 import { cloneDeep } from "../utils/helper/helper.ts";
 import NodeStatusBadge from "./NodeStatusBadge.vue";
+import { Range } from "../models/types.ts";
+import { findDecorationBoundariesByUuid, findNodeBoundariesByUuid } from "../utils/helper/tiptapHelper.ts";
+import { DecorationSet } from "@tiptap/pm/view";
+import { ANNOTATION_DECORATION_KEY } from "../editors/text/extensions/annotationDecoration.ts";
 
 const props = defineProps<{
   annotation: NodeStatusObject<AnnotationNode>;
@@ -123,8 +127,43 @@ function handleShrink(): void {
 
 /* eslint-enable */
 
+function handleSpyClick() {
+  if (!tiptap.value) {
+    return;
+  }
+
+  let range: Range | null = null;
+
+  const uuid: string = workingData.value.node.data.uuid;
+  const renderType: "range" | "zeroPoint" = config.isZeroPoint ? "zeroPoint" : "range";
+
+  if (renderType === "range") {
+    const decorationSet: DecorationSet | undefined = ANNOTATION_DECORATION_KEY.getState(tiptap.value.state)?.all;
+
+    if (!decorationSet) {
+      return;
+    }
+
+    range = findDecorationBoundariesByUuid(decorationSet, uuid);
+  } else if (renderType === "zeroPoint") {
+    range = findNodeBoundariesByUuid(tiptap.value.state.doc, uuid);
+  }
+
+  if (!range) {
+    console.error(`Annotation with uuid ${workingData.value.node.data.uuid} not found`);
+    return;
+  }
+
+  tiptap.value
+    ?.chain()
+    .focus()
+    .toggleAnnotationHighlight("off", uuid, { displayType: renderType })
+    .setTextSelection(range.to)
+    .run();
+}
+
 function handleSpyHover(direction: "on" | "off"): void {
-  const renderType = config.isZeroPoint ? "zeroPoint" : "range";
+  const renderType: "range" | "zeroPoint" = config.isZeroPoint ? "zeroPoint" : "range";
 
   tiptap.value?.commands.toggleAnnotationHighlight(direction, props.annotation.node.data.uuid, {
     displayType: renderType,
@@ -187,6 +226,7 @@ function updateData(): void {
           title="Show annotated text"
           @mouseover="handleSpyHover('on')"
           @mouseleave="handleSpyHover('off')"
+          @click="handleSpyClick"
         ></div>
       </div>
       <NodeStatusBadge :status="workingData.meta.status" />
@@ -351,10 +391,6 @@ function updateData(): void {
 .icon-container {
   width: 20px;
   height: 20px;
-}
-
-.highlight {
-  background-color: yellow !important;
 }
 
 .hidden {
