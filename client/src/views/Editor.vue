@@ -859,4 +859,8 @@ watch(
   </div>
 </template>
 
-<style></style>
+<style>
+.highlight {
+  background-color: yellow !important;
+}
+</style>
