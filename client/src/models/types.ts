@@ -288,6 +288,11 @@ export type PropertyConfigDataType = "array" | "boolean" | "date" | "date-time" 
 
 export type PropertyConfigStringTemplate = "input" | "textarea";
 
+export interface Range {
+  from: number;
+  to: number;
+}
+
 export interface RedrawModeOptions {
   direction: "on" | "off";
   cause?: "success" | "cancel";
