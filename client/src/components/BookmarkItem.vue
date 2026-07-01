@@ -17,7 +17,9 @@ const uuid: string = props.bookmarkData.data.data.uuid;
 const isCollection: boolean = props.bookmarkData.type === "collection";
 
 async function handleItemClick(): Promise<void> {
-  await router.push(`/${props.bookmarkData.type}s/${uuid}`);
+  const urlParam: "collections" | "contents" = isCollection ? "collections" : "contents";
+
+  await router.push(`/${urlParam}/${uuid}`);
 }
 
 const htmlTitle = computed<string>(

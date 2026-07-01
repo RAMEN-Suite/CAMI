@@ -61,7 +61,7 @@ function handleClickContainer(event: PointerEvent): void {
     return;
   }
 
-  window.open(`/editor/${props.text.node.data.uuid}`, "_blank", "noopener noreferrer");
+  window.open(`/contents/${props.text.node.data.uuid}`, "_blank", "noopener noreferrer");
 }
 </script>
 
