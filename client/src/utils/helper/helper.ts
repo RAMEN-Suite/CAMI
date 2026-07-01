@@ -292,6 +292,21 @@ export function areSetsEqual(setA: Set<string>, setB: Set<string>): boolean {
 }
 
 /**
+ * Truncates a string to a maximum length, appending "..." if truncation is needed.
+ *
+ * @param {string} text - The string to truncate.
+ * @param {string} maxLength - The maximum number of characters to keep before truncation.
+ * @returns The original string if it's within `maxLength`, otherwise the truncated string followed by "...".
+ *
+ * @example
+ * ellipsize("Hello World", 5); // "Hello..."
+ * ellipsize("Hi", 5);          // "Hi"
+ */
+export function ellipsize(text: string, maxLength: number): string {
+  return text.slice(0, maxLength) + (text.length > maxLength ? "..." : "");
+}
+
+/**
  * Filters out the RAMEN base node labels (`"Annotation"`, `"Collection"`, `"Content"`, `"Entity"`, `"Text"`)
  * from the given array, returning only the domain-specific labels.
  *
