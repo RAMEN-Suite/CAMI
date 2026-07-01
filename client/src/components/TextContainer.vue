@@ -134,7 +134,7 @@ function handleClickContainer(event: PointerEvent): void {
               }"
             >
               <template #chip="{ value }">
-                <NodeTag type="Text" :content="value" class="mr-1" />
+                <NodeTag type="Content" :content="value" class="mr-1" />
               </template>
             </MultiSelect>
           </template>
