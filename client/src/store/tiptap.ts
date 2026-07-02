@@ -22,6 +22,7 @@ import { AnnotationAttributes } from "../editors/text/extensions/AnnotationAttri
 import { CustomBlock } from "../editors/text/extensions/customBlock";
 import { BlockDecorations } from "../editors/text/extensions/blockDecorations";
 import { history } from "prosemirror-history";
+import { type Extensions } from "@tiptap/core";
 import { useEditorSettingsStore } from "./editorSettings";
 import { AnnotationHighlight } from "../editors/text/extensions/annotationHighlight";
 
@@ -41,7 +42,7 @@ let initialPlainText: string | null = null;
 const tableOfContent = ref<ToCItem[]>([]);
 const semanticBlockRanges = ref<SemanticBlockRange[]>([]);
 
-function getConfiguredExtensions(): any[] {
+function getConfiguredExtensions(): Extensions {
   return [
     Document,
     Paragraph,

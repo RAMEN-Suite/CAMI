@@ -8,8 +8,15 @@ import AnnotationTypeIcon from "./AnnotationTypeIcon.vue";
 import AnnotationFormAdditionalNodesSection from "./AnnotationFormAdditionalNodesSection.vue";
 import Button from "primevue/button";
 import { cloneDeep } from "../utils/helper/helper.ts";
+import { DynamicDialogInstance } from "primevue/dynamicdialogoptions";
+import { Ref } from "vue";
 
-const dialogRef: any = inject("dialogRef");
+const dialogRef = inject<Ref<DynamicDialogInstance>>("dialogRef");
+
+if (!dialogRef) {
+  throw new Error("dialogRef not provided - component must be used inside a DynamicDialog");
+}
+
 const annotation = ref<Annotation>(cloneDeep(dialogRef.value.data.annotation));
 
 const { getAnnotationConfig, getAnnotationFields } = useGuidelinesStore();
@@ -26,7 +33,7 @@ function handleUpdateClick(): void {
 }
 
 function closeModal(): void {
-  dialogRef.value?.close();
+  dialogRef?.value?.close();
 }
 </script>
 

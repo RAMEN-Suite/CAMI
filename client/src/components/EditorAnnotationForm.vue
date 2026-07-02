@@ -217,8 +217,14 @@ function updateData(): void {
         <div
           class="spy pi pi-eye cursor-pointer"
           title="Show annotated text"
+          role="button"
+          tabindex="0"
           @mouseover="handleSpyHover('on')"
           @mouseleave="handleSpyHover('off')"
+          @focus="handleSpyHover('on')"
+          @blur="handleSpyHover('off')"
+          @keydown.enter="handleSpyClick"
+          @keydown.space.prevent="handleSpyClick"
           @click="handleSpyClick"
         ></div>
       </div>

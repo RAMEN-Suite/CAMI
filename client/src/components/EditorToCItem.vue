@@ -57,7 +57,7 @@ function handleMenuItemClick(e: MenuItemCommandEvent) {
   });
 }
 
-function handleNodeClick() {
+function handleNodeSelect() {
   emit("itemClick", props.item);
 }
 
@@ -72,7 +72,14 @@ function handleOptionButtonClick(event: MouseEvent): void {
 
 <template>
   <div class="flex align-items-center gap-2">
-    <div class="type-container ml-1 flex align-items-center gap-3 flex-grow-1" @click="handleNodeClick">
+    <div
+      class="type-container ml-1 flex align-items-center gap-3 flex-grow-1"
+      tabindex="0"
+      role="button"
+      @click="handleNodeSelect"
+      @keydown.enter="handleNodeSelect"
+      @keydown.space.prevent="handleNodeSelect"
+    >
       <span> {{ displayedLabel }} </span>
       <small :title="props.item.data.text" class="font-italic">
         {{ displayedText }}
