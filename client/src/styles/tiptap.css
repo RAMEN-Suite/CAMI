@@ -22,9 +22,6 @@
 
 .tiptap-editor-pane {
   width: 100%;
-  /* Left gutter for the semantic-block lines. Width is driven dynamically by
-     SemanticBlockLines.vue (one column per overlapping block); 0 when none. */
-  padding-left: var(--semantic-gutter, 0px);
 }
 
 .tiptap-editor-pane:focus-visible {

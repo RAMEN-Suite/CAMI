@@ -12,11 +12,9 @@ import { Menu } from "primevue";
 interface PositionedLine {
   uuid: string;
   type: string;
-  /** px from the top of the scroll container's content origin */
   top: number;
   height: number;
-  /** parallel-column index so overlapping ranges don't collide */
-  column: number;
+  left: number;
 }
 
 const { tiptap, semanticBlockRanges, structuralAnnotations } = useTiptapStore();
@@ -24,41 +22,55 @@ const { createModalInstance, destroyModalInstance } = useAppStore();
 const dialog = useDialog();
 const menuItems = ref<MenuItem[]>([]);
 
-const menu = useTemplateRef("menu");
+const menu = useTemplateRef<InstanceType<typeof Menu>>("menu");
 
-// Layout constants -------------------------------------------
+console.log(menu);
+
+/** Width of a single vertical line in the gutter, in px. */
 const LINE_WIDTH: number = 5;
-// Horizontal gap between two parallel lines.
+
+/** Horizontal gap between two parallel lines, in px. */
 const COLUMN_GAP: number = 2;
-// Horizontal stride per column.
+
+/** Horizontal stride from one column to the next ({@linkcode LINE_WIDTH} + {@linkcode COLUMN_GAP}), in px. */
 const COLUMN_WIDTH: number = LINE_WIDTH + COLUMN_GAP;
-// px from the editor's left edge to the first (leftmost) column.
+
+/** Offset from the editor's left edge to the first (leftmost) column, in px. */
 const GUTTER_START: number = 4;
-// px gap kept between the last line and the start of the text.
+
+/** Gap kept between the last line and the start of the text, in px. */
 const GUTTER_END: number = 8;
-// CSS custom property the editor pane reads for its dynamic left padding.
-const GUTTER_VAR = "--semantic-gutter";
-// --------------------------------------------------------------------------
 
 const lines = ref<PositionedLine[]>([]);
-// The `#editor` Teleport target is rendered by `<editor-content>` only once the
-// editor is created (after mount). We must not mount the Teleport before it
-// exists, so gate on the element actually being in the DOM rather than on the
-// `tiptap` ref alone (which flips truthy in the same flush, before `#editor` is
-// patched in).
-const targetReady = ref(false);
+
+/**
+ * Indicates whether the Teleport target `#editor` - the `<editor-content>` wrapper that hosts tiptap's view -
+ * is present in the DOM. Not guaranteed immediately: the editor instance can exist while it is not inserted into the DOM yet.
+ * Updated by {@linkcode refreshTarget}.
+ */
+const isTargetReady = ref<boolean>(false);
 
 // Track the last hovered line by uuid (not by object) so the label keeps the
 // correct geometry after a recompute swaps the line objects.
 const hoveredUuid = ref<string | null>(null);
 const lastHovered = computed<PositionedLine | null>(() => lines.value.find((line) => line.uuid === hoveredUuid.value) ?? null);
 
-/** Absolute x (px) of a column's left edge inside the gutter. */
-function columnLeft(column: number): number {
-  return GUTTER_START + column * COLUMN_WIDTH;
+/**
+ * Calculates the left position in px of a column based on its index.
+ * First column gets the {@linkcode GUTTER_START} offset, and each subsequent column is spaced by {@linkcode COLUMN_WIDTH}.
+ *
+ * @param {number} columnIndex - The index of the column for which to calculate the left position.
+ * @returns {number} The left offset in pixels of the specified column.
+ */
+function columnLeft(columnIndex: number): number {
+  return GUTTER_START + columnIndex * COLUMN_WIDTH;
 }
 
-// Label sits directly above the top of the hovered line.
+/**
+ * Inline style that pins the hover label directly above the top-left corner of the currently
+ * hovered line. Empty object when nothing is hovered.
+ * TODO: Can this be displayed directly on the mouse hover coords or in the viewport generally if scrolled further down?
+ */
 const labelStyle = computed(() => {
   if (!lastHovered.value) {
     return {};
@@ -66,29 +78,40 @@ const labelStyle = computed(() => {
 
   return {
     top: `${lastHovered.value.top}px`,
-    left: `${columnLeft(lastHovered.value.column)}px`,
+    left: `${lastHovered.value.left}px`,
   };
 });
 
-/** Re-check, after the DOM has flushed, whether the Teleport target exists. */
+/**
+ * Checks if tiptap's HTML element exists. If it does, marks mount target as valid which allows the Teleport.
+ *
+ * Waits for the next tick to ensure that the DOM has been updated before checking for the element. This is currently not
+ * necessary, but in a (potentially future) scenario where the function is called in the same update cycle as
+ * the tiptap creation, this waits for the DOM flush and ensures the HTML reflects the changed state.
+ *
+ * @returns {Promise<void>} A promise that resolves once the readiness check has run.
+ */
 async function refreshTarget(): Promise<void> {
   await nextTick();
-  targetReady.value = document.getElementById("editor") !== null;
+
+  isTargetReady.value = document.getElementById("editor") !== null;
 }
 
 /**
- * Assign each range a column so that two ranges which overlap in document
+ * Assign each range a column index so that two ranges which overlap in document
  * positions never share the same column (greedy interval colouring).
+ *
+ * @param {SemanticBlockRange[]} ranges - The ranges which need to be assigned to columns
+ * @returns {Map<string, number>} A map where each range's uuid is mapped to its assigned column index
  */
 function assignColumns(ranges: SemanticBlockRange[]): Map<string, number> {
   const columns = new Map<string, number>();
-  // endPos currently occupying each column index
   const columnEnds: number[] = [];
 
-  const sorted: SemanticBlockRange[] = [...ranges].sort((a, b) => a.startPos - b.startPos);
+  const sorted: SemanticBlockRange[] = ranges.toSorted((a, b) => a.startPos - b.startPos);
 
   for (const range of sorted) {
-    let column: number = columnEnds.findIndex((end) => end <= range.startPos);
+    let column: number = columnEnds.findIndex((end: number) => end <= range.startPos);
 
     if (column === -1) {
       column = columnEnds.length;
@@ -102,29 +125,41 @@ function assignColumns(ranges: SemanticBlockRange[]): Map<string, number> {
 }
 
 /**
- * Reserve exactly enough left padding on the editor pane to fit the columns,
- * via a CSS variable. Column count depends only on document positions (not on
- * pixel layout), so widening the gutter never changes the column count and
- * cannot loop. Returns `true` when the value actually changed (i.e. the text
- * will reflow and geometry must be re-measured afterwards).
+ * Calculates the required gutter width from the highest column index and applies it as the
+ * editor element's left padding, so the lines never overlap the text.
+ *
+ * Returns `true` when the padding actually changed, signalling that the text may reflow and the
+ * pixel geometry has to be re-measured afterwards.
+ *
+ * @param {HTMLElement} editorEl - The editor's HTML element (`#editor`)
+ * @param {number} maxColumn - The highest column index in use (`-1` when there are no lines)
+ * @returns {boolean} Whether the gutter width (left padding) changed
  */
 function applyGutter(editorEl: HTMLElement, maxColumn: number): boolean {
   const width: number = maxColumn < 0 ? 0 : columnLeft(maxColumn) + LINE_WIDTH + GUTTER_END;
-  const value = `${width}px`;
+  const cssValue: `${number}px` = `${width}px`;
 
-  if (editorEl.style.getPropertyValue(GUTTER_VAR) === value) {
+  if (editorEl.style.getPropertyValue("padding-left") === cssValue) {
     return false;
   }
 
-  editorEl.style.setProperty(GUTTER_VAR, value);
+  editorEl.style.setProperty("padding-left", cssValue);
+
   return true;
 }
 
-/** Measure pixel geometry for every range against the current editor layout. */
-function measure(editorEl: HTMLElement, columns: Map<string, number>): void {
-  const editor = tiptap.value;
-
-  if (!editor) {
+/**
+ * Creates line objects to display with measured height of them.
+ *
+ * Calculates only the vertical geometry attributes (height, top). The horizontal spacing
+ * is handled by {@linkcode applyGutter} (total gutter width) and {@linkcode columnLeft} (column's left offset).
+ *
+ * @param {HTMLElement} editorEl - The editor's HTML element (`#editor`)
+ * @param {Map<string, number>} columns - A map where each range's uuid is mapped to its assigned column index
+ * @returns {void} - This function does not return any value.
+ */
+function measureVerticalDimensions(editorEl: HTMLElement, columns: Map<string, number>): void {
+  if (!tiptap.value) {
     lines.value = [];
     return;
   }
@@ -136,26 +171,34 @@ function measure(editorEl: HTMLElement, columns: Map<string, number>): void {
 
   for (const range of semanticBlockRanges.value) {
     try {
-      const startCoords = editor.view.coordsAtPos(range.startPos);
-      // Stay inside the last block so we get its bottom rather than the next line's top.
-      const endCoords = editor.view.coordsAtPos(Math.max(range.startPos, range.endPos - 1));
+      const startCoords = tiptap.value.view.coordsAtPos(range.startPos);
+      const endCoords = tiptap.value.view.coordsAtPos(Math.max(range.startPos, range.endPos));
 
       next.push({
         uuid: range.uuid,
         type: range.type,
         top: startCoords.top - editorTop + scrollTop,
         height: endCoords.bottom - startCoords.top,
-        column: columns.get(range.uuid) ?? 0,
+        left: columnLeft(columns.get(range.uuid) ?? 0),
       });
-    } catch {
-      // A position can be transiently invalid mid-transaction; skip it this pass.
+    } catch (e: unknown) {
+      // If any error occurs because of invalid positions, view/state interferences or similar
+      // log the error as warning but continue processing. Errors here will only affect
+      // the visual representation of the lines, not the underlying data.
+      console.warn("Line could not be drawn: ", e);
     }
   }
 
   lines.value = next;
 }
 
-function updateAnnotation(updated: Annotation) {
+/**
+ * Writes the edited annotation data coming from the edit modal back into the structural-annotations store.
+ *
+ * @param {Annotation} updated - The edited annotation data.
+ * @returns {void} This function does not return any value.
+ */
+function updateAnnotationData(updated: Annotation): void {
   const uuid: string = updated.node.data.uuid;
 
   const annotationEntry: Annotation | undefined = structuralAnnotations.value?.get(uuid);
@@ -167,6 +210,13 @@ function updateAnnotation(updated: Annotation) {
   structuralAnnotations.value?.set(uuid, updated);
 }
 
+/**
+ * Opens the {@linkcode SemanticBlockDetailsModal} for the given line's annotation and wires its
+ * submit event to {@linkcode updateAnnotationData}.
+ *
+ * @param {PositionedLine} line - The line whose annotation should be shown and edited
+ * @returns {void} This function does not return any value.
+ */
 function handleDetailsClick(line: PositionedLine): void {
   const annotation: Annotation | undefined = structuralAnnotations.value?.get(line.uuid);
 
@@ -191,7 +241,7 @@ function handleDetailsClick(line: PositionedLine): void {
       data: { annotation },
       emits: {
         onSubmit: (updated: Annotation) => {
-          updateAnnotation(updated);
+          updateAnnotationData(updated);
           destroyModalInstance();
         },
       },
@@ -200,11 +250,23 @@ function handleDetailsClick(line: PositionedLine): void {
   );
 }
 
+/**
+ * Removes the semantic-block annotation of the given line from the document.
+ *
+ * @param {PositionedLine} line - The line whose annotation should be removed
+ * @returns {void} This function does not return any value.
+ */
 function handleDeleteClick(line: PositionedLine): void {
   tiptap.value?.commands.removeSemanticBlock(line.uuid);
 }
 
-function buildMenuItems(line: PositionedLine) {
+/**
+ * (Re)builds the popup-menu model (Edit / Delete) so its commands operate on the given line.
+ *
+ * @param {PositionedLine} line - The line the menu actions should target
+ * @returns {void} This function does not return any value.
+ */
+function buildMenuItems(line: PositionedLine): void {
   menuItems.value = [
     {
       items: [
@@ -226,59 +288,76 @@ function buildMenuItems(line: PositionedLine) {
 }
 
 /**
- * Turn the document-position ranges into positioned lines. Columns (and thus
- * the gutter width) are derived first since they are layout-independent; the
- * gutter is applied, and geometry is measured once the (possible) reflow from
- * that padding change has settled.
+ * Rebuilds every line from the current document ranges and the live editor layout.
+ *
+ * @returns {void} This function does not return any value.
  */
 function recompute(): void {
   const editorEl: HTMLElement | null = document.getElementById("editor");
 
   if (!tiptap.value || !editorEl) {
     lines.value = [];
+
     return;
   }
 
   const columns: Map<string, number> = assignColumns(semanticBlockRanges.value);
   const maxColumn: number = Math.max(-1, ...columns.values());
 
-  const reflowed: boolean = applyGutter(editorEl, maxColumn);
+  const gutterWidthChanged: boolean = applyGutter(editorEl, maxColumn);
 
-  if (reflowed) {
-    // Padding change shifts/wraps the text; measure on the next frame.
-    requestAnimationFrame(() => measure(editorEl, columns));
+  if (gutterWidthChanged) {
+    // Padding change shifts/wraps the text which changes
+    // geometry -> measure on the next frame when all the layout is set
+    requestAnimationFrame(() => measureVerticalDimensions(editorEl, columns));
   } else {
-    measure(editorEl, columns);
+    measureVerticalDimensions(editorEl, columns);
   }
 }
 
-// Wait for the DOM/layout to settle before measuring.
-function schedule(): void {
-  nextTick(() => requestAnimationFrame(recompute));
+/**
+ * Schedules a {@linkcode recompute} once the DOM and its layout have settled.
+ * Serves as the single entry point for every recompute trigger (initial mount, semantic-block-range changes and window resize).
+ *
+ * Uses two delay concepts: `nextTick` waits for Vue to flush pending reactive updates into the DOM,
+ * then `requestAnimationFrame` waits for the browser to lay them out - so the measurements taken
+ * in `recompute` read final geometry.
+ *
+ * @returns {Promise<void>} A promise that resolves after the recompute has been scheduled.
+ */
+async function schedule(): Promise<void> {
+  await nextTick();
+
+  requestAnimationFrame(recompute);
 }
 
-function setHovered(line: PositionedLine): void {
-  hoveredUuid.value = line.uuid;
+/**
+ * Records the currently hovered line by uuid (or clears it) so {@linkcode lastHovered} and the
+ * label follow the pointer.
+ *
+ * @param {PositionedLine | null} line - The hovered line, or `null` on mouse-leave
+ * @returns {void} This function does not return any value.
+ */
+function handleLineHover(line: PositionedLine | null): void {
+  hoveredUuid.value = line?.uuid ?? null;
 }
 
-function handleClick(line: PositionedLine): void {
+/**
+ * Builds the menu for the clicked line and toggles it open, anchored at the click event.
+ *
+ * @param {MouseEvent} event - The click event, used to position the menu
+ * @param {PositionedLine} line - The clicked line
+ * @returns {void} This function does not return any value.
+ */
+function handleLineClick(event: MouseEvent, line: PositionedLine): void {
   buildMenuItems(line);
 
   menu.value?.toggle(event);
 }
 
-watch(tiptap, async (editor) => {
-  if (!editor) {
-    targetReady.value = false;
-    return;
-  }
-
-  await refreshTarget();
+watch(semanticBlockRanges, () => {
   schedule();
 });
-
-// Ranges are reassigned on every doc change (store `computeSemanticBlockRanges`).
-watch(semanticBlockRanges, schedule);
 
 onMounted(async () => {
   await refreshTarget();
@@ -289,7 +368,7 @@ useEventListener(window, "resize", schedule);
 </script>
 
 <template>
-  <Teleport v-if="targetReady" to="#editor">
+  <Teleport to="#editor" v-if="isTargetReady">
     <div class="semantic-block-lines-layer">
       <!-- Type of the last hovered line, shown directly above its top edge. -->
       <div v-if="lastHovered" class="semantic-block-line__label" :style="labelStyle">
@@ -300,15 +379,15 @@ useEventListener(window, "resize", schedule);
         v-for="line in lines"
         :key="line.uuid"
         class="semantic-block-line"
-        tabindex="0"
         :style="{
           top: `${line.top}px`,
           height: `${line.height}px`,
-          left: `${columnLeft(line.column)}px`,
+          left: `${line.left}px`,
           width: `${LINE_WIDTH}px`,
         }"
-        @mouseenter="setHovered(line)"
-        @click="handleClick(line)"
+        @mouseenter="handleLineHover(line)"
+        @mouseleave="handleLineHover(null)"
+        @click="handleLineClick($event, line)"
       ></div>
     </div>
   </Teleport>
@@ -326,8 +405,6 @@ useEventListener(window, "resize", schedule);
 </template>
 
 <style scoped>
-/* ------------------ SEMANTIC BLOCK LINES ------------------ */
-
 /*
  * Overlay teleported into #editor. It shares the scroll container's content
  * origin, so it scrolls together with the text and needs no scroll recompute.

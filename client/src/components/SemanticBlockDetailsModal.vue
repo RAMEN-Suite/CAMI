@@ -19,6 +19,8 @@ const propertyFields: PropertyConfig[] = getAnnotationFields(annotation.value.no
 const emit = defineEmits<(e: "submit", data: Annotation) => void>();
 
 function handleUpdateClick(): void {
+  annotation.value.meta.status = "modified";
+
   emit("submit", toValue(annotation));
   closeModal();
 }
