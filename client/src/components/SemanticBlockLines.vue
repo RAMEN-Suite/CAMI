@@ -10,6 +10,7 @@ import SemanticBlockDetailsModal from "./SemanticBlockDetailsModal.vue";
 import { Menu } from "primevue";
 import { collectSemanticBlocks } from "../utils/helper/tiptapHelper";
 import { Node } from "@tiptap/pm/model";
+import { useEditorSettingsStore } from "../store/editorSettings.ts";
 
 interface PositionedLine {
   uuid: string;
@@ -22,12 +23,13 @@ interface PositionedLine {
 const { tiptap, semanticBlockRanges } = useTiptapStore();
 const { createModalInstance, destroyModalInstance } = useAppStore();
 const dialog = useDialog();
+const { settings } = useEditorSettingsStore();
 const menuItems = ref<MenuItem[]>([]);
 
 const menu = useTemplateRef<InstanceType<typeof Menu>>("menu");
 
 /** Width of a single vertical line in the gutter, in px. */
-const LINE_WIDTH: number = 5;
+const LINE_WIDTH: number = 6;
 
 /** Horizontal gap between two parallel lines, in px. */
 const COLUMN_GAP: number = 2;
@@ -362,9 +364,13 @@ function removeHighlight(uuid: string): void {
   tiptap.value?.commands.toggleAnnotationHighlight("off", uuid, { renderType: "semanticBlock" });
 }
 
-watch(semanticBlockRanges, async () => {
-  await schedule();
-});
+watch(semanticBlockRanges, async () => await schedule());
+
+watch(
+  () => settings.value.blockDecorations,
+  async () => await schedule(),
+  { deep: true },
+);
 
 watch(hoveredUuid, (newUuid, oldUuid) => {
   if (!newUuid && oldUuid) {
@@ -467,7 +473,7 @@ useEventListener(window, "resize", () => void schedule());
   border-radius: 0.25rem;
   background-color: #5f5f5f;
   color: white;
-  font-size: 0.65rem;
+  font-size: 0.8rem;
   line-height: 1.2;
   white-space: nowrap;
   pointer-events: none;
