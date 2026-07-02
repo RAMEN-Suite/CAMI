@@ -1,7 +1,7 @@
 import { readonly, ref } from "vue";
 import { useTiptapStore } from "../store/tiptap";
 import { ANNOTATION_DECORATION_KEY } from "../editors/text/extensions/annotationDecoration";
-import { IndexMap } from "../models/types";
+import { AnnotationNode, IndexMap, NodeStatusObject } from "../models/types";
 import { Decoration } from "@tiptap/pm/view";
 import { Node } from "@tiptap/pm/model";
 
@@ -96,9 +96,11 @@ export function useCreateIndexMaps() {
         current = walk(child, current);
       });
 
-      const semanticBlocks: { uuid: string; type: string }[] = node.attrs?._semanticBlocks ?? [];
+      const semanticBlocks: NodeStatusObject<AnnotationNode>[] = node.attrs?._semanticBlocks ?? [];
 
-      semanticBlocks.forEach(({ uuid }) => {
+      semanticBlocks.forEach((block) => {
+        const { uuid } = block.node.data;
+
         const existing = map.get(uuid);
 
         if (!existing) {

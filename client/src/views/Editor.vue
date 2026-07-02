@@ -40,11 +40,12 @@ import PageOverlay from "../components/PageOverlay.vue";
 import { useTiptapStore } from "../store/tiptap.ts";
 import EditorAnnotationButtonPane from "../components/EditorAnnotationButtonPane.vue";
 import { Node as DocNode } from "@tiptap/pm/model";
-import { cloneDeep } from "../utils/helper/helper.ts";
+import { collectSemanticBlocks } from "../utils/helper/tiptapHelper.ts";
 import { useCreateIndexMaps } from "../composables/useCreateIndexMaps.ts";
 import { useGuidelinesStore } from "../store/guidelines.ts";
 import { IAnnotation } from "../models/IAnnotation.ts";
 import EditorToC from "../components/EditorToC.vue";
+import { cloneDeep } from "../utils/helper/helper.ts";
 
 interface SidebarConfig {
   isCollapsed: boolean;
@@ -56,7 +57,6 @@ const textUuid = computed<string>(() => route.params.uuid as string);
 
 const {
   annotations,
-  structuralAnnotations,
   initialStructuralAnnotations,
   initialAnnotations,
   tiptap,
@@ -407,34 +407,55 @@ function findChangedStructureElements(indexMap: IndexMap, plainText: string): An
   return affectedElements;
 }
 
+/**
+ * Builds the save payload node for a semantic block from its `_semanticBlocks` attr entry.
+ *
+ * The entry is a whole `Annotation` (the doc is the source of truth); this clones it and
+ * overwrites the derived fields (start/end index, text) from the live index map plus the
+ * save-time derived status, leaving `node.nodeLabels`/`connectedNodes` untouched.
+ *
+ * TODO: this should be very similar to assembleStructuralAnnotationData -> refactor
+ *
+ * @param {Annotation} entry - The annotation node read from the doc attrs.
+ * @param {number} startIndex - Character start index from the semantic-block index map.
+ * @param {number} endIndex - Character end index from the semantic-block index map.
+ * @param {string} text - The plain-text slice for the block's range.
+ * @param {NodeStatus} status - The save-time derived status (created/modified).
+ * @returns {Annotation} The assembled annotation node for the save payload.
+ */
+function assembleSemanticBlockData(
+  entry: Annotation,
+  startIndex: number,
+  endIndex: number,
+  text: string,
+  status: NodeStatus,
+): Annotation {
+  const assembled: Annotation = cloneDeep(entry);
+
+  assembled.node.data = { ...assembled.node.data, startIndex, endIndex, text };
+  assembled.meta = { status };
+
+  return assembled;
+}
+
 function findChangedSemanticBlocks(indexMap: IndexMap, plainText: string): Annotation[] {
   const affectedElements: Annotation[] = [];
 
+  // The doc is the source of truth: read the whole annotation node from the attrs.
+  const semanticBlocks: Map<string, Annotation> = collectSemanticBlocks(tiptap.value!.state.doc);
+
   // Updated/created label annotations: derive live startIndex/endIndex from the doc
   indexMap.forEach(({ startIndex, endIndex }, uuid) => {
-    const storeEntry: Annotation | undefined = structuralAnnotations.value?.get(uuid);
+    const entry: Annotation | undefined = semanticBlocks.get(uuid);
 
-    if (!storeEntry) {
+    if (!entry) {
       return;
     }
 
     const status: NodeStatus = initialStructuralAnnotations.value?.has(uuid) ? "modified" : "created";
+    const text: string = plainText.slice(startIndex, endIndex + 1);
 
-    affectedElements.push({
-      node: {
-        data: {
-          ...storeEntry.node.data,
-          startIndex,
-          endIndex,
-          text: plainText.slice(startIndex, endIndex + 1),
-        },
-        nodeLabels: ["Annotation"],
-      },
-      connectedNodes: [...storeEntry.connectedNodes],
-      meta: {
-        status: status,
-      },
-    });
+    affectedElements.push(assembleSemanticBlockData(entry, startIndex, endIndex, text, status));
   });
 
   // Deleted: was semantic block annotation in the initial snapshot but no longer present in the doc

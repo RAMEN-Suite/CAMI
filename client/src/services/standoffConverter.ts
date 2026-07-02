@@ -3,7 +3,8 @@ import { useGuidelinesStore } from "../store/guidelines";
 
 type Anno = NodeStatusObject<AnnotationNode>;
 
-/** Helper for text ranges, used during creation of gap paragraphs when indices are orphaned
+/**
+ * Helper for text ranges, used during creation of gap paragraphs when indices are orphaned
  * (not part of any block annotation)
  */
 interface Range {
@@ -714,7 +715,8 @@ export default class StandoffConverter {
    */
   private attachLabelsToNodes(nodes: TiptapNode[], annotations: Anno[]): void {
     for (const node of nodes) {
-      if (node.type === "text") {
+      // TODO: Hardcoded momentarily -> update!
+      if (node.type === "text" || node.type === "hardBreak" || node.type === "zeroPointAnnotation") {
         continue;
       }
 
@@ -722,12 +724,11 @@ export default class StandoffConverter {
       const nodeEnd: number | undefined = node.attrs?._annotationData?.endIndex;
 
       if (nodeStart !== undefined && nodeEnd !== undefined) {
-        const labelsSortedBySize = annotations
+        const semanticBlocks: Anno[] = annotations
           .filter((a) => a.node.data.startIndex <= nodeEnd && a.node.data.endIndex >= nodeStart)
-          .sort((a, b) => b.node.data.endIndex - b.node.data.startIndex - (a.node.data.endIndex - a.node.data.startIndex))
-          .map((a) => ({ uuid: a.node.data.uuid, type: a.node.data.type }));
+          .sort((a, b) => b.node.data.endIndex - b.node.data.startIndex - (a.node.data.endIndex - a.node.data.startIndex));
 
-        node.attrs = { ...node.attrs, _semanticBlocks: labelsSortedBySize };
+        node.attrs = { ...node.attrs, _semanticBlocks: semanticBlocks };
       }
 
       if (node.content?.length) {

@@ -2,12 +2,14 @@
 import { ref, computed, watch, onMounted, nextTick, useTemplateRef } from "vue";
 import { useEventListener } from "@vueuse/core";
 import { useTiptapStore } from "../store/tiptap";
-import type { Annotation, SemanticBlockRange } from "../models/types";
+import type { Annotation, NodeStatusObject, SemanticBlockRange } from "../models/types";
 import { MenuItem } from "primevue/menuitem";
 import { useAppStore } from "../store/app";
 import { useDialog } from "primevue";
 import SemanticBlockDetailsModal from "./SemanticBlockDetailsModal.vue";
 import { Menu } from "primevue";
+import { collectSemanticBlocks } from "../utils/helper/tiptapHelper";
+import { Node } from "@tiptap/pm/model";
 
 interface PositionedLine {
   uuid: string;
@@ -17,14 +19,12 @@ interface PositionedLine {
   left: number;
 }
 
-const { tiptap, semanticBlockRanges, structuralAnnotations } = useTiptapStore();
+const { tiptap, semanticBlockRanges } = useTiptapStore();
 const { createModalInstance, destroyModalInstance } = useAppStore();
 const dialog = useDialog();
 const menuItems = ref<MenuItem[]>([]);
 
 const menu = useTemplateRef<InstanceType<typeof Menu>>("menu");
-
-console.log(menu);
 
 /** Width of a single vertical line in the gutter, in px. */
 const LINE_WIDTH: number = 5;
@@ -193,32 +193,31 @@ function measureVerticalDimensions(editorEl: HTMLElement, columns: Map<string, n
 }
 
 /**
- * Writes the edited annotation data coming from the edit modal back into the structural-annotations store.
+ * Updates the semantic block annotation data coming from the edit modal.
  *
- * @param {Annotation} updated - The edited annotation data.
- * @returns {void} This function does not return any value.
+ * @param {Annotation} updated - The updated annotation data
+ * @returns {void} This function does not return any value
  */
-function updateAnnotationData(updated: Annotation): void {
-  const uuid: string = updated.node.data.uuid;
-
-  const annotationEntry: Annotation | undefined = structuralAnnotations.value?.get(uuid);
-
-  if (!annotationEntry) {
-    return;
-  }
-
-  structuralAnnotations.value?.set(uuid, updated);
+function updateAnnotation(updated: Annotation): void {
+  tiptap.value?.commands.updateSemanticBlock(updated);
 }
 
 /**
- * Opens the {@linkcode SemanticBlockDetailsModal} for the given line's annotation and wires its
- * submit event to {@linkcode updateAnnotationData}.
+ * Opens the {@linkcode SemanticBlockDetailsModal} for the given line's semantic block. The
+ * annotation is assembled from the doc attrs (the source of truth); on submit the edited data is
+ * written back into the doc via the `updateSemanticBlockData` command (undoable, save reads it).
  *
  * @param {PositionedLine} line - The line whose annotation should be shown and edited
  * @returns {void} This function does not return any value.
  */
 function handleDetailsClick(line: PositionedLine): void {
-  const annotation: Annotation | undefined = structuralAnnotations.value?.get(line.uuid);
+  const doc: Node | undefined = tiptap.value?.state.doc;
+
+  if (!doc) {
+    return;
+  }
+
+  const annotation: NodeStatusObject | undefined = collectSemanticBlocks(doc).get(line.uuid);
 
   if (!annotation) {
     return;
@@ -241,7 +240,7 @@ function handleDetailsClick(line: PositionedLine): void {
       data: { annotation },
       emits: {
         onSubmit: (updated: Annotation) => {
-          updateAnnotationData(updated);
+          updateAnnotation(updated);
           destroyModalInstance();
         },
       },

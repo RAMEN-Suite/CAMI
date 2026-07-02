@@ -1,6 +1,34 @@
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
-import { Range } from "../../models/types";
+import { Annotation, AnnotationNode, NodeStatusObject, Range } from "../../models/types";
 import { Node } from "@tiptap/pm/model";
+
+/**
+ * Collects all unique semantic block annotations from the given document.
+ *
+ * @param {Node} doc - The ProseMirror document node to traverse.
+ * @returns {Map<string, NodeStatusObject<AnnotationNode>>} A map of semantic block annotations keyed by their UUID.
+ */
+export function collectSemanticBlocks(doc: Node): Map<string, Annotation> {
+  const map = new Map<string, Annotation>();
+
+  doc.descendants((node: Node) => {
+    if (node.isText) {
+      return;
+    }
+
+    const semanticBlocks: Annotation[] = node.attrs?._semanticBlocks ?? [];
+
+    for (const block of semanticBlocks) {
+      const uuid: string = block.node.data.uuid;
+
+      if (!map.has(uuid)) {
+        map.set(uuid, block);
+      }
+    }
+  });
+
+  return map;
+}
 
 /**
  * Finds the annotation decoration matching the given uuid from the given decoration set and returns its range.
@@ -75,9 +103,9 @@ export function findSemanticBlockBoundariesByUuid(doc: Node, uuid: string): Rang
       return;
     }
 
-    const semanticBlocks: { type: string; uuid: string }[] = node.attrs._semanticBlocks ?? [];
+    const semanticBlocks: NodeStatusObject<AnnotationNode>[] = node.attrs._semanticBlocks ?? [];
 
-    const found: { type: string; uuid: string } | undefined = semanticBlocks.find((block) => block.uuid === uuid);
+    const found: NodeStatusObject<AnnotationNode> | undefined = semanticBlocks.find((block) => block.node.data.uuid === uuid);
 
     if (found) {
       if (result) {

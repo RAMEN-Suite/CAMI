@@ -177,7 +177,7 @@ function computeSemanticBlockRanges(editor: Editor | null): void {
   const uuidMap = new Map<string, SemanticBlockRange>();
 
   editor.state.doc.descendants((node, pos) => {
-    const semanticBlocks: { type: string; uuid: string }[] = node.attrs._semanticBlocks ?? [];
+    const semanticBlocks: NodeStatusObject<AnnotationNode>[] = node.attrs._semanticBlocks ?? [];
 
     // TODO: Hardcoded because of assignment mistake in standoff converter
     // (hardBreaks should not get a semanticBlocks attr since they are zero point annotations)
@@ -185,7 +185,9 @@ function computeSemanticBlockRanges(editor: Editor | null): void {
       return;
     }
 
-    semanticBlocks.forEach(({ uuid, type }) => {
+    semanticBlocks.forEach((block) => {
+      const { type, uuid } = block.node.data;
+
       const existing: SemanticBlockRange | undefined = uuidMap.get(uuid);
 
       if (existing) {

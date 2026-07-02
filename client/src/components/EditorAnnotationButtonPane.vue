@@ -27,7 +27,7 @@ const { groupedAnnotationTypes, annotationHasConstraints, getAnnotationConfig, i
   useGuidelinesStore();
 const { addToastMessage, createModalInstance, destroyModalInstance } = useAppStore();
 const { selectedOptions } = useFilterStore();
-const { tiptap, annotations, structuralAnnotations } = useTiptapStore();
+const { tiptap, annotations } = useTiptapStore();
 const { createTextAnnotation: createAnnotation } = useCreateAnnotation("Content");
 
 const selectedTab = ref<"annotations" | "structure">("annotations");
@@ -183,8 +183,6 @@ function handleBlockAnnotationClick(data: { type: string; subType?: string | num
   try {
     const config: AnnotationType = getAnnotationConfig(data.type);
 
-    console.log(config);
-
     isAnnotationTypeEnabled(data.type);
     isSelectionValid(selection, config);
 
@@ -198,11 +196,7 @@ function handleBlockAnnotationClick(data: { type: string; subType?: string | num
       selectedText: textInSelection,
     });
 
-    // Add block annotation to all nodes in selection
-    tiptap.value?.commands.addSemanticBlockLabel(newAnnotationTemplate, capturedSelection.from, capturedSelection.to);
-
-    // Add to store
-    structuralAnnotations.value?.set(newAnnotationTemplate.node.data.uuid, newAnnotationTemplate);
+    tiptap.value?.commands.addSemanticBlock(newAnnotationTemplate, capturedSelection.from, capturedSelection.to);
   } catch (error: unknown) {
     if (error instanceof AnnotationRangeError) {
       addToastMessage({
