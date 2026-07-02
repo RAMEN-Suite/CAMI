@@ -860,7 +860,8 @@ watch(
 </template>
 
 <style>
-.highlight {
+.highlight,
+.highlight * {
   background-color: yellow !important;
 }
 </style>

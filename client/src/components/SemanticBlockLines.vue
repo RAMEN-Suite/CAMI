@@ -343,32 +343,53 @@ function handleLineHover(line: PositionedLine | null): void {
 }
 
 /**
- * Builds the menu for the clicked line and toggles it open, anchored at the click event.
+ * Builds the menu for the clicked line and toggles it open, anchored at the click or space/enter key event.
  *
- * @param {MouseEvent} event - The click event, used to position the menu
+ * @param {MouseEvent | KeyboardEvent} event - The click or enter/space key event, used to position the menu
  * @param {PositionedLine} line - The clicked line
  * @returns {void} This function does not return any value.
  */
-function handleLineClick(event: MouseEvent, line: PositionedLine): void {
+function handleLineClick(event: MouseEvent | KeyboardEvent, line: PositionedLine): void {
   buildMenuItems(line);
 
   menu.value?.toggle(event);
 }
 
-watch(semanticBlockRanges, () => {
-  schedule();
+function highlightSemanticBlock(uuid: string): void {
+  tiptap.value?.commands.toggleAnnotationHighlight("on", uuid, { renderType: "semanticBlock" });
+}
+
+function removeHighlight(uuid: string): void {
+  tiptap.value?.commands.toggleAnnotationHighlight("off", uuid, { renderType: "semanticBlock" });
+}
+
+watch(semanticBlockRanges, async () => {
+  await schedule();
+});
+
+watch(hoveredUuid, (newUuid, oldUuid) => {
+  if (!newUuid && oldUuid) {
+    removeHighlight(oldUuid);
+
+    return;
+  }
+
+  if (newUuid) {
+    highlightSemanticBlock(newUuid);
+  }
 });
 
 onMounted(async () => {
   await refreshTarget();
-  schedule();
+  await schedule();
 });
 
-useEventListener(window, "resize", schedule);
+// TODO: This should not be scoped on the window resize, but tiptap dom resize
+useEventListener(window, "resize", () => void schedule());
 </script>
 
 <template>
-  <Teleport to="#editor" v-if="isTargetReady">
+  <Teleport v-if="isTargetReady" to="#editor">
     <div class="semantic-block-lines-layer">
       <!-- Type of the last hovered line, shown directly above its top edge. -->
       <div v-if="lastHovered" class="semantic-block-line__label" :style="labelStyle">
@@ -378,6 +399,7 @@ useEventListener(window, "resize", schedule);
       <div
         v-for="line in lines"
         :key="line.uuid"
+        tabindex="0"
         class="semantic-block-line"
         :style="{
           top: `${line.top}px`,
@@ -385,7 +407,12 @@ useEventListener(window, "resize", schedule);
           left: `${line.left}px`,
           width: `${LINE_WIDTH}px`,
         }"
+        role="button"
         @mouseenter="handleLineHover(line)"
+        @keydown.enter.prevent="handleLineClick($event, line)"
+        @keydown.space.prevent="handleLineClick($event, line)"
+        @focus="handleLineHover(line)"
+        @blur="handleLineHover(null)"
         @mouseleave="handleLineHover(null)"
         @click="handleLineClick($event, line)"
       ></div>

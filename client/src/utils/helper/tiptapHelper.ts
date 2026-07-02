@@ -54,3 +54,42 @@ export function findNodeBoundariesByUuid(doc: Node, uuid: string): Range | null 
 
   return result;
 }
+
+/**
+ * Finds all semantic blocks carrying the given uuid and returns their combined document range.
+ *
+ * Scans the document tree for nodes containing the uuid in their `_semanticBlocks` attribute,
+ * accumulating the range from the first matching block to the last.
+ *
+ * @param {Node} doc The root document node to search
+ * @param {string} uuid The uuid to match within each node's `_semanticBlocks` array
+ * @returns {Range | null} The from/to range spanning all matching blocks, or null if none found
+ */
+export function findSemanticBlockBoundariesByUuid(doc: Node, uuid: string): Range | null {
+  let result: Range | null = null;
+
+  doc.descendants((node, pos) => {
+    // TODO: Hardcoded because of assignment mistake in standoff converter
+    // (hardBreaks should not get a semanticBlocks attr since they are zero point annotations)
+    if (node.type.name === "hardBreak") {
+      return;
+    }
+
+    const semanticBlocks: { type: string; uuid: string }[] = node.attrs._semanticBlocks ?? [];
+
+    const found: { type: string; uuid: string } | undefined = semanticBlocks.find((block) => block.uuid === uuid);
+
+    if (found) {
+      if (result) {
+        result.to = pos + (node.nodeSize - 1);
+      } else {
+        result = {
+          from: pos,
+          to: pos + (node.nodeSize - 1),
+        };
+      }
+    }
+  });
+
+  return result;
+}

@@ -154,20 +154,13 @@ function handleSpyClick() {
     return;
   }
 
-  tiptap.value
-    ?.chain()
-    .focus()
-    .toggleAnnotationHighlight("off", uuid, { displayType: renderType })
-    .setTextSelection(range.to)
-    .run();
+  tiptap.value?.chain().focus().toggleAnnotationHighlight("off", uuid, { renderType }).setTextSelection(range.to).run();
 }
 
 function handleSpyHover(direction: "on" | "off"): void {
   const renderType: "range" | "zeroPoint" = config.isZeroPoint ? "zeroPoint" : "range";
 
-  tiptap.value?.commands.toggleAnnotationHighlight(direction, props.annotation.node.data.uuid, {
-    displayType: renderType,
-  });
+  tiptap.value?.commands.toggleAnnotationHighlight(direction, props.annotation.node.data.uuid, { renderType });
 }
 
 function toggleCollapsed(newState?: boolean): void {

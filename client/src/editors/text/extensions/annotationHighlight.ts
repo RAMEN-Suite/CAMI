@@ -3,19 +3,29 @@ import { EditorState, Plugin, PluginKey, Transaction } from "@tiptap/pm/state";
 import { Decoration, DecorationSet, EditorView } from "@tiptap/pm/view";
 import { ANNOTATION_DECORATION_KEY } from "./annotationDecoration";
 import { Node } from "@tiptap/pm/model";
-import { findDecorationBoundariesByUuid, findNodeBoundariesByUuid } from "../../../utils/helper/tiptapHelper";
+import {
+  findDecorationBoundariesByUuid,
+  findNodeBoundariesByUuid,
+  findSemanticBlockBoundariesByUuid,
+} from "../../../utils/helper/tiptapHelper";
 import { Range } from "../../../models/types";
 
+type RenderType = "range" | "zeroPoint" | "block" | "semanticBlock";
 type ToggleDirection = "on" | "off";
 
 interface HighlightOptions {
-  displayType: "range" | "zeroPoint" | "block" | "semanticBlock";
+  renderType: RenderType;
 }
 
 interface HighlightMeta {
   uuid: string;
   options: HighlightOptions;
   direction: ToggleDirection;
+}
+
+interface HighlightState {
+  decorations: DecorationSet;
+  renderType?: RenderType;
 }
 
 declare module "@tiptap/core" {
@@ -26,7 +36,7 @@ declare module "@tiptap/core" {
   }
 }
 
-export const ANNOTATION_HIGHLIGHT_KEY = new PluginKey("annotationHighlight");
+export const ANNOTATION_HIGHLIGHT_KEY = new PluginKey<HighlightState>("annotationHighlight");
 
 /**
  * Builds the decoration set used to highlight the annotation with the given uuid.
@@ -44,11 +54,11 @@ function buildDecorationSet(editorState: EditorState, uuid: string, options: Hig
   }
 
   const doc: Node = editorState.doc;
-  const displayType = options.displayType;
+  const renderType = options.renderType;
 
   let range: Range | null = null;
 
-  if (displayType === "range") {
+  if (renderType === "range") {
     const decorationSet: DecorationSet | undefined = ANNOTATION_DECORATION_KEY.getState(editorState)?.all;
 
     if (!decorationSet) {
@@ -56,8 +66,10 @@ function buildDecorationSet(editorState: EditorState, uuid: string, options: Hig
     }
 
     range = findDecorationBoundariesByUuid(decorationSet, uuid);
-  } else if (displayType === "zeroPoint") {
+  } else if (renderType === "zeroPoint") {
     range = findNodeBoundariesByUuid(editorState.doc, uuid);
+  } else if (renderType === "semanticBlock") {
+    range = findSemanticBlockBoundariesByUuid(editorState.doc, uuid);
   }
 
   if (!range) {
@@ -70,7 +82,7 @@ function buildDecorationSet(editorState: EditorState, uuid: string, options: Hig
 
   const decoration: Decoration = createDecoration(from, to);
 
-  // TODO: Implement other display types (blocks, semantic blocks)
+  // TODO: Implement other display types (blocks)
 
   return DecorationSet.create(doc, [decoration]);
 }
@@ -117,10 +129,10 @@ export const AnnotationHighlight = Extension.create({
       new Plugin({
         key: ANNOTATION_HIGHLIGHT_KEY,
         state: {
-          init() {
-            return DecorationSet.empty;
+          init(): HighlightState {
+            return { decorations: DecorationSet.empty };
           },
-          apply(tr: Transaction, pluginState, oldEditorState) {
+          apply(tr: Transaction, pluginState, oldEditorState): HighlightState {
             const meta: HighlightMeta | undefined = tr.getMeta(ANNOTATION_HIGHLIGHT_KEY);
 
             if (!meta) {
@@ -128,31 +140,36 @@ export const AnnotationHighlight = Extension.create({
             }
 
             if (meta.direction === "off") {
-              return DecorationSet.empty;
+              return { decorations: DecorationSet.empty };
             } else {
               if (!meta.options) {
-                return DecorationSet.empty;
+                return { decorations: DecorationSet.empty };
               }
 
               const { uuid, options } = meta;
 
-              return buildDecorationSet(oldEditorState, uuid, options);
+              return { decorations: buildDecorationSet(oldEditorState, uuid, options), renderType: options.renderType };
             }
           },
         },
         props: {
-          decorations(state): DecorationSet {
-            return this.getState(state) ?? DecorationSet.empty;
+          decorations(state) {
+            return this.getState(state)?.decorations ?? DecorationSet.empty;
           },
         },
         view() {
           return {
             update: (view: EditorView, prevState: EditorState) => {
-              const prevDecos: Decoration[] = ANNOTATION_HIGHLIGHT_KEY.getState(prevState).find();
-              const currDecos: Decoration[] = ANNOTATION_HIGHLIGHT_KEY.getState(view.state).find();
+              const prevDecos: Decoration[] = ANNOTATION_HIGHLIGHT_KEY.getState(prevState)?.decorations?.find() ?? [];
+              const currDecos: Decoration[] = ANNOTATION_HIGHLIGHT_KEY.getState(view.state)?.decorations?.find() ?? [];
+              const lastHighlightAnnotationType = ANNOTATION_HIGHLIGHT_KEY.getState(view.state)?.renderType;
 
-              // Only scroll on the off->on transition (empty -> non-empty).
-              if (prevDecos.length > 0 || currDecos.length === 0) {
+              // Only scroll on the off->on transition (empty -> non-empty) AND if it is not a semantic block (can span multiple blocks)
+              if (
+                prevDecos.length > 0 ||
+                currDecos.length === 0 ||
+                (lastHighlightAnnotationType && lastHighlightAnnotationType === "semanticBlock")
+              ) {
                 return;
               }
 
