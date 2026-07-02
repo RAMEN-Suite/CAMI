@@ -30,7 +30,7 @@ const { getAvailableCollectionLabels } = useGuidelinesStore();
 const { activeCollection, canNavigate, levels, createNewUrlPath, setMode } = useCollectionManagerStore();
 const { searchParams, updateSearchParams } = useSearchParams({ scope: "Collection", rowCount: 25 });
 
-const addMenu = useTemplateRef("add-menu");
+const addMenu = useTemplateRef<InstanceType<typeof Menu>>("add-menu");
 
 const addMenuItems: MenuItem[] = [
   { label: "New", icon: "pi pi-file-plus", command: () => openCreateCollectionModal("new") },
@@ -209,7 +209,7 @@ function openCreateCollectionModal(mode: "new" | "existing") {
 }
 
 function toggleAddMenu(event: Event) {
-  (addMenu.value as any).toggle(event);
+  addMenu.value?.toggle(event);
 }
 
 function handleChangeSortOrderClick() {

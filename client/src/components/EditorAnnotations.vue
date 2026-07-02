@@ -112,8 +112,8 @@ function expandNode(node: TreeNode): void {
   }
 }
 
-function handleAnnotationClick(event: MouseEvent): void {
-  const annotationUuid: string = (event.target as HTMLElement).dataset.annotationUuid;
+function handleAnnotationSelect(event: MouseEvent | KeyboardEvent): void {
+  const annotationUuid: string | undefined = (event.target as HTMLElement).dataset.annotationUuid;
 
   if (!annotationUuid) {
     return;
@@ -172,10 +172,15 @@ function handleAnnotationClick(event: MouseEvent): void {
             </div>
             <div
               v-else
+              tabindex="0"
               :style="{ 'text-wrap': 'nowrap' }"
               @mouseover="toggleTextHightlighting(slotProps.node.data, 'on')"
               @mouseout="toggleTextHightlighting(slotProps.node.data, 'off')"
-              @click="handleAnnotationClick"
+              @focus="toggleTextHightlighting(slotProps.node.data, 'on')"
+              @blur="toggleTextHightlighting(slotProps.node.data, 'off')"
+              @click="handleAnnotationSelect"
+              @keydown.enter="handleAnnotationSelect"
+              @keydown.space.prevent="handleAnnotationSelect"
             >
               <div class="ml-2 anno-entry preview" :data-annotation-uuid="slotProps.node.data.node.data.uuid">
                 {{ slotProps.node.data.node.data.text }}

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, useTemplateRef, inject, watch } from "vue";
+import { ref, computed, useTemplateRef, inject, watch, Ref } from "vue";
 import { useEventListener } from "@vueuse/core";
 import { formatFileSize } from "../utils/helper/helper";
 import ProgressBar from "primevue/progressbar";
@@ -11,6 +11,13 @@ import Textarea from "primevue/textarea";
 import ToggleButton from "primevue/togglebutton";
 import { useImport } from "../composables/useImport";
 import { RouteLocationNormalizedLoaded, useRoute } from "vue-router";
+import { DynamicDialogInstance } from "primevue/dynamicdialogoptions";
+
+const dialogRef = inject<Ref<DynamicDialogInstance>>("dialogRef");
+
+if (!dialogRef) {
+  throw new Error("dialogRef not provided - component must be used inside a DynamicDialog");
+}
 
 const route: RouteLocationNormalizedLoaded = useRoute();
 
@@ -27,7 +34,6 @@ const {
 const totalCharacters = ref([]);
 const totalAnnotations = ref([]);
 
-const dialogRef: any = inject("dialogRef");
 const fileupload = useTemplateRef("fileupload");
 
 const chooseOption = ref<"raw" | "file">("file");

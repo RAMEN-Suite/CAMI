@@ -33,10 +33,10 @@ function setNodeStatus(status: NodeStatus): void {
  * Handles a click event on the Card component, which will the corresponding text in a new tab. The click event is ignored
  * if the click target is part of button.
  *
- * @param {PointerEvent} event - The click event.
+ * @param {PointerEvent | KeyboardEvent} event - The click or enter/space key event.
  * @returns {void} This function does not return any value.
  */
-function handleClickContainer(event: PointerEvent): void {
+function handleSelectContainer(event: PointerEvent | KeyboardEvent): void {
   if ((event.target as HTMLElement).closest("button")) {
     return;
   }
@@ -54,7 +54,15 @@ const tableData = Object.entries(node.value.node.data).map(([property, value]) =
 </script>
 
 <template>
-  <div class="node-card-container" title="Open collection in Editor" @click="handleClickContainer">
+  <div
+    class="node-card-container"
+    title="Open collection in Editor"
+    tabindex="0"
+    role="link"
+    @keydown.enter="handleSelectContainer"
+    @keydown.space="handleSelectContainer"
+    @click="handleSelectContainer"
+  >
     <NodeCardHeader :node="node!" :mode="props.mode" @remove="handleRemoveNode" />
     <span>
       {{ node!.node.data.label }}

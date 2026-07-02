@@ -442,7 +442,7 @@ function findChangedSemanticBlocks(indexMap: IndexMap, plainText: string): Annot
   const affectedElements: Annotation[] = [];
 
   // The doc is the source of truth: read the whole annotation node from the attrs.
-  const semanticBlocks: Map<string, Annotation> = collectSemanticBlocks(tiptap.value!.state.doc);
+  const semanticBlocks: Map<string, Annotation> = tiptap.value ? collectSemanticBlocks(tiptap.value.state.doc) : new Map();
 
   // Updated/created label annotations: derive live startIndex/endIndex from the doc
   indexMap.forEach(({ startIndex, endIndex }, uuid) => {
@@ -461,7 +461,7 @@ function findChangedSemanticBlocks(indexMap: IndexMap, plainText: string): Annot
   // Deleted: was semantic block annotation in the initial snapshot but no longer present in the doc
   const uuidsInEditor = new Set<string>(indexMap.keys());
 
-  initialStructuralAnnotations.value!.forEach((anno, uuid) => {
+  initialStructuralAnnotations.value?.forEach((anno, uuid) => {
     if (!isBuiltinStructuralType(anno.node.data.type) && !uuidsInEditor.has(uuid)) {
       affectedElements.push({ ...cloneDeep(anno), meta: { status: "deleted" } });
     }

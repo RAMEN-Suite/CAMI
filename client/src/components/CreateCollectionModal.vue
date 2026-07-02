@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, inject, watch, computed, toValue } from "vue";
+import { ref, inject, watch, computed, toValue, Ref } from "vue";
 import Button from "primevue/button";
 import MultiSelect from "primevue/multiselect";
 import { useRoute } from "vue-router";
@@ -11,8 +11,15 @@ import NodeTag from "./NodeTag.vue";
 import { useAppStore } from "../store/app";
 import { useGuidelinesStore } from "../store/guidelines";
 import { createCollectionNode, createNodeDtoFromNode, createNodeStatusObjectFromRawData } from "../utils/helper/helper";
+import { DynamicDialogInstance } from "primevue/dynamicdialogoptions";
 
 type Mode = "new" | "existing";
+
+const dialogRef = inject<Ref<DynamicDialogInstance>>("dialogRef");
+
+if (!dialogRef) {
+  throw new Error("dialogRef not provided - component must be used inside a DynamicDialog");
+}
 
 const emit = defineEmits<{
   (e: "close"): void;
@@ -23,8 +30,6 @@ const route = useRoute();
 
 const { api, addToastMessage } = useAppStore();
 const { getCollectionConfigFields, getAvailableCollectionLabels } = useGuidelinesStore();
-
-const dialogRef: any = inject("dialogRef");
 
 const mode: Mode = dialogRef.value.data.mode;
 const parentCollection: CollectionNode | null = dialogRef.value.data.parentCollection;
