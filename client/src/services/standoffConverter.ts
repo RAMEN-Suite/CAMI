@@ -702,7 +702,7 @@ export default class StandoffConverter {
 
       if (nodeStart !== undefined && nodeEnd !== undefined && isValidBlockTarget) {
         const semanticBlocks: Anno[] = annotations
-          .filter((a) => a.node.data.startIndex <= nodeStart && a.node.data.endIndex >= nodeEnd)
+          .filter((a) => a.node.data.startIndex <= nodeEnd && a.node.data.endIndex >= nodeStart)
           .sort((a, b) => b.node.data.endIndex - b.node.data.startIndex - (a.node.data.endIndex - a.node.data.startIndex));
 
         node.attrs = { ...node.attrs, _semanticBlocks: semanticBlocks };

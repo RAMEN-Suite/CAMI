@@ -112,6 +112,12 @@ function assignColumns(ranges: SemanticBlockRange[]): Map<string, number> {
 
   const sorted: SemanticBlockRange[] = ranges.toSorted((a, b) => a.startPos - b.startPos);
 
+  // TODO: This leads to a visual when multiple table cells in the same row should have different
+  // semantic Blocks. The sorted ranges are cell1 -> cell2, in the same column because nothing overlaps.
+  // But since these ranges are displayed horizontally in the editor they share the same vertical coordinates
+  // and get assigned the same `left` offset and are stacked on top of each other. Overhaul, but this might
+  // not be the case very often anyway.
+
   for (const range of sorted) {
     let column: number = columnEnds.findIndex((end: number) => end <= range.startPos);
 
@@ -437,20 +443,14 @@ useEventListener(window, "resize", () => void schedule());
 </template>
 
 <style scoped>
-/*
- * Overlay teleported into #editor. It shares the scroll container's content
- * origin, so it scrolls together with the text and needs no scroll recompute.
- * The layer itself ignores pointer events so text below stays selectable; the
- * lines re-enable them.
- */
 .semantic-block-lines-layer {
   position: absolute;
   top: 0;
   left: 0;
+  /* Important so text below stays selectable if the element might overflow over the text */
   pointer-events: none;
 }
 
-/* A single vertical line spanning one semantic block's range. */
 .semantic-block-line {
   position: absolute;
   border-radius: 2px;
@@ -460,12 +460,10 @@ useEventListener(window, "resize", () => void schedule());
   transition: background-color 0.12s ease;
 }
 
-/* Darker on hover; siblings revert to default automatically. */
 .semantic-block-line:hover {
   background-color: #5f5f5f;
 }
 
-/* Type label of the last hovered line, pinned directly above its top edge. */
 .semantic-block-line__label {
   position: absolute;
   transform: translateY(-100%);
@@ -476,7 +474,6 @@ useEventListener(window, "resize", () => void schedule());
   font-size: 0.8rem;
   line-height: 1.2;
   white-space: nowrap;
-  pointer-events: none;
   z-index: 1;
 }
 </style>
