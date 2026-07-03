@@ -1,3 +1,4 @@
+import { LEAF_BLOCK_TYPES, VALID_SEMANTIC_BLOCK_TARGETS } from "../config/editor";
 import { ApiJson, TiptapNode, TiptapJson, NodeDto, NodeStatusObject, AnnotationNode, AnnotationType } from "../models/types";
 import { useGuidelinesStore } from "../store/guidelines";
 
@@ -35,9 +36,6 @@ export default class StandoffConverter {
   private tiptapJson: TiptapJson | null = null;
   private structuralAnnotationTypes: Set<string>;
   private usedUuids = new Set<string>();
-
-  /** Leaf block types: always produce inline content, never recurse into structural children.*/
-  private static readonly LEAF_BLOCK_TYPES = new Set(["paragraph", "heading"]);
 
   // Types that are always handled inline and must never appear as block children.
   private static readonly EXCLUDED_FROM_BLOCK_CHILDREN = new Set(["hardBreak"]);
@@ -82,23 +80,6 @@ export default class StandoffConverter {
    */
   private createAnnotationUuidMaps(): void {
     const statusObjects: Anno[] = this.standoffJson.annotations.map((a) => this.createNodeStatusObjectFromRawData(a));
-
-    // console.log(
-    //   statusObjects
-    //     .filter(a1 => isBuiltinStructuralType(a1.node.data.type))
-    //     .toSorted((a, b) => {
-    //       if (a.node.data.startIndex === b.node.data.startIndex) {
-    //         return b.node.data.endIndex - a.node.data.endIndex;
-    //       } else {
-    //         return a.node.data.startIndex - b.node.data.startIndex;
-    //       }
-    //     })
-    //     .map(a => {
-    //       const { startIndex, endIndex, type } = a.node.data;
-
-    //       return [startIndex, endIndex, type];
-    //     }),
-    // );
 
     for (const a of statusObjects) {
       const type: string = a.node.data.type;
@@ -668,7 +649,7 @@ export default class StandoffConverter {
    * @returns {boolean} `true` if the node is a leaf container, `false` otherwise
    */
   private isLeafContainer(editorRole: string): boolean {
-    return StandoffConverter.LEAF_BLOCK_TYPES.has(editorRole);
+    return LEAF_BLOCK_TYPES.includes(editorRole);
   }
 
   /**
@@ -715,17 +696,13 @@ export default class StandoffConverter {
    */
   private attachLabelsToNodes(nodes: TiptapNode[], annotations: Anno[]): void {
     for (const node of nodes) {
-      // TODO: Hardcoded momentarily -> update!
-      if (node.type === "text" || node.type === "hardBreak" || node.type === "zeroPointAnnotation") {
-        continue;
-      }
-
       const nodeStart: number | undefined = node.attrs?._annotationData?.startIndex;
       const nodeEnd: number | undefined = node.attrs?._annotationData?.endIndex;
+      const isValidBlockTarget: boolean = VALID_SEMANTIC_BLOCK_TARGETS.includes(getEditorRole(node.type));
 
-      if (nodeStart !== undefined && nodeEnd !== undefined) {
+      if (nodeStart !== undefined && nodeEnd !== undefined && isValidBlockTarget) {
         const semanticBlocks: Anno[] = annotations
-          .filter((a) => a.node.data.startIndex <= nodeEnd && a.node.data.endIndex >= nodeStart)
+          .filter((a) => a.node.data.startIndex <= nodeStart && a.node.data.endIndex >= nodeEnd)
           .sort((a, b) => b.node.data.endIndex - b.node.data.startIndex - (a.node.data.endIndex - a.node.data.startIndex));
 
         node.attrs = { ...node.attrs, _semanticBlocks: semanticBlocks };

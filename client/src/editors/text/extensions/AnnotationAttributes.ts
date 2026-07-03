@@ -3,6 +3,7 @@ import { getDefaultValueForProperty } from "../../../utils/helper/helper";
 import { Annotation, AnnotationType, PropertyConfig } from "../../../models/types";
 import { useGuidelinesStore } from "../../../store/guidelines";
 import { Node } from "@tiptap/pm/model";
+import { VALID_SEMANTIC_BLOCK_TARGETS } from "../../../config/editor";
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
@@ -113,7 +114,7 @@ export const AnnotationAttributes = Extension.create({
         (newAnnotation: Annotation, from: number, to: number) =>
         ({ tr, dispatch }) => {
           tr.doc.nodesBetween(from, to, (node, pos) => {
-            if (node.type.isText) {
+            if (!VALID_SEMANTIC_BLOCK_TARGETS.includes(node.type.name) || node.isText) {
               return;
             }
 
