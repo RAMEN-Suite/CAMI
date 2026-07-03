@@ -177,7 +177,7 @@ export function createNodeStatusObjectFromRawData(rawNode: NodeDto): NodeStatusO
  */
 export function createCollectionNode(): CollectionNode {
   return {
-    nodeLabels: [],
+    nodeLabels: ["Collection"],
     data: {
       uuid: crypto.randomUUID(),
       label: "",
@@ -194,7 +194,7 @@ export function createCollectionNode(): CollectionNode {
  */
 export function createTextNode(): TextNode {
   return {
-    nodeLabels: [],
+    nodeLabels: ["Text"],
     data: {
       uuid: crypto.randomUUID(),
       text: "",

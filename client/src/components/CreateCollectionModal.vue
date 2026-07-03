@@ -3,7 +3,7 @@ import { ref, inject, watch, computed, toValue, Ref } from "vue";
 import Button from "primevue/button";
 import MultiSelect from "primevue/multiselect";
 import { useRoute } from "vue-router";
-import { CollectionNode, EntityNode, NodeDto, NodeStatusObject, TextNode } from "../models/types";
+import { CollectionNode, EntityNode, NodeDto, NodeStatus, NodeStatusObject, TextNode } from "../models/types";
 import NodeSearchbar from "./NodeSearchbar.vue";
 import CollectionCard from "./CollectionCard.vue";
 import FormPropertiesSection from "./FormPropertiesSection.vue";
@@ -59,7 +59,7 @@ const inputIsValid = computed<boolean>(() => {
 watch(() => route.path, closeModal);
 
 function closeModal() {
-  dialogRef.value?.close();
+  dialogRef?.value?.close();
 }
 
 function handleSearchItemSelected(item: CollectionNode | EntityNode | TextNode) {
@@ -89,23 +89,25 @@ function wrapDataForCreation(
 }
 
 async function handleSubmit() {
-  if (!selectedCollection.value) {
+  const collectionNodeToAdd: CollectionNode | null =
+    mode === "new" ? { ...newCollectionNode.value, nodeLabels: allLabels.value } : selectedCollection.value;
+
+  if (!collectionNodeToAdd) {
     return;
   }
 
-  const collectionNode = mode === "new" ? { ...newCollectionNode.value, nodeLabels: allLabels.value } : selectedCollection.value;
-  const status = mode === "new" ? "created" : "added";
+  const status: NodeStatus = mode === "new" ? "created" : "added";
 
   isLoading.value = true;
 
   try {
-    const updateObj: NodeStatusObject = wrapDataForCreation(collectionNode, parentCollection, status);
+    const updateObj: NodeStatusObject = wrapDataForCreation(collectionNodeToAdd, parentCollection, status);
 
-    const result: NodeDto<CollectionNode> = await api.createOrAddCollection(collectionNode.data.uuid, updateObj);
+    const result: NodeDto<CollectionNode> = await api.createOrAddCollection(collectionNodeToAdd.data.uuid, updateObj);
 
     emit("success", toValue(result));
 
-    dialogRef.value.close({ collection: result.node });
+    dialogRef?.value.close({ collection: result.node });
   } catch {
     addToastMessage({
       severity: "error",

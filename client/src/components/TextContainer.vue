@@ -22,7 +22,7 @@ const { getAvailableTextLabels } = useGuidelinesStore();
 const { bookmarks, toggleBookmark } = useBookmarks();
 
 const isBookmarked = computed<boolean>(() => {
-  return bookmarks.value.some((b) => b.data.data.uuid === props.text.node.data.uuid);
+  return bookmarks.value.some((b) => b.data.data.uuid === props.text?.node.data.uuid);
 });
 
 function handleBookmarkAction() {
@@ -32,7 +32,7 @@ function handleBookmarkAction() {
 const PREVIEW_LENGTH: number = 300;
 
 const displayedText = computed<string>(
-  () => props.text.node.data.text.slice(0, PREVIEW_LENGTH) + (props.text.node.data.text.length > PREVIEW_LENGTH ? "..." : ""),
+  () => props.text.node.data.text?.slice(0, PREVIEW_LENGTH) + (props.text.node.data.text?.length > PREVIEW_LENGTH ? "..." : ""),
 );
 
 function handleRemoveText() {
