@@ -21,15 +21,15 @@ const displayedText = computed<string>(
  * Handles a click event on the Card component, which will the corresponding text in a new tab. The click event is ignored
  * if the click target is part of button.
  *
- * @param {PointerEvent} event - The click event.
+ * @param {PointerEvent | KeyboardEvent} event - The click or enter/space key event.
  * @returns {void} This function does not return any value.
  */
-function handleClickContainer(event: PointerEvent): void {
+function handleSelectContainer(event: PointerEvent | KeyboardEvent): void {
   if ((event.target as HTMLElement).closest("button")) {
     return;
   }
 
-  window.open(`/editor/${node.value.node.data.uuid}`, "_blank", "noopener noreferrer");
+  window.open(`/contents/${node.value.node.data.uuid}`, "_blank", "noopener noreferrer");
 }
 
 function handleRemoveNode(): void {
@@ -46,7 +46,14 @@ function setNodeStatus(status: NodeStatus): void {
 </script>
 
 <template>
-  <div class="node-card-container" title="Open text in Editor" @click="handleClickContainer">
+  <div
+    class="node-card-container"
+    title="Open text in Editor"
+    tabindex="0"
+    @click="handleSelectContainer"
+    @keydown.enter="handleSelectContainer"
+    @keydown.space.prevent="handleSelectContainer"
+  >
     <NodeCardHeader :node="node!" :mode="props.mode" @remove="handleRemoveNode" />
     <div class="text-xs">
       {{ displayedText }}

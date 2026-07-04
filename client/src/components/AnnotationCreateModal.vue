@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, ref, watch } from "vue";
+import { computed, inject, Ref, ref, watch } from "vue";
 import Button from "primevue/button";
 import { useRoute } from "vue-router";
 import Fieldset from "primevue/fieldset";
@@ -7,9 +7,14 @@ import FormPropertiesSection from "./FormPropertiesSection.vue";
 import { Annotation, AnnotationType, PropertyConfig } from "../models/types";
 import { useGuidelinesStore } from "../store/guidelines";
 import AnnotationFormAdditionalNodesSection from "./AnnotationFormAdditionalNodesSection.vue";
+import { DynamicDialogInstance } from "primevue/dynamicdialogoptions";
 
 const route = useRoute();
-const dialogRef: any = inject("dialogRef");
+const dialogRef = inject<Ref<DynamicDialogInstance>>("dialogRef");
+
+if (!dialogRef) {
+  throw new Error("dialogRef not provided - component must be used inside a DynamicDialog");
+}
 
 const emit = defineEmits<{
   (e: "close"): void;

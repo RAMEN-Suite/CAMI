@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, inject, watch, computed, toValue } from "vue";
+import { ref, inject, watch, computed, toValue, Ref } from "vue";
 import Button from "primevue/button";
 import MultiSelect from "primevue/multiselect";
 import { useRoute } from "vue-router";
-import { CollectionNode, EntityNode, NodeDto, NodeStatusObject, TextNode } from "../models/types";
+import { CollectionNode, EntityNode, NodeDto, NodeStatus, NodeStatusObject, TextNode } from "../models/types";
 import NodeSearchbar from "./NodeSearchbar.vue";
 import CollectionCard from "./CollectionCard.vue";
 import FormPropertiesSection from "./FormPropertiesSection.vue";
@@ -11,8 +11,15 @@ import NodeTag from "./NodeTag.vue";
 import { useAppStore } from "../store/app";
 import { useGuidelinesStore } from "../store/guidelines";
 import { createCollectionNode, createNodeDtoFromNode, createNodeStatusObjectFromRawData } from "../utils/helper/helper";
+import { DynamicDialogInstance } from "primevue/dynamicdialogoptions";
 
 type Mode = "new" | "existing";
+
+const dialogRef = inject<Ref<DynamicDialogInstance>>("dialogRef");
+
+if (!dialogRef) {
+  throw new Error("dialogRef not provided - component must be used inside a DynamicDialog");
+}
 
 const emit = defineEmits<{
   (e: "close"): void;
@@ -23,8 +30,6 @@ const route = useRoute();
 
 const { api, addToastMessage } = useAppStore();
 const { getCollectionConfigFields, getAvailableCollectionLabels } = useGuidelinesStore();
-
-const dialogRef: any = inject("dialogRef");
 
 const mode: Mode = dialogRef.value.data.mode;
 const parentCollection: CollectionNode | null = dialogRef.value.data.parentCollection;
@@ -54,7 +59,7 @@ const inputIsValid = computed<boolean>(() => {
 watch(() => route.path, closeModal);
 
 function closeModal() {
-  dialogRef.value?.close();
+  dialogRef?.value?.close();
 }
 
 function handleSearchItemSelected(item: CollectionNode | EntityNode | TextNode) {
@@ -84,23 +89,25 @@ function wrapDataForCreation(
 }
 
 async function handleSubmit() {
-  if (!selectedCollection.value) {
+  const collectionNodeToAdd: CollectionNode | null =
+    mode === "new" ? { ...newCollectionNode.value, nodeLabels: allLabels.value } : selectedCollection.value;
+
+  if (!collectionNodeToAdd) {
     return;
   }
 
-  const collectionNode = mode === "new" ? { ...newCollectionNode.value, nodeLabels: allLabels.value } : selectedCollection.value;
-  const status = mode === "new" ? "created" : "added";
+  const status: NodeStatus = mode === "new" ? "created" : "added";
 
   isLoading.value = true;
 
   try {
-    const updateObj: NodeStatusObject = wrapDataForCreation(collectionNode, parentCollection, status);
+    const updateObj: NodeStatusObject = wrapDataForCreation(collectionNodeToAdd, parentCollection, status);
 
-    const result: NodeDto<CollectionNode> = await api.createOrAddCollection(collectionNode.data.uuid, updateObj);
+    const result: NodeDto<CollectionNode> = await api.createOrAddCollection(collectionNodeToAdd.data.uuid, updateObj);
 
     emit("success", toValue(result));
 
-    dialogRef.value.close({ collection: result.node });
+    dialogRef?.value.close({ collection: result.node });
   } catch {
     addToastMessage({
       severity: "error",

@@ -55,13 +55,37 @@ export type AnnotationMapping = DeepReadonly<{
 export const EDITOR_OWNED_ATTRIBUTES = ["level", "colspan", "rowspan"] as const;
 
 /**
+ * Built-in structural annotation types that only contain inline content (text, zero-point annotations, hardBreaks),
+ * and never recurse into structural children.
+ *
+ * Used during initial document creation in {@linkcode StandoffConverter} when structural nodes are built or
+ * gap paragraphs for orphaned indices (not part of any block annotation) are handled.
+ */
+export const LEAF_BLOCK_TYPES: string[] = ["paragraph", "heading"];
+
+/**
+ * Built-in structural annotation types on which semantic block annotations can be attached. During document parsing
+ * and annotation cration this prevents structural parents to be annotated, too, when their leaf child is annotated.
+ * E.g., in table -> tableRow -> tableCell -> paragraph, only the paragraph is annotated, not the tableRow or table,
+ * even though they have a bigger range.
+ *
+ * Used during initial document creation in {@linkcode StandoffConverter} and on setting semantic block annotations.
+ */
+export const VALID_SEMANTIC_BLOCK_TARGETS: string[] = ["paragraph", "heading"];
+
+/**
  * Default mapping between builtin structural annotations and their (optional) project-specific override
  * TODO: This should be empty, the config should be injected on app load
  */
 export const DEFAULT_ANNOTATION_MAPPING: AnnotationMapping = {
   typeByRole: {
     paragraph: "p",
+    heading: "head",
     hardBreak: "lb",
+    tableRow: "row",
+    tableCell: "cell",
+    bulletList: "list",
+    listItem: "item",
   },
   attrByRole: {
     tableRow: {

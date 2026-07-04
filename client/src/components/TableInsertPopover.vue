@@ -5,7 +5,6 @@ import InputNumber from "primevue/inputnumber";
 import Button from "primevue/button";
 import Checkbox from "primevue/checkbox";
 import { useTiptapStore } from "../store/tiptap";
-
 const { tiptap } = useTiptapStore();
 
 const popover = useTemplateRef<InstanceType<typeof Popover>>("popover");
@@ -14,7 +13,7 @@ const columns = ref<number>(3);
 const rows = ref<number>(3);
 const hasHeaderRow = ref<boolean>(true);
 
-function toggle(event: PointerEvent): void {
+function toggle(event: Event): void {
   popover.value?.toggle(event);
 }
 

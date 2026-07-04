@@ -16,6 +16,9 @@ import { useValidateTextSelection } from "../composables/useValidateTextSelectio
 import { Selection } from "@tiptap/pm/state";
 import Button from "primevue/button";
 import TableInsertPopover from "./TableInsertPopover.vue";
+import TieredMenu from "primevue/tieredmenu";
+import { MenuItem, MenuItemCommandEvent } from "primevue/menuitem";
+import type { ChainedCommands } from "@tiptap/core";
 import Tabs from "primevue/tabs";
 import TabList from "primevue/tablist";
 import Tab from "primevue/tab";
@@ -27,7 +30,7 @@ const { groupedAnnotationTypes, annotationHasConstraints, getAnnotationConfig, i
   useGuidelinesStore();
 const { addToastMessage, createModalInstance, destroyModalInstance } = useAppStore();
 const { selectedOptions } = useFilterStore();
-const { tiptap, annotations, structuralAnnotations } = useTiptapStore();
+const { tiptap, annotations } = useTiptapStore();
 const { createTextAnnotation: createAnnotation } = useCreateAnnotation("Content");
 
 const selectedTab = ref<"annotations" | "structure">("annotations");
@@ -45,7 +48,109 @@ watchEffect(() => {
 });
 
 const tablePopover = useTemplateRef<InstanceType<typeof TableInsertPopover>>("table-popover");
+const tableMenu = useTemplateRef<InstanceType<typeof TieredMenu>>("table-menu");
+const tableMenuItems = ref<MenuItem[]>([]);
 const dialog: ReturnType<typeof useDialog> = useDialog();
+
+/**
+ * Wrapper for running TipTap table chain commands on the focused editor (e.g., `mergeCells`)
+ *
+ * @param {(chain: ChainedCommands) => ChainedCommands} fn - Callback that receives the focused command chain
+ * and returns the modified chain to be executed.
+ * @example runTableCommand((c) => c.mergeCells())
+ */
+function runTableCommand(fn: (chain: ChainedCommands) => ChainedCommands): void {
+  if (!tiptap.value) {
+    return;
+  }
+
+  const chain: ChainedCommands = tiptap.value.chain().focus();
+
+  fn(chain).run();
+}
+
+/**
+ * Builds the table menu model. Rebuilt on each open (see `openTableMenu`) so that `disabled` reflects the
+ * current caret position — TipTap's `isActive` is not Vue-reactive, so a static/computed model would go stale.
+ *
+ * @returns {MenuItem[]} The tiered menu items
+ */
+function buildTableMenuItems(): MenuItem[] {
+  const inTable: boolean = tiptap.value?.isActive("table") ?? false;
+
+  return [
+    {
+      label: "Insert table",
+      title: "Insert table",
+      icon: "pi pi-table",
+      command: (e: MenuItemCommandEvent) => tablePopover.value?.toggle(e.originalEvent),
+    },
+    { label: "Delete table", icon: "pi pi-trash", command: () => runTableCommand((c) => c.deleteTable()) },
+
+    { separator: true },
+    {
+      label: "Add",
+      title: "Add row or column",
+      icon: "pi pi-plus",
+      disabled: !inTable,
+      items: [
+        { label: "Row above", title: "Add row above", command: () => runTableCommand((c) => c.addRowBefore()) },
+        { label: "Row below", title: "Add row below", command: () => runTableCommand((c) => c.addRowAfter()) },
+        { label: "Column left", title: "Add column left", command: () => runTableCommand((c) => c.addColumnBefore()) },
+        { label: "Column right", title: "Add column right", command: () => runTableCommand((c) => c.addColumnAfter()) },
+      ],
+    },
+    {
+      label: "Remove",
+      title: "Remove row or column",
+      icon: "pi pi-minus",
+      disabled: !inTable,
+      items: [
+        { label: "Delete row", title: "Delete row", command: () => runTableCommand((c) => c.deleteRow()) },
+        { label: "Delete column", title: "Delete column", command: () => runTableCommand((c) => c.deleteColumn()) },
+      ],
+    },
+    {
+      label: "Merge / Split",
+      title: "Merge or split cells",
+      icon: "pi pi-arrows-h",
+      disabled: !inTable,
+      items: [
+        { label: "Merge cells", title: "Merge cells", command: () => runTableCommand((c) => c.mergeCells()) },
+        { label: "Split cell", title: "Split cell", command: () => runTableCommand((c) => c.splitCell()) },
+        { label: "Merge or split", title: "Merge or split cell", command: () => runTableCommand((c) => c.mergeOrSplit()) },
+      ],
+    },
+    {
+      label: "Header",
+      title: "Toggle header row or column",
+      icon: "pi pi-list",
+      disabled: !inTable,
+      items: [
+        { label: "Toggle header row", title: "Toggle header row", command: () => runTableCommand((c) => c.toggleHeaderRow()) },
+        {
+          label: "Toggle header column",
+          title: "Toggle header column",
+          command: () => runTableCommand((c) => c.toggleHeaderColumn()),
+        },
+      ],
+    },
+  ];
+}
+
+/**
+ */
+
+/**
+ * Opens the TieredMenu for table commands.
+ *
+ * @param {PointerEvent} event - The click event
+ * @returns {void} This function does not return any value
+ */
+function openTableMenu(event: Event): void {
+  tableMenuItems.value = buildTableMenuItems();
+  tableMenu.value?.toggle(event);
+}
 
 // Project-defined custom block types: isBlock:true entries that are not pre-configured built-ins.
 // These get a generic wrapIn/lift toggle button rather than a dedicated tiptap command button.
@@ -183,8 +288,6 @@ function handleBlockAnnotationClick(data: { type: string; subType?: string | num
   try {
     const config: AnnotationType = getAnnotationConfig(data.type);
 
-    console.log(config);
-
     isAnnotationTypeEnabled(data.type);
     isSelectionValid(selection, config);
 
@@ -198,11 +301,7 @@ function handleBlockAnnotationClick(data: { type: string; subType?: string | num
       selectedText: textInSelection,
     });
 
-    // Add block annotation to all nodes in selection
-    tiptap.value?.commands.addSemanticBlockLabel(newAnnotationTemplate, capturedSelection.from, capturedSelection.to);
-
-    // Add to store
-    structuralAnnotations.value?.set(newAnnotationTemplate.node.data.uuid, newAnnotationTemplate);
+    tiptap.value?.commands.addSemanticBlock(newAnnotationTemplate, capturedSelection.from, capturedSelection.to);
   } catch (error: unknown) {
     if (error instanceof AnnotationRangeError) {
       addToastMessage({
@@ -300,11 +399,19 @@ function handleBlockAnnotationClick(data: { type: string; subType?: string | num
           >
           </Button>
           <Button
+            v-tooltip.hover.top="{ value: 'list', showDelay: 50 }"
+            severity="secondary"
+            icon="pi pi-list"
+            :class="{ 'is-active': tiptap?.isActive('bulletList') }"
+            @click="tiptap?.chain().focus().toggleBulletList().run()"
+          ></Button>
+          <Button
             v-tooltip.hover.top="{ value: 'table', showDelay: 50 }"
             severity="secondary"
             icon="pi pi-table"
+            aria-haspopup="true"
             :class="{ 'is-active': tiptap?.isActive('table') }"
-            @click="tablePopover?.toggle($event)"
+            @click="openTableMenu($event)"
           >
           </Button>
           <Button
@@ -322,6 +429,15 @@ function handleBlockAnnotationClick(data: { type: string; subType?: string | num
     </TabPanels>
   </Tabs>
 
+  <TieredMenu
+    ref="table-menu"
+    :model="tableMenuItems"
+    popup
+    :pt="{
+      submenuLabel: { style: { display: 'none' } },
+      item: ({ context }) => ({ title: context.item.title }),
+    }"
+  />
   <TableInsertPopover ref="table-popover" />
 </template>
 

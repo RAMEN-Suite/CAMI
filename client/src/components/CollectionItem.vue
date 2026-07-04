@@ -13,7 +13,7 @@ const props = defineProps<{
 
 const nodeLabels = computed<string[]>(() => filterDefaultLabels(props.collection.data.node.nodeLabels));
 
-function handleItemClick(): void {
+function handleItemSelect(): void {
   // Emit the event with the collection data
   emit("itemSelected", props.collection.data.node.data.uuid);
 }
@@ -22,9 +22,12 @@ function handleItemClick(): void {
 <template>
   <div
     class="container p-1"
+    tabindex="0"
     :class="{ active: props.isActive, temporary: props.collection.status === 'temporary' }"
     :title="`Click to show details of ${props.collection.data.node.data.label}`"
-    @click="handleItemClick"
+    @click="handleItemSelect"
+    @keydown.enter="handleItemSelect"
+    @keydown.space.prevent="handleItemSelect"
   >
     <div class="labels">
       <NodeTag

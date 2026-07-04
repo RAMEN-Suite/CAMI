@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Button from "primevue/button";
 import NodeTag from "./NodeTag.vue";
-import { filterDefaultLabels } from "../utils/helper/helper";
+import { filterDefaultLabels, getBaseNodeLabel } from "../utils/helper/helper";
 import { BaseNodeLabel, NodeStatusObject } from "../models/types";
 import NodeStatusBadge from "./NodeStatusBadge.vue";
 
@@ -14,20 +14,6 @@ const emit = defineEmits<(e: "remove") => void>();
 
 const filteredLabels: string[] = filterDefaultLabels(props.node.node.nodeLabels);
 const baseNodeLabel: BaseNodeLabel = getBaseNodeLabel(props.node.node.nodeLabels);
-
-function getBaseNodeLabel(labels: string[]): BaseNodeLabel {
-  if (labels.includes("Entity")) {
-    return "Entity";
-  } else if (labels.includes("Collection")) {
-    return "Collection";
-  } else if (labels.includes("Content")) {
-    return "Content";
-  } else if (labels.includes("Annotation")) {
-    return "Annotation";
-  } else {
-    throw new Error("Node does not have a valid base label");
-  }
-}
 
 function handleRemoveClick(): void {
   // Just to be sure

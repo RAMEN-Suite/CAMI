@@ -16,8 +16,10 @@ const { removeBookmark } = useBookmarks();
 const uuid: string = props.bookmarkData.data.data.uuid;
 const isCollection: boolean = props.bookmarkData.type === "collection";
 
-async function handleItemClick(): Promise<void> {
-  await router.push(`/${props.bookmarkData.type}s/${uuid}`);
+async function handleItemSelect(): Promise<void> {
+  const urlParam: "collections" | "contents" = isCollection ? "collections" : "contents";
+
+  await router.push(`/${urlParam}/${uuid}`);
 }
 
 const htmlTitle = computed<string>(
@@ -42,7 +44,14 @@ const displayedText = computed<string>(() => {
 <template>
   <Card :title="htmlTitle" class="container" :pt="{ body: { class: 'p-1' } }">
     <template #content>
-      <div class="flex align-items-center p-1" @click="handleItemClick">
+      <div
+        class="flex align-items-center p-1"
+        role="link"
+        tabindex="0"
+        @keydown.enter="handleItemSelect"
+        @keydown.space.prevent="handleItemSelect"
+        @click="handleItemSelect"
+      >
         <div class="data flex-grow-1">
           <div class="labels">
             <NodeTag

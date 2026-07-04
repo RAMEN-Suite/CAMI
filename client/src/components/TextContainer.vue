@@ -22,7 +22,7 @@ const { getAvailableTextLabels } = useGuidelinesStore();
 const { bookmarks, toggleBookmark } = useBookmarks();
 
 const isBookmarked = computed<boolean>(() => {
-  return bookmarks.value.some((b) => b.data.data.uuid === props.text.node.data.uuid);
+  return bookmarks.value.some((b) => b.data.data.uuid === props.text?.node.data.uuid);
 });
 
 function handleBookmarkAction() {
@@ -32,7 +32,7 @@ function handleBookmarkAction() {
 const PREVIEW_LENGTH: number = 300;
 
 const displayedText = computed<string>(
-  () => props.text.node.data.text.slice(0, PREVIEW_LENGTH) + (props.text.node.data.text.length > PREVIEW_LENGTH ? "..." : ""),
+  () => props.text.node.data.text?.slice(0, PREVIEW_LENGTH) + (props.text.node.data.text?.length > PREVIEW_LENGTH ? "..." : ""),
 );
 
 function handleRemoveText() {
@@ -61,7 +61,7 @@ function handleClickContainer(event: PointerEvent): void {
     return;
   }
 
-  window.open(`/editor/${props.text.node.data.uuid}`, "_blank", "noopener noreferrer");
+  window.open(`/contents/${props.text.node.data.uuid}`, "_blank", "noopener noreferrer");
 }
 </script>
 
@@ -134,7 +134,7 @@ function handleClickContainer(event: PointerEvent): void {
               }"
             >
               <template #chip="{ value }">
-                <NodeTag type="Text" :content="value" class="mr-1" />
+                <NodeTag type="Content" :content="value" class="mr-1" />
               </template>
             </MultiSelect>
           </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, watch, toValue } from "vue";
+import { computed, inject, watch, toValue, Ref } from "vue";
 import Button from "primevue/button";
 import { useAddNode } from "../composables/useAddNode";
 import { RouteLocationNormalizedLoaded, useRoute } from "vue-router";
@@ -8,8 +8,14 @@ import NodeSearchbar from "./NodeSearchbar.vue";
 import CollectionCard from "./CollectionCard.vue";
 import TextCard from "./TextCard.vue";
 import EntityCard from "./EntityCard.vue";
+import { DynamicDialogInstance } from "primevue/dynamicdialogoptions";
 
-const dialogRef: any = inject("dialogRef");
+const dialogRef = inject<Ref<DynamicDialogInstance>>("dialogRef");
+
+if (!dialogRef) {
+  throw new Error("dialogRef not provided - component must be used inside a DynamicDialog");
+}
+
 const route: RouteLocationNormalizedLoaded = useRoute();
 
 const { currentStep, node: nodeToAdd, setPipelineStep, setNode, finish: finishProcess } = useAddNode();
@@ -54,7 +60,7 @@ function handleGoBack(): void {
 }
 
 function closeModal(): void {
-  dialogRef.value?.close();
+  dialogRef?.value?.close();
 }
 </script>
 

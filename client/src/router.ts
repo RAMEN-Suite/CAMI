@@ -14,7 +14,7 @@ const allRoutes = [
     beforeEnter: redirectToCollectionPath,
   },
   { path: "/texts/:uuid", component: Editor },
-  { path: "/editor/:uuid", component: Editor },
+  { path: "/contents/:uuid", component: Editor },
 ];
 
 const prodRoutes = allRoutes.filter((r) => !["/test", "/playground"].includes(r.path));

@@ -32,7 +32,7 @@ export function useValidateTextSelection(): UseValidateTextSelectionReturnType {
 
     const isCaret: boolean = selection.empty;
 
-    if (isCaret && !config.isZeroPoint) {
+    if (isCaret && !config.isZeroPoint && !config.isBlock) {
       throw new AnnotationRangeError("Select some text to annotate.");
     }
 

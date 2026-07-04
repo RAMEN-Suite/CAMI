@@ -16,6 +16,7 @@ jobs:
     name: config linting
     permissions:
       contents: read # required for actions/checkout to fetch repo contents if this repo is private
+      security-events: write # required to push the scan results to GitHub Security tab
     runs-on: ubuntu-latest
     if: github.head_ref != 'dev' && github.head_ref != 'main'
     steps:
@@ -148,6 +149,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read # required for actions/checkout to fetch repo contents if this repo is private
+      security-events: write # required to push the scan results to GitHub Security tab
     container:
       image: semgrep/semgrep@sha256:06938c1f365d3f67b8cedd8bc117607ae64253f88a0e768e9da9408548927dd6 # 1.167.0
     if: github.head_ref != 'dev' && github.head_ref != 'main'

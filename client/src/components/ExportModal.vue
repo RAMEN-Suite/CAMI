@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, watch, computed, ref } from "vue";
+import { inject, watch, computed, ref, Ref } from "vue";
 import Button from "primevue/button";
 import ButtonGroup from "primevue/buttongroup";
 import Message from "primevue/message";
@@ -7,6 +7,13 @@ import Textarea from "primevue/textarea";
 import { useExport } from "../composables/useExport";
 import { RouteLocationNormalizedLoaded, useRoute } from "vue-router";
 import { useTiptapStore } from "../store/tiptap";
+import { DynamicDialogInstance } from "primevue/dynamicdialogoptions";
+
+const dialogRef = inject<Ref<DynamicDialogInstance>>("dialogRef");
+
+if (!dialogRef) {
+  throw new Error("dialogRef not provided - component must be used inside a DynamicDialog");
+}
 
 const route: RouteLocationNormalizedLoaded = useRoute();
 
@@ -17,8 +24,6 @@ const totalCharacters = ref([]);
 const totalAnnotations = ref([]);
 
 const textHasUnsavedChanges = hasUnsavedChanges();
-
-const dialogRef: any = inject("dialogRef");
 
 const copyLabel = computed<string>(() => (status.value === "copied" ? "Copied!" : "Copy"));
 const copyIcon = computed<string>(() => (status.value === "copied" ? "pi pi-check" : "pi pi-copy"));

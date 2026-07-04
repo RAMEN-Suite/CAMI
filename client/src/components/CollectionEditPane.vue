@@ -24,6 +24,7 @@ import {
   createNodeStatusObjectFromRawData,
   getDefaultValueForProperty,
   createTextNode,
+  filterBaseNodeLabel,
 } from "../utils/helper/helper";
 import MultiSelect from "primevue/multiselect";
 import DataInputComponent from "./DataInputComponent.vue";
@@ -118,6 +119,14 @@ const availableCollectionLabels = computed(getAvailableCollectionLabels);
 const availabeAnnotationTypes: ComputedRef<AnnotationType[]> = computed(() =>
   getAvailableCollectionAnnotationConfigs(temporaryWorkData.value.collection.node.nodeLabels),
 );
+
+// Writable computed since "Collection" should be stripped from all visual displays/selection options
+// Adjusting styling in the `Multiselect` was not possible since chip items don't provide context
+const collectionNodeLabels = computed<string[]>({
+  get: () => filterBaseNodeLabel(temporaryWorkData.value.collection.node.nodeLabels),
+  set: (labels: string[]) =>
+    (temporaryWorkData.value.collection.node.nodeLabels = ["Collection", ...filterBaseNodeLabel(labels)]),
+});
 
 watch(
   () => activeCollection.value?.collection?.node.data.uuid,
@@ -555,7 +564,7 @@ function toggleViewMode(direction: TabView): void {
           <h3 class="text-center">Labels</h3>
           <div v-if="formMode === 'edit'" class="flex justify-content-center">
             <MultiSelect
-              v-model="temporaryWorkData.collection.node.nodeLabels"
+              v-model="collectionNodeLabels"
               :options="availableCollectionLabels"
               display="chip"
               :invalid="availableCollectionLabels.length > 0 && temporaryWorkData.collection.node.nodeLabels.length === 0"
@@ -570,13 +579,7 @@ function toggleViewMode(direction: TabView): void {
           </div>
           <div v-else class="flex gap-2 justify-content-center">
             <template v-if="temporaryWorkData.collection.node.nodeLabels.length > 0">
-              <NodeTag
-                v-for="label in temporaryWorkData.collection.node.nodeLabels"
-                :key="label"
-                :content="label"
-                type="Collection"
-                class="mr-1"
-              />
+              <NodeTag v-for="label in collectionNodeLabels" :key="label" :content="label" type="Collection" class="mr-1" />
             </template>
             <div v-else>
               <i>This Collection has no labels yet.</i>

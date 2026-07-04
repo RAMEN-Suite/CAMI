@@ -1,14 +1,20 @@
 <script setup lang="ts">
-import { computed, inject, ref, watch } from "vue";
+import { computed, inject, Ref, ref, watch } from "vue";
 import Button from "primevue/button";
 import { CollectionAccessObject } from "../models/types";
 import { useAppStore } from "../store/app";
 import { useRoute } from "vue-router";
+import { DynamicDialogInstance } from "primevue/dynamicdialogoptions";
+
+const dialogRef = inject<Ref<DynamicDialogInstance>>("dialogRef");
+
+if (!dialogRef) {
+  throw new Error("dialogRef not provided - component must be used inside a DynamicDialog");
+}
 
 const emit = defineEmits(["deleted", "canceled"]);
 
 const route = useRoute();
-const dialogRef: any = inject("dialogRef");
 
 const { api, addToastMessage } = useAppStore();
 
@@ -40,8 +46,6 @@ const deleteMessage = computed<string>(() => {
 });
 
 watch(() => route.path, closeModal);
-
-// ------------------------- UI stuff ------------------------
 
 async function handleSubmitClick(): Promise<void> {
   asyncOperationRunning.value = true;

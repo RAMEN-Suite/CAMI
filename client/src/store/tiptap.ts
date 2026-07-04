@@ -1,5 +1,5 @@
 import { ref, shallowRef, watch } from "vue";
-import { NodeDto, Annotation, NodeStatusObject, AnnotationNode, ToCItem } from "../models/types";
+import { NodeDto, Annotation, NodeStatusObject, AnnotationNode, ToCItem, SemanticBlockRange } from "../models/types";
 import { Editor } from "@tiptap/vue-3";
 import { Node } from "@tiptap/pm/model";
 import Heading from "@tiptap/extension-heading";
@@ -22,6 +22,7 @@ import { AnnotationAttributes } from "../editors/text/extensions/AnnotationAttri
 import { CustomBlock } from "../editors/text/extensions/customBlock";
 import { BlockDecorations } from "../editors/text/extensions/blockDecorations";
 import { history } from "prosemirror-history";
+import { type Extensions } from "@tiptap/core";
 import { useEditorSettingsStore } from "./editorSettings";
 import { AnnotationHighlight } from "../editors/text/extensions/annotationHighlight";
 
@@ -39,8 +40,9 @@ let initialDoc: ReturnType<Editor["getJSON"]> | null = null;
 let initialPlainText: string | null = null;
 
 const tableOfContent = ref<ToCItem[]>([]);
+const semanticBlockRanges = ref<SemanticBlockRange[]>([]);
 
-function getConfiguredExtensions(): any[] {
+function getConfiguredExtensions(): Extensions {
   return [
     Document,
     Paragraph,
@@ -157,11 +159,46 @@ function initializeTiptap(standoffObject: { text: string; annotations: NodeDto[]
       initializeEventListeners();
 
       updateTableOfContent(editor.state.doc);
+      computeSemanticBlockRanges(tiptap.value);
     },
     onUpdate: ({ transaction }) => {
       updateTableOfContent(transaction.doc);
+      computeSemanticBlockRanges(tiptap.value);
     },
   });
+}
+
+function computeSemanticBlockRanges(editor: Editor | null): void {
+  if (!editor) {
+    semanticBlockRanges.value = [];
+    return;
+  }
+
+  const uuidMap = new Map<string, SemanticBlockRange>();
+
+  editor.state.doc.descendants((node, pos) => {
+    const semanticBlocks: NodeStatusObject<AnnotationNode>[] = node.attrs._semanticBlocks ?? [];
+
+    // TODO: Hardcoded because of assignment mistake in standoff converter
+    // (hardBreaks should not get a semanticBlocks attr since they are zero point annotations)
+    if (node.type.name === "hardBreak") {
+      return;
+    }
+
+    semanticBlocks.forEach((block) => {
+      const { type, uuid } = block.node.data;
+
+      const existing: SemanticBlockRange | undefined = uuidMap.get(uuid);
+
+      if (existing) {
+        existing.endPos = pos + (node.nodeSize - 1);
+      } else {
+        uuidMap.set(uuid, { startPos: pos, endPos: pos + (node.nodeSize - 1), type, uuid });
+      }
+    });
+  });
+
+  semanticBlockRanges.value = [...uuidMap.values()];
 }
 
 function initializeEventListeners(): void {
@@ -267,6 +304,7 @@ export function useTiptapStore() {
     annotations,
     initialAnnotations,
     initialStructuralAnnotations,
+    semanticBlockRanges,
     structuralAnnotations,
     tiptap,
     tableOfContent,

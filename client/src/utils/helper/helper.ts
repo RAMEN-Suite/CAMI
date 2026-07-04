@@ -12,6 +12,7 @@ import {
   CollectionNode,
   ToCItem,
   Annotation,
+  BaseNodeLabel,
 } from "../../models/types";
 import { EditorView } from "@tiptap/pm/view";
 import { Node } from "@tiptap/pm/model";
@@ -177,7 +178,7 @@ export function createNodeStatusObjectFromRawData(rawNode: NodeDto): NodeStatusO
  */
 export function createCollectionNode(): CollectionNode {
   return {
-    nodeLabels: [],
+    nodeLabels: ["Collection"],
     data: {
       uuid: crypto.randomUUID(),
       label: "",
@@ -194,7 +195,7 @@ export function createCollectionNode(): CollectionNode {
  */
 export function createTextNode(): TextNode {
   return {
-    nodeLabels: [],
+    nodeLabels: ["Text"],
     data: {
       uuid: crypto.randomUUID(),
       text: "",
@@ -244,6 +245,41 @@ export function createExtendedStandoffObject(standoffObject: { text: string; ann
 }
 
 /**
+ * Returns a list of all labels that are not one of the RAMEN base node labels.
+ *
+ * Mainly used for visual purposes (base node labels do not need to be displayed).
+ *
+ * @param {string[]} labels - All Node labels of a RAMEN-valid node
+ * @returns {string[]} List of all labels that are not one of the RAMEN base node labels
+ */
+export function filterBaseNodeLabel(labels: string[]): string[] {
+  const baseNodeLabels: string[] = ["Annotation", "Collection", "Content", "Entity"];
+
+  return labels.filter((l: string) => !baseNodeLabels.includes(l));
+}
+
+/**
+ * Returns the RAMEN base node label for a node from its full list of labels.
+ *
+ * @param {string[]} labels - All Node labels of a RAMEN-valid node
+ * @returns {BaseNodeLabel} The node's base label
+ * @throws {Error} If none of the base labels is present
+ */
+export function getBaseNodeLabel(labels: string[]): BaseNodeLabel {
+  if (labels.includes("Entity")) {
+    return "Entity";
+  } else if (labels.includes("Collection")) {
+    return "Collection";
+  } else if (labels.includes("Content")) {
+    return "Content";
+  } else if (labels.includes("Annotation")) {
+    return "Annotation";
+  } else {
+    throw new Error("Node does not have a valid base label");
+  }
+}
+
+/**
  * A function that compares two objects to check if they are equal. Works only for non-nested objects
  * where values are strings or numbers.
  *
@@ -289,6 +325,21 @@ export function areSetsEqual(setA: Set<string>, setB: Set<string>): boolean {
   }
 
   return true;
+}
+
+/**
+ * Truncates a string to a maximum length, appending "..." if truncation is needed.
+ *
+ * @param {string} text - The string to truncate.
+ * @param {string} maxLength - The maximum number of characters to keep before truncation.
+ * @returns The original string if it's within `maxLength`, otherwise the truncated string followed by "...".
+ *
+ * @example
+ * ellipsize("Hello World", 5); // "Hello..."
+ * ellipsize("Hi", 5);          // "Hi"
+ */
+export function ellipsize(text: string, maxLength: number): string {
+  return text.slice(0, maxLength) + (text.length > maxLength ? "..." : "");
 }
 
 /**
