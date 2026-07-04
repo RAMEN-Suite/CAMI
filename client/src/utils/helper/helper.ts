@@ -12,6 +12,7 @@ import {
   CollectionNode,
   ToCItem,
   Annotation,
+  BaseNodeLabel,
 } from "../../models/types";
 import { EditorView } from "@tiptap/pm/view";
 import { Node } from "@tiptap/pm/model";
@@ -241,6 +242,41 @@ export function createExtendedStandoffObject(standoffObject: { text: string; ann
   });
 
   return extended;
+}
+
+/**
+ * Returns a list of all labels that are not one of the RAMEN base node labels.
+ *
+ * Mainly used for visual purposes (base node labels do not need to be displayed).
+ *
+ * @param {string[]} labels - All Node labels of a RAMEN-valid node
+ * @returns {string[]} List of all labels that are not one of the RAMEN base node labels
+ */
+export function filterBaseNodeLabel(labels: string[]): string[] {
+  const baseNodeLabels: string[] = ["Annotation", "Collection", "Content", "Entity"];
+
+  return labels.filter((l: string) => !baseNodeLabels.includes(l));
+}
+
+/**
+ * Returns the RAMEN base node label for a node from its full list of labels.
+ *
+ * @param {string[]} labels - All Node labels of a RAMEN-valid node
+ * @returns {BaseNodeLabel} The node's base label
+ * @throws {Error} If none of the base labels is present
+ */
+export function getBaseNodeLabel(labels: string[]): BaseNodeLabel {
+  if (labels.includes("Entity")) {
+    return "Entity";
+  } else if (labels.includes("Collection")) {
+    return "Collection";
+  } else if (labels.includes("Content")) {
+    return "Content";
+  } else if (labels.includes("Annotation")) {
+    return "Annotation";
+  } else {
+    throw new Error("Node does not have a valid base label");
+  }
 }
 
 /**
