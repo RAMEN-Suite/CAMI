@@ -80,7 +80,12 @@ export const VALID_SEMANTIC_BLOCK_TARGETS: string[] = ["paragraph", "heading"];
 export const DEFAULT_ANNOTATION_MAPPING: AnnotationMapping = {
   typeByRole: {
     paragraph: "p",
+    heading: "head",
     hardBreak: "lb",
+    tableRow: "row",
+    tableCell: "cell",
+    bulletList: "list",
+    listItem: "item",
   },
   attrByRole: {
     tableRow: {
