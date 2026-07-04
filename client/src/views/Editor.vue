@@ -857,7 +857,7 @@ watch(
       <EditorAnnotationButtonPane />
       <SemanticBlockLines />
 
-      <editor-content id="editor" :editor="tiptap" spellcheck="false" />
+      <editor-content v-if="tiptap" id="editor" :editor="tiptap" spellcheck="false" />
 
       <EditorActionButtonsPane
         @save="handleSaveChanges"
