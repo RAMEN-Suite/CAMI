@@ -729,9 +729,17 @@ function toggleViewMode(direction: TabView): void {
       <Button
         v-if="formMode === 'view'"
         icon="pi pi-pencil"
-        label="Edit"
         title="Edit collection"
+        severity="contrast"
         @click="handleClickEditButton"
+      ></Button>
+      <Button
+        v-if="formMode === 'view'"
+        :disabled="asyncOperationRunning"
+        icon="pi pi-trash"
+        title="Delete collection"
+        severity="danger"
+        @click="handleDeleteColletion"
       ></Button>
       <Button
         v-if="formMode === 'edit'"
@@ -749,15 +757,6 @@ function toggleViewMode(direction: TabView): void {
         :label="globalMode === 'create' ? 'Discard' : 'Cancel'"
         severity="secondary"
         @click="handleDiscardChanges"
-      ></Button>
-      <Button
-        v-if="formMode === 'edit' && globalMode !== 'create'"
-        :disabled="asyncOperationRunning"
-        icon="pi pi-trash"
-        label="Delete"
-        title="Delete collection"
-        severity="danger"
-        @click="handleDeleteColletion"
       ></Button>
     </div>
   </div>

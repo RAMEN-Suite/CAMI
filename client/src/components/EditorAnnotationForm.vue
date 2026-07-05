@@ -316,21 +316,21 @@ function updateData(): void {
       <div class="action-buttons flex gap-1 justify-content-center">
         <Button
           v-if="mode === 'view'"
-          title="Delete annotation"
-          severity="danger"
-          icon="pi pi-trash"
-          size="small"
-          :style="{ width: '25px', height: '25px' }"
-          @click="handleDeleteAnnotation"
-        />
-        <Button
-          v-if="mode === 'view'"
           title="Edit annotation"
           severity="contrast"
           icon="pi pi-pencil"
           size="small"
           :style="{ width: '25px', height: '25px' }"
           @click="handleEditAnnotation"
+        />
+        <Button
+          v-if="mode === 'view'"
+          title="Delete annotation"
+          severity="danger"
+          icon="pi pi-trash"
+          size="small"
+          :style="{ width: '25px', height: '25px' }"
+          @click="handleDeleteAnnotation"
         />
         <Button
           v-if="mode === 'edit'"
