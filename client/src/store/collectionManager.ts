@@ -24,16 +24,10 @@ const previousPaths = useRefHistory(pathToActiveCollection, {
   capacity: 5,
 });
 
-const mode = ref<"view" | "edit" | "create">("view");
+const mode = ref<"view" | "edit">("view");
 const asyncOperationRunning = ref<boolean>(false);
 const isFetchingCollectionDetails = ref<boolean>(false);
-const canNavigate = computed<boolean>(() => {
-  if (mode.value === "edit" || mode.value === "create") {
-    return false;
-  }
-
-  return true;
-});
+const canNavigate = computed<boolean>(() => mode.value === "view");
 
 export function useCollectionManagerStore() {
   /**

@@ -9,6 +9,7 @@ import { useGuidelinesStore } from "../store/guidelines";
 import { computed } from "vue";
 import { useBookmarks } from "../composables/useBookmarks";
 import NodeStatusBadge from "./NodeStatusBadge.vue";
+import { filterBaseNodeLabel } from "../utils/helper/helper.ts";
 
 const props = defineProps<{
   status: "existing" | "temporary";
@@ -20,6 +21,13 @@ const emit = defineEmits<(e: "textAdded" | "textRemoved", text: NodeDto<TextNode
 
 const { getAvailableTextLabels } = useGuidelinesStore();
 const { bookmarks, toggleBookmark } = useBookmarks();
+
+// Writable computed since "Collection" should be stripped from all visual displays/selection options
+// Adjusting styling in the `Multiselect` was not possible since chip items don't provide context
+const contentNodeLabels = computed<string[]>({
+  get: () => filterBaseNodeLabel(props.text.node.nodeLabels),
+  set: (labels: string[]) => (props.text.node.nodeLabels = ["Content", ...filterBaseNodeLabel(labels)]),
+});
 
 const isBookmarked = computed<boolean>(() => {
   return bookmarks.value.some((b) => b.data.data.uuid === props.text?.node.data.uuid);
@@ -115,21 +123,21 @@ function handleClickContainer(event: PointerEvent): void {
         </div>
         <div class="node-labels-container">
           <template v-if="mode === 'view'">
-            <NodeTag v-for="label in props.text.node.nodeLabels" :key="label" :content="label" type="Content" />
+            <NodeTag v-for="label in contentNodeLabels" :key="label" :content="label" type="Content" />
           </template>
           <!-- eslint-disable vue/no-mutating-props -- TODO: Avoid working directly on props in template: Requires more refactoring though -->
           <template v-if="mode === 'edit'">
             <MultiSelect
-              v-model="text.node.nodeLabels"
+              v-model="contentNodeLabels"
               size="small"
               :options="getAvailableTextLabels()"
               display="chip"
-              placeholder="Text labels"
+              placeholder="Content labels"
               class="multiselect text-center"
               :filter="false"
               :pt="{
                 root: {
-                  title: `Select Text labels`,
+                  title: `Select Content labels`,
                 },
               }"
             >

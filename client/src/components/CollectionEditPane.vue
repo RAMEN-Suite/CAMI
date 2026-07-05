@@ -69,9 +69,8 @@ const {
   activeCollection,
   isFetchingCollectionDetails,
   levels,
-  mode: globalMode,
+  mode,
   pathToActiveCollection,
-  createNewUrlPath,
   findCollectionInHierarchy,
   getUrlPath,
   removeTemporaryCollectionItems,
@@ -90,15 +89,6 @@ const initialTemporaryWorkData = ref<CollectionAccessStatusObject | null>(null);
 
 const temporaryTexts = ref<NodeStatusObject<TextNode>[]>([]);
 
-// Responsible for setting inputs (non-)editable. The global mode
-// determines the state of the page.
-const formMode = computed<"view" | "edit">(() => {
-  if (globalMode.value === "create" || globalMode.value === "edit") {
-    return "edit";
-  } else {
-    return "view";
-  }
-});
 const asyncOperationRunning = ref<boolean>(false);
 const propertiesAreCollapsed = ref<boolean>(false);
 
@@ -137,7 +127,7 @@ watch(
     temporaryTexts.value = [];
 
     // In this case, the collection data is editable directly, meaning that the data need to be enriched
-    if (globalMode.value === "create") {
+    if (mode.value === "create") {
       enrichCollectionData();
     }
   },
@@ -245,7 +235,7 @@ function handleClickEditButton(): void {
 async function handleDiscardChanges(): Promise<void> {
   temporaryWorkData.value = cloneDeep(initialTemporaryWorkData.value);
 
-  if (globalMode.value === "create") {
+  if (mode.value === "create") {
     restorePath();
     await updateLevelsAndFetchData(pathToActiveCollection.value);
   }
@@ -319,26 +309,9 @@ async function handleApplyChanges(): Promise<void> {
     return;
   }
 
-  const operationType: "create" | "update" = globalMode.value === "create" ? "create" : "update";
-
-  // TODO: Enable
-  if (operationType === "create") {
-    addToastMessage({
-      severity: "info",
-      summary: "Not implemented",
-      detail: "Creating new Collections is not yet enabled.",
-      life: 3000,
-    });
-    return;
-  }
-
   asyncOperationRunning.value = true;
 
   try {
-    // TODO: Implement Creating collections
-    // const result: CollectionNode =
-    //   globalMode.value === 'create' ? await createCollection() : await updateCollection();
-
     const result = await updateCollection();
 
     // Set returned collection data to column list item
@@ -350,11 +323,6 @@ async function handleApplyChanges(): Promise<void> {
     // Clean up pane data
     initialTemporaryWorkData.value = cloneDeep(temporaryWorkData.value);
     clearTemporaryTexts();
-
-    // Update route when new collection was created (created collection must be in focus and children displayed)
-    if (operationType === "create") {
-      await router.push({ query: { path: createNewUrlPath(result.data.uuid, pathIndex) } });
-    }
 
     showMessage("success");
     setMode("view");
@@ -513,9 +481,6 @@ function toggleViewMode(direction: TabView): void {
           @click="handleBookmarkAction"
         />
       </div>
-      <div class="status-section h-2rem relative text-right">
-        <Tag v-if="globalMode === 'create'" severity="success" value="New" icon="pi pi-sparkles" rounded></Tag>
-      </div>
 
       <div class="label-section">
         <h3 v-if="temporaryWorkData.collection.node.data.label">
@@ -562,7 +527,7 @@ function toggleViewMode(direction: TabView): void {
       <div class="content">
         <div v-show="isDetailsSelected" class="properties-pane">
           <h3 class="text-center">Labels</h3>
-          <div v-if="formMode === 'edit'" class="flex justify-content-center">
+          <div v-if="mode === 'edit'" class="flex justify-content-center">
             <MultiSelect
               v-model="collectionNodeLabels"
               :options="availableCollectionLabels"
@@ -595,13 +560,13 @@ function toggleViewMode(direction: TabView): void {
                   v-if="field.type === 'array'"
                   v-model="temporaryWorkData.collection.node.data[field.name]"
                   :config="field"
-                  :mode="formMode"
+                  :mode="mode"
                 />
                 <DataInputComponent
                   v-else
                   v-model="temporaryWorkData.collection.node.data[field.name]"
                   :config="field"
-                  :mode="formMode"
+                  :mode="mode"
                 />
               </div>
             </div>
@@ -609,18 +574,17 @@ function toggleViewMode(direction: TabView): void {
         </div>
 
         <div v-show="isAnnotationsSelected" class="annotations-pane">
-          <div v-if="formMode === 'edit'" class="annotation-button-pane flex flex-wrap gap-3 py-3">
+          <div v-if="mode === 'edit'" class="annotation-button-pane flex flex-wrap gap-3 py-3">
             <AnnotationButton
               v-for="type in availabeAnnotationTypes"
               :key="type.type"
               :type="type.type"
-              :disabled="(formMode as 'view' | 'edit') === 'view'"
               :config="getCollectionAnnotationConfig(temporaryWorkData.collection.node.nodeLabels, type.type)"
               @clicked="handleAnnotationButtonClick($event)"
             />
           </div>
 
-          <div v-if="formMode === 'view' && temporaryWorkData.annotations.length === 0" class="pt-4 font-italic">
+          <div v-if="mode === 'view' && temporaryWorkData.annotations.length === 0" class="pt-4 font-italic">
             This collection has no annotations yet.
           </div>
 
@@ -666,19 +630,19 @@ function toggleViewMode(direction: TabView): void {
               <FormPropertiesSection
                 v-model="annotation.node.data"
                 :fields="getCollectionAnnotationFields(temporaryWorkData.collection.node.nodeLabels, annotation.node.data.type)"
-                :mode="formMode"
+                :mode="mode"
               />
             </Fieldset>
             <AnnotationFormAdditionalNodesSection
               v-model="annotation.connectedNodes"
-              :mode="formMode"
+              :mode="mode"
               :annotation-config="
                 getCollectionAnnotationConfig(temporaryWorkData.collection.node.nodeLabels, annotation.node.data.type)
               "
             />
             <div class="action-buttons flex justify-content-center">
               <Button
-                v-if="formMode === 'edit'"
+                v-if="mode === 'edit'"
                 label="Delete"
                 title="Delete annotation"
                 severity="danger"
@@ -691,14 +655,14 @@ function toggleViewMode(direction: TabView): void {
           </Panel>
         </div>
         <div v-show="isTextsSelected" class="texts-pane">
-          <div v-if="formMode === 'view' && temporaryWorkData.texts.length === 0" class="pt-4 font-italic">
+          <div v-if="mode === 'view' && temporaryWorkData.texts.length === 0" class="pt-4 font-italic">
             This collection has no texts yet.
           </div>
           <TextContainer
             v-for="text in temporaryWorkData.texts"
             :key="text.node.data.uuid"
             :text="text"
-            :mode="formMode"
+            :mode="mode"
             status="existing"
             @text-removed="handleRemoveText(text, 'existing')"
           />
@@ -706,13 +670,13 @@ function toggleViewMode(direction: TabView): void {
             v-for="text in temporaryTexts"
             :key="text.node.data.uuid"
             :text="text"
-            :mode="formMode"
+            :mode="mode"
             status="temporary"
             @text-added="handleAddText(text)"
             @text-removed="handleRemoveText(text, 'temporary')"
           />
           <Button
-            v-if="formMode === 'edit' && temporaryTexts.length === 0"
+            v-if="mode === 'edit' && temporaryTexts.length === 0"
             class="mt-2 w-full h-2rem"
             icon="pi pi-plus"
             size="small"
@@ -727,14 +691,14 @@ function toggleViewMode(direction: TabView): void {
 
     <div class="buttons flex justify-content-center gap-2">
       <Button
-        v-if="formMode === 'view'"
+        v-if="mode === 'view'"
         icon="pi pi-pencil"
         title="Edit collection"
         severity="contrast"
         @click="handleClickEditButton"
       ></Button>
       <Button
-        v-if="formMode === 'view'"
+        v-if="mode === 'view'"
         :disabled="asyncOperationRunning"
         icon="pi pi-trash"
         title="Delete collection"
@@ -742,19 +706,19 @@ function toggleViewMode(direction: TabView): void {
         @click="handleDeleteColletion"
       ></Button>
       <Button
-        v-if="formMode === 'edit'"
+        v-if="mode === 'edit'"
         :loading="asyncOperationRunning"
-        :icon="globalMode === 'create' ? 'pi pi-plus' : 'pi pi-save'"
-        :label="globalMode === 'create' ? 'Create' : 'Save'"
-        :title="globalMode === 'create' ? 'Create new collection' : 'Save changes'"
+        label="Save"
+        icon="pi pi-save"
+        title="Save changes"
         @click="handleApplyChanges"
       ></Button>
       <Button
-        v-if="formMode === 'edit'"
+        v-if="mode === 'edit'"
         :disabled="asyncOperationRunning"
+        label="Cancel"
         icon="pi pi-times"
-        :title="globalMode === 'create' ? 'Discard collection' : 'Cancel changes'"
-        :label="globalMode === 'create' ? 'Discard' : 'Cancel'"
+        title="Cancel changes"
         severity="secondary"
         @click="handleDiscardChanges"
       ></Button>
