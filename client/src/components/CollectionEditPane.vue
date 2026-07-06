@@ -463,7 +463,7 @@ function toggleViewMode(direction: TabView): void {
 <template>
   <div
     v-if="temporaryWorkData && !isFetchingCollectionDetails"
-    class="edit-pane-container h-full flex flex-column align-items-center text-center p-2"
+    class="edit-pane-container h-full flex flex-column align-items-center p-2"
   >
     <div class="main flex-grow-1 flex flex-column w-full">
       <div class="buttons text-right">
@@ -603,7 +603,7 @@ function toggleViewMode(direction: TabView): void {
             }"
           >
             <template #header>
-              <div class="flex items-center gap-1 align-items-center">
+              <div class="flex items-center gap-1 align-items-center flex-grow-1">
                 <div class="icon-container">
                   <AnnotationTypeIcon :annotation-type="annotation.node.data.type" />
                 </div>

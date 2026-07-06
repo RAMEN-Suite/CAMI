@@ -235,7 +235,7 @@ function updateData(): void {
     :data-mode="mode"
   >
     <div class="annotation-card-header">
-      <div class="flex items-center gap-1 align-items-center">
+      <div class="flex items-center gap-1 align-items-center flex-grow-1">
         <div class="icon-container">
           <AnnotationTypeIcon :annotation-type="workingData.node.data.subType ?? workingData.node.data.type" />
         </div>

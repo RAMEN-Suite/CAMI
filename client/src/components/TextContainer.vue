@@ -19,7 +19,7 @@ const props = defineProps<{
 
 const emit = defineEmits<(e: "textAdded" | "textRemoved", text: NodeDto<TextNode>) => void>();
 
-const { getAvailableTextLabels } = useGuidelinesStore();
+const { getAvailableContentLabels } = useGuidelinesStore();
 const { bookmarks, toggleBookmark } = useBookmarks();
 
 // Writable computed since "Collection" should be stripped from all visual displays/selection options
@@ -130,7 +130,7 @@ function handleClickContainer(event: PointerEvent): void {
             <MultiSelect
               v-model="contentNodeLabels"
               size="small"
-              :options="getAvailableTextLabels()"
+              :options="getAvailableContentLabels()"
               display="chip"
               placeholder="Content labels"
               class="multiselect text-center"

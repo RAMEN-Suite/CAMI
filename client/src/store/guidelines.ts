@@ -79,7 +79,7 @@ export function useGuidelinesStore() {
     groupedAndSortedAnnotationTypes.value = sortAnnotationTypesInGroup();
     availableCollectionLabels.value = getAvailableCollectionLabels();
     availableEntityLabels.value = getAvailableEntityLabels();
-    availableTextLabels.value = getAvailableTextLabels();
+    availableTextLabels.value = getAvailableContentLabels();
 
     initializeFilter(guidelines.value);
   }
@@ -265,11 +265,11 @@ export function useGuidelinesStore() {
   }
 
   /**
-   * Retrieves the available labels that can be assigned to a a Text node.
+   * Retrieves the available labels that can be assigned to a a Content node.
    *
    * @return {string[]} The available labels.
    */
-  function getAvailableTextLabels(): string[] {
+  function getAvailableContentLabels(): string[] {
     return guidelines.value?.texts.additionalLabels ?? [];
   }
 
@@ -567,7 +567,7 @@ export function useGuidelinesStore() {
     getAvailableCollectionLabels,
     getAvailableEntityLabels,
     getAvailableNodeLabels,
-    getAvailableTextLabels,
+    getAvailableContentLabels,
     getCollectionAnnotationFields,
     getCollectionAnnotationConfig,
     getCollectionConfigFields,
