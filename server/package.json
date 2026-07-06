@@ -1,6 +1,6 @@
 {
   "name": "atag_editor_backend",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "BE Express",
   "type": "module",
   "scripts": {
