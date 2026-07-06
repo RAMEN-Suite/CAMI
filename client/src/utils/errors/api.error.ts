@@ -1,4 +1,4 @@
-import AppError from './app.error';
+import AppError from "./app.error";
 
 /**
  * Represents an API-related error. Extends the generic `AppError` class by adding an HTTP status code.

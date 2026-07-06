@@ -1,10 +1,10 @@
-import { ref, Ref } from 'vue';
-import { EditorSettings } from '../models/types';
+import { ref, Ref } from "vue";
+import { EditorSettings } from "../models/types";
 
 const DEFAULT_SETTINGS: EditorSettings = {
   blockDecorations: {
-    outline: true,
-    baseType: true,
+    outline: false,
+    baseType: false,
     semanticTypes: false,
   },
 };

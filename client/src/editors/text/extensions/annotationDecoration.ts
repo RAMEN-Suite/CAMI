@@ -1,21 +1,19 @@
-import { Plugin, PluginKey, Transaction, EditorState } from '@tiptap/pm/state';
-import { Mapping } from '@tiptap/pm/transform';
-import { Extension } from '@tiptap/core';
-import { Node } from '@tiptap/pm/model';
-import { Decoration, DecorationSet } from '@tiptap/pm/view';
-import { useGuidelinesStore } from '../../../store/guidelines';
-import { AddAnnotationStep } from '../steps/addAnnotationStep';
-import { AnnotationNode, NodeStatusObject } from '../../../models/types';
-import { RemoveAnnotationStep } from '../steps/removeAnnotationStep';
-import { indexToPosition } from '../../../utils/helper/indexHelper';
+import { Plugin, PluginKey, Transaction, EditorState } from "@tiptap/pm/state";
+import { Mapping } from "@tiptap/pm/transform";
+import { Extension } from "@tiptap/core";
+import { Node } from "@tiptap/pm/model";
+import { Decoration, DecorationSet } from "@tiptap/pm/view";
+import { useGuidelinesStore } from "../../../store/guidelines";
+import { AddAnnotationStep } from "../steps/addAnnotationStep";
+import { AnnotationNode, NodeStatusObject } from "../../../models/types";
+import { RemoveAnnotationStep } from "../steps/removeAnnotationStep";
+import { indexToPosition } from "../../../utils/helper/indexHelper";
 
 const { isZeroPoint } = useGuidelinesStore();
 
-export const ANNOTATION_DECORATION_KEY = new PluginKey<AnnotationDecorationState>(
-  'annotationDecoration',
-);
+export const ANNOTATION_DECORATION_KEY = new PluginKey<AnnotationDecorationState>("annotationDecoration");
 
-declare module '@tiptap/core' {
+declare module "@tiptap/core" {
   interface Commands<ReturnType> {
     annotationDecoration: {
       addAnnotationDecoration: (annotation: AnnotationNode, from: number, to: number) => ReturnType;
@@ -32,62 +30,57 @@ declare module '@tiptap/core' {
   }
 }
 
-type AnnotationDecorationState = {
+interface AnnotationDecorationState {
   all: DecorationSet;
   filtered: DecorationSet;
   visibleFrom: number;
   visibleTo: number;
   selectedTypes: string[];
-};
+}
 
 type TransactionMeta = InitMeta | FilterUpdateMeta | ViewportMeta | undefined;
 
-type InitMeta = {
-  type: 'initialize';
+interface InitMeta {
+  type: "initialize";
   annotations: Map<string, AnnotationNode>;
   visibleFrom: number;
   visibleTo: number;
   selectedTypes: string[];
-};
+}
 
-type FilterUpdateMeta = {
-  type: 'filterUpdated';
+interface FilterUpdateMeta {
+  type: "filterUpdated";
   selectedTypes: string[];
-};
+}
 
-type ViewportMeta = {
-  type: 'viewportChanged';
+interface ViewportMeta {
+  type: "viewportChanged";
   visibleFrom: number;
   visibleTo: number;
-};
+}
 
-type AnnotationDecorationSpec = {
+interface AnnotationDecorationSpec {
   _type: string;
   _uuid: string;
-};
+}
 
 function createDecoration(from: number, to: number, annotation: AnnotationNode): Decoration {
   return Decoration.inline(
     from,
     to,
     {
-      nodeName: 'span',
-      class: [annotation.data.type, annotation.data.subType].filter(Boolean).join(' '),
-      'data-anno-uuid': annotation.data.uuid,
+      nodeName: "span",
+      class: [annotation.data.type, annotation.data.subType].filter(Boolean).join(" "),
+      "data-anno-uuid": annotation.data.uuid,
     },
     { inclusiveEnd: true, _type: annotation.data.type, _uuid: annotation.data.uuid },
   );
 }
 
-function createInitialDecorations(
-  doc: Node,
-  annotations: Map<string, AnnotationNode>,
-): Decoration[] {
+function createInitialDecorations(doc: Node, annotations: Map<string, AnnotationNode>): Decoration[] {
   const decos: Decoration[] = [];
 
-  for (const annotation of [...annotations.values()].toSorted(
-    (a, b) => a.data.startIndex - b.data.startIndex,
-  )) {
+  for (const annotation of [...annotations.values()].toSorted((a, b) => a.data.startIndex - b.data.startIndex)) {
     const { startIndex, endIndex } = annotation.data;
 
     const start: number = indexToPosition(doc, startIndex);
@@ -111,17 +104,15 @@ function createFilteredDecorations(
   const { doc } = tr;
   const { selectedTypes, visibleFrom, visibleTo } = filters;
 
-  const filteredDecorations: Decoration[] = decorationSet.find(
-    visibleFrom,
-    visibleTo,
-    (spec: AnnotationDecorationSpec) => selectedTypes.includes(spec._type),
+  const filteredDecorations: Decoration[] = decorationSet.find(visibleFrom, visibleTo, (spec: AnnotationDecorationSpec) =>
+    selectedTypes.includes(spec._type),
   );
 
   return DecorationSet.create(doc, filteredDecorations);
 }
 
 export const AnnotationDecoration = Extension.create({
-  name: 'annotationDecoration',
+  name: "annotationDecoration",
 
   addOptions() {
     return {
@@ -145,8 +136,7 @@ export const AnnotationDecoration = Extension.create({
       removeAnnotationDecoration:
         (annotation: AnnotationNode) =>
         ({ tr, dispatch, state }) => {
-          const pluginState: AnnotationDecorationState | undefined =
-            ANNOTATION_DECORATION_KEY.getState(state);
+          const pluginState: AnnotationDecorationState | undefined = ANNOTATION_DECORATION_KEY.getState(state);
 
           if (!pluginState) {
             return false;
@@ -191,7 +181,7 @@ export const AnnotationDecoration = Extension.create({
           }
 
           const meta: InitMeta = {
-            type: 'initialize',
+            type: "initialize",
             annotations: filtered,
             selectedTypes,
             visibleFrom,
@@ -208,7 +198,7 @@ export const AnnotationDecoration = Extension.create({
         (selectedTypes: string[]) =>
         ({ tr, dispatch }) => {
           const meta: FilterUpdateMeta = {
-            type: 'filterUpdated',
+            type: "filterUpdated",
             selectedTypes,
           };
 
@@ -225,7 +215,7 @@ export const AnnotationDecoration = Extension.create({
           const { from, to } = docRange;
 
           const meta: ViewportMeta = {
-            type: 'viewportChanged',
+            type: "viewportChanged",
             visibleFrom: from,
             visibleTo: to,
           };
@@ -264,7 +254,7 @@ export const AnnotationDecoration = Extension.create({
             const meta: TransactionMeta = tr.getMeta(ANNOTATION_DECORATION_KEY);
 
             // On initialization, all decorations need to be created at first
-            if (meta?.type === 'initialize') {
+            if (meta?.type === "initialize") {
               const decos: Decoration[] = createInitialDecorations(doc, meta.annotations);
 
               const newAll: DecorationSet = DecorationSet.create(doc, decos);
@@ -285,7 +275,7 @@ export const AnnotationDecoration = Extension.create({
                 visibleFrom: meta.visibleFrom,
                 visibleTo: meta.visibleTo,
               };
-            } else if (meta?.type === 'filterUpdated') {
+            } else if (meta?.type === "filterUpdated") {
               const newAll: DecorationSet = oldDecorations.all.map(tr.mapping, tr.doc);
 
               // Set of to-be-rendered decorations (viewport, annotation type filter etc.)
@@ -304,7 +294,7 @@ export const AnnotationDecoration = Extension.create({
                 all: newAll,
                 filtered: newFiltered,
               };
-            } else if (meta?.type === 'viewportChanged') {
+            } else if (meta?.type === "viewportChanged") {
               const newAll: DecorationSet = oldDecorations.all.map(tr.mapping, tr.doc);
 
               // Set of to-be-rendered decorations (viewport, annotation type filter etc.)
@@ -350,11 +340,7 @@ export const AnnotationDecoration = Extension.create({
               } else if (step instanceof RemoveAnnotationStep) {
                 const { annotation } = step;
 
-                const toRemove: Decoration[] = newAll.find(
-                  undefined,
-                  undefined,
-                  spec => spec._uuid === annotation.data.uuid,
-                );
+                const toRemove: Decoration[] = newAll.find(undefined, undefined, (spec) => spec._uuid === annotation.data.uuid);
                 newAll = newAll.remove(toRemove);
                 decorationsChanged = true;
               }
@@ -365,9 +351,7 @@ export const AnnotationDecoration = Extension.create({
             const newVisibleFrom: number = tr.docChanged
               ? tr.mapping.map(oldDecorations.visibleFrom)
               : oldDecorations.visibleFrom;
-            const newVisibleTo: number = tr.docChanged
-              ? tr.mapping.map(oldDecorations.visibleTo)
-              : oldDecorations.visibleTo;
+            const newVisibleTo: number = tr.docChanged ? tr.mapping.map(oldDecorations.visibleTo) : oldDecorations.visibleTo;
 
             let newFiltered: DecorationSet = oldDecorations.filtered;
 
@@ -409,17 +393,13 @@ export const AnnotationDecoration = Extension.create({
           // Undo/redo transactions are handled by history replaying the steps we
           // already emitted — re-running detection here would misread those
           // corrections as new changes and emit spurious counter-steps.
-          if (
-            transactions.some(
-              tr => tr.getMeta('uiEvent') === 'undo' || tr.getMeta('uiEvent') === 'redo',
-            )
-          ) {
-            console.log('undo/redo detected...');
+          if (transactions.some((tr) => tr.getMeta("uiEvent") === "undo" || tr.getMeta("uiEvent") === "redo")) {
+            console.log("undo/redo detected...");
             return null;
           }
 
           // Only perform calculations when the document actually changed
-          if (!transactions.some(tr => tr.docChanged)) {
+          if (!transactions.some((tr) => tr.docChanged)) {
             return null;
           }
 
@@ -427,7 +407,7 @@ export const AnnotationDecoration = Extension.create({
           const newPluginState = ANNOTATION_DECORATION_KEY.getState(newState);
 
           if (!oldPluginState || !newPluginState) {
-            console.error('Old or new plugin state not found');
+            console.error("Old or new plugin state not found");
 
             return null;
           }
@@ -436,17 +416,17 @@ export const AnnotationDecoration = Extension.create({
           // These are intentional user removals, no partial/complete deletions by text operations.
           const explicitlyRemovedUuids = new Set<string>(
             transactions
-              .flatMap(tr => tr.steps)
+              .flatMap((tr) => tr.steps)
               .filter((step): step is RemoveAnnotationStep => step instanceof RemoveAnnotationStep)
-              .map(step => step.annotation.data.uuid),
+              .map((step) => step.annotation.data.uuid),
           );
 
           // Create maps (faster/easier to compare)
           const oldDecoMap = new Map<string, Decoration>(
-            oldPluginState.all.find().map(d => [(d.spec as AnnotationDecorationSpec)._uuid, d]),
+            oldPluginState.all.find().map((d) => [(d.spec as AnnotationDecorationSpec)._uuid, d]),
           );
           const newDecoMap = new Map<string, Decoration>(
-            newPluginState.all.find().map(d => [(d.spec as AnnotationDecorationSpec)._uuid, d]),
+            newPluginState.all.find().map((d) => [(d.spec as AnnotationDecorationSpec)._uuid, d]),
           );
 
           // Compose all mappings that happened in the transactions so far so we can test whether individual
@@ -480,10 +460,7 @@ export const AnnotationDecoration = Extension.create({
               // Completely removed by a delete operations — add Remove step so history can
               // invert it to Add on undo, restoring the decoration with the text.
               tr.step(new RemoveAnnotationStep(annotation, oldDeco.from, oldDeco.to));
-            } else if (
-              composedMapping.mapResult(oldDeco.from, 1).deleted ||
-              composedMapping.mapResult(oldDeco.to, -1).deleted
-            ) {
+            } else if (composedMapping.mapResult(oldDeco.from, 1).deleted || composedMapping.mapResult(oldDeco.to, -1).deleted) {
               // A boundary was clipped (landed inside a deleted range and snapped
               // to the deletion start). Pure shifts — deletions entirely before the
               // decoration — have deleted=false for both endpoints and are skipped.

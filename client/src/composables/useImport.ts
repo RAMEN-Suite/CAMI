@@ -1,9 +1,9 @@
-import { ref, readonly, Ref, DeepReadonly } from 'vue';
-import { useGuidelinesStore } from '../store/guidelines';
-import { cloneDeep, createNewCharacter, getDefaultValueForProperty } from '../utils/helper/helper';
-import JsonParseError from '../utils/errors/parse.error';
-import ImportError from '../utils/errors/import.error';
-import MalformedAnnotationsError from '../utils/errors/malformedAnnotations.error';
+import { ref, readonly, Ref, DeepReadonly } from "vue";
+import { useGuidelinesStore } from "../store/guidelines";
+import { cloneDeep, createNewCharacter, getDefaultValueForProperty } from "../utils/helper/helper";
+import JsonParseError from "../utils/errors/parse.error";
+import ImportError from "../utils/errors/import.error";
+import MalformedAnnotationsError from "../utils/errors/malformedAnnotations.error";
 import {
   Annotation,
   AnnotationData,
@@ -12,7 +12,7 @@ import {
   MalformedAnnotation,
   PropertyConfig,
   StandoffJson,
-} from '../models/types';
+} from "../models/types";
 
 interface DataDump {
   characters: {
@@ -28,26 +28,24 @@ interface DataDump {
   };
 }
 
-type ErrorMessage = {
+interface ErrorMessage {
   severity: string;
   content: string;
   id: number;
-};
+}
 
-type PipelineStep = null | 'validating' | 'importing' | 'finishing';
+type PipelineStep = null | "validating" | "importing" | "finishing";
 
-export type UseImportReturn = {
+export interface UseImportReturn {
   currentStep: Readonly<Ref<PipelineStep, PipelineStep>>;
   errorMessages: DeepReadonly<Ref<ErrorMessage[], ErrorMessage[]>>;
   rawJson: Ref<string, string>;
-  addErrorMessage: (
-    error: JsonParseError | MalformedAnnotationsError | ImportError | DOMException | unknown,
-  ) => void;
+  addErrorMessage: (error: JsonParseError | MalformedAnnotationsError | ImportError | DOMException | unknown) => void;
   cancel: () => void;
   finish: () => void;
   importJson: () => Promise<void>;
   setPipelineStep: (step: PipelineStep) => void;
-};
+}
 
 /**
  * A composable function that provides a pipeline for importing JSON data into the Editor.
@@ -66,18 +64,12 @@ export function useImport(): UseImportReturn {
   const errorMessages = ref<ErrorMessage[]>([]);
   const errorMessageCount = ref<number>(0);
 
-  const rawJson = ref<string>('');
+  const rawJson = ref<string>("");
   const parsedJson = ref<null | StandoffJson>(null);
   const dataToImport = ref<{ annotations: AnnotationData[]; characters: Character[] }>(null);
 
-  function addErrorMessage(
-    error: JsonParseError | MalformedAnnotationsError | ImportError | DOMException | unknown,
-  ): void {
-    if (
-      error instanceof JsonParseError ||
-      error instanceof ImportError ||
-      error instanceof MalformedAnnotationsError
-    ) {
+  function addErrorMessage(error: JsonParseError | MalformedAnnotationsError | ImportError | DOMException | unknown): void {
+    if (error instanceof JsonParseError || error instanceof ImportError || error instanceof MalformedAnnotationsError) {
       errorMessages.value.push({
         severity: error.severity,
         content: error.message,
@@ -85,8 +77,8 @@ export function useImport(): UseImportReturn {
       });
     } else {
       errorMessages.value.push({
-        severity: 'error',
-        content: 'An unknown error occurred.',
+        severity: "error",
+        content: "An unknown error occurred.",
         id: errorMessageCount.value++,
       });
     }
@@ -147,7 +139,7 @@ export function useImport(): UseImportReturn {
    */
   async function importJson(): Promise<void> {
     clearErrorMessages();
-    setPipelineStep('validating');
+    setPipelineStep("validating");
 
     try {
       parse();
@@ -157,10 +149,10 @@ export function useImport(): UseImportReturn {
       return;
     }
 
-    setPipelineStep('importing');
+    setPipelineStep("importing");
 
     // Give the browser time to repaint (=show the progress bar)
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     try {
       transformStandoffToAtag();
@@ -183,7 +175,7 @@ export function useImport(): UseImportReturn {
       return;
     }
 
-    setPipelineStep('finishing');
+    setPipelineStep("finishing");
   }
 
   /**
@@ -195,10 +187,10 @@ export function useImport(): UseImportReturn {
    */
   function initializeStores(): void {
     try {
-      initializeCharacters(dataToImport.value.characters, 'import');
-      initializeAnnotations(dataToImport.value.annotations, 'import');
-    } catch (e: unknown) {
-      throw new ImportError('An internal error during import occured. Pleasy try again.');
+      // initializeCharacters(dataToImport.value.characters, "import");
+      // initializeAnnotations(dataToImport.value.annotations, "import");
+    } catch {
+      throw new ImportError("An internal error during import occured. Pleasy try again.");
     }
   }
 
@@ -211,15 +203,13 @@ export function useImport(): UseImportReturn {
   function parse(): void {
     try {
       parsedJson.value = JSON.parse(rawJson.value);
-    } catch (e: unknown) {
-      throw new JsonParseError(
-        'The JSON format contains syntax errors. Please check and try again.',
-      );
+    } catch {
+      throw new JsonParseError("The JSON format contains syntax errors. Please check and try again.");
     }
   }
 
   function resetPipeline(): void {
-    rawJson.value = '';
+    rawJson.value = "";
     parsedJson.value = null;
     dataToImport.value = null;
 
@@ -261,14 +251,14 @@ export function useImport(): UseImportReturn {
 
     try {
       // Create character chain (without annotation references)
-      parsedJson.value.text.split('').forEach((c: string) => {
+      parsedJson.value.text.split("").forEach((c: string) => {
         const char: Character = createNewCharacter(c);
 
         newCharacters.push(char);
       });
 
       // Create annotation objects and annotate characters
-      parsedJson.value.annotations.forEach(a => {
+      parsedJson.value.annotations.forEach((a) => {
         const indicesAreInvalid: boolean =
           a.startIndex < 0 ||
           a.endIndex < 0 ||
@@ -278,7 +268,7 @@ export function useImport(): UseImportReturn {
 
         // Catch annotations with invalid indices
         if (indicesAreInvalid) {
-          malformedAnnotations.push({ reason: 'indexOutOfBounds', data: a });
+          malformedAnnotations.push({ reason: "indexOutOfBounds", data: a });
           return;
         }
 
@@ -286,7 +276,7 @@ export function useImport(): UseImportReturn {
 
         // Catch annotations that are not configured in the guidelines
         if (!config) {
-          malformedAnnotations.push({ reason: 'unconfiguredType', data: a });
+          malformedAnnotations.push({ reason: "unconfiguredType", data: a });
           return;
         }
 
@@ -299,8 +289,7 @@ export function useImport(): UseImportReturn {
           if (field.name in a) {
             newAnnotationProperties[field.name] = a[field.name];
           } else {
-            newAnnotationProperties[field.name] =
-              field?.required === true ? getDefaultValueForProperty(field.type) : null;
+            newAnnotationProperties[field.name] = field?.required ? getDefaultValueForProperty(field.type) : null;
           }
         });
 
@@ -321,7 +310,7 @@ export function useImport(): UseImportReturn {
             isFirstCharacter: index === a.startIndex,
             isLastCharacter: index === a.endIndex,
             type: a.type,
-            subType: (a.subType as string) || '',
+            subType: (a.subType as string) || "",
           });
 
           index++;
@@ -337,22 +326,22 @@ export function useImport(): UseImportReturn {
       // Throw explicit MalformedError for detailed information to override default Import error
       if (malformedAnnotations.length > 0) {
         const invalidIndicesAnnotations: MalformedAnnotation[] = malformedAnnotations.filter(
-          a => a.reason === 'indexOutOfBounds',
+          (a) => a.reason === "indexOutOfBounds",
         );
 
         const unconfiguredTypeAnnotations: MalformedAnnotation[] = malformedAnnotations.filter(
-          a => a.reason === 'unconfiguredType',
+          (a) => a.reason === "unconfiguredType",
         );
 
-        const unconfiguredTypesList: string = [
-          ...new Set(unconfiguredTypeAnnotations.map(type => `"${type.data.type}"`)),
-        ].join(', ');
+        const unconfiguredTypesList: string = [...new Set(unconfiguredTypeAnnotations.map((type) => `"${type.data.type}"`))].join(
+          ", ",
+        );
 
         const message: string =
           `Some annotations are not correct. ` +
           `${invalidIndicesAnnotations.length} annotations because of invalid indices, ` +
           `${unconfiguredTypeAnnotations.length} annotations because of unconfigured types` +
-          `${unconfiguredTypesList.length > 0 ? `(${unconfiguredTypesList})` : ''}` +
+          (unconfiguredTypesList.length > 0 ? `(${unconfiguredTypesList})` : "") +
           `.`;
 
         throw new MalformedAnnotationsError(message);
@@ -366,9 +355,7 @@ export function useImport(): UseImportReturn {
         throw e;
       }
 
-      throw new ImportError(
-        'The JSON structure does not match the expected schema. Please check the JSON format.',
-      );
+      throw new ImportError("The JSON structure does not match the expected schema. Please check the JSON format.");
     }
   }
 

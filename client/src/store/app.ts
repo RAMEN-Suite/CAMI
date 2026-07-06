@@ -1,10 +1,10 @@
-import { readonly, ref } from 'vue';
-import ApiService from '../services/api';
-import { useStyleTag } from '@vueuse/core';
-import { useGuidelinesStore } from './guidelines';
-import { DynamicDialogInstance } from 'primevue/dynamicdialogoptions';
-import { ToastMessageOptions, ToastServiceMethods } from 'primevue';
-import AppError from '../utils/errors/app.error';
+import { readonly, ref } from "vue";
+import ApiService from "../services/api";
+import { useStyleTag } from "@vueuse/core";
+import { useGuidelinesStore } from "./guidelines";
+import { DynamicDialogInstance } from "primevue/dynamicdialogoptions";
+import { ToastMessageOptions, ToastServiceMethods } from "primevue";
+import AppError from "../utils/errors/app.error";
 
 const { error: guidelinesError, initializeGuidelines } = useGuidelinesStore();
 
@@ -43,7 +43,7 @@ export function useAppStore() {
    */
   function addToastMessage(params: ToastMessageOptions): void {
     if (!toast.value) {
-      console.warn('Toast service is not registered yet.');
+      console.warn("Toast service is not registered yet.");
       return;
     }
 
@@ -81,7 +81,7 @@ export function useAppStore() {
   async function fetchAndApplyStyles(): Promise<void> {
     const css: string = await api.getStyles();
 
-    useStyleTag(css, { id: 'custom-styles' });
+    useStyleTag(css, { id: "custom-styles" });
   }
 
   /**

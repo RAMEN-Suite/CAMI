@@ -1,17 +1,7 @@
-import { Request } from 'express';
-import {
-  int,
-  isDate,
-  isDateTime,
-  isDuration,
-  isInt,
-  isLocalDateTime,
-  isLocalTime,
-  isTime,
-  types,
-} from 'neo4j-driver';
-import { CursorData, PropertyConfig } from '../models/types.js';
-import ICharacter from '../models/ICharacter.js';
+import { Request } from "express";
+import { int, isDate, isDateTime, isDuration, isInt, isLocalDateTime, isLocalTime, isTime, types } from "neo4j-driver";
+import { CursorData, PropertyConfig } from "../models/types.js";
+import ICharacter from "../models/ICharacter.js";
 
 /**
  * Capitalizes the first letter of a given string.
@@ -33,7 +23,7 @@ export function capitalize(inputString: string): string {
  * @return {ICharacter[]} An array of ICharacter objects, one for each character in the input string.
  */
 export function createCharactersFromText(text: string): ICharacter[] {
-  return text.split('').map((c: string) => ({
+  return text.split("").map((c: string) => ({
     text: c,
     uuid: crypto.randomUUID(),
   }));
@@ -58,19 +48,18 @@ export function getPagination(req: Request): Record<string, any> {
   let { search, limit, order, cursorUuid, cursorLabel, offset } = req.query;
 
   // Valid Order directions
-  const ORDER_ASC: string = 'ASC';
-  const ORDER_DESC: string = 'DESC';
+  const ORDER_ASC: string = "ASC";
+  const ORDER_DESC: string = "DESC";
   const ORDERS: string[] = [ORDER_ASC, ORDER_DESC];
   // TODO: This is a temporary solution until a better endless
   // pagination solution in the frontend is implemented
   const MAX_ROW_COUNT: number = 1000;
   const DEFAULT_OFFSET: number = 0;
 
-  const isCursorValid: boolean =
-    typeof cursorUuid === 'string' && typeof cursorLabel === 'string' && cursorUuid !== '';
+  const isCursorValid: boolean = typeof cursorUuid === "string" && typeof cursorLabel === "string" && cursorUuid !== "";
 
   // Set default values
-  search ||= '';
+  search ||= "";
   const cursor: CursorData | null = isCursorValid
     ? {
         uuid: cursorUuid as string,
@@ -103,12 +92,12 @@ export function getPagination(req: Request): Record<string, any> {
  */
 export function isValidConfigFile(fileName: string): boolean {
   // No path traversal should be allowed, only the file name
-  if (fileName.includes('/') || fileName.includes('..')) {
+  if (fileName.includes("/") || fileName.includes("..")) {
     return false;
   }
 
   // Files in the directry are either JSON (guidelines) or CSS (stylesheet) files, so only these should be allowed
-  if (!fileName.endsWith('.json') && !fileName.endsWith('.css')) {
+  if (!fileName.endsWith(".json") && !fileName.endsWith(".css")) {
     return false;
   }
 
@@ -129,7 +118,7 @@ export function isValidHttpUrl(string: string): boolean {
   try {
     const newUrl: URL = new URL(string);
 
-    return newUrl.protocol === 'http:' || newUrl.protocol === 'https:';
+    return newUrl.protocol === "http:" || newUrl.protocol === "https:";
   } catch (err: unknown) {
     return false;
   }
@@ -146,7 +135,7 @@ export function isValidHttpUrl(string: string): boolean {
  */
 export function toNativeTypes(properties: Record<string, any>): Record<string, any> {
   return Object.fromEntries(
-    Object.keys(properties).map(key => {
+    Object.keys(properties).map((key) => {
       const value: any = valueToNativeType(properties[key]);
 
       return [key, value];
@@ -165,7 +154,7 @@ export function toNativeTypes(properties: Record<string, any>): Record<string, a
  */
 function valueToNativeType(value: any): any {
   if (Array.isArray(value)) {
-    value = value.map(innerValue => valueToNativeType(innerValue));
+    value = value.map((innerValue) => valueToNativeType(innerValue));
   } else if (isInt(value)) {
     value = value.toNumber();
   } else if (isDate(value) || isDateTime(value) || isLocalDateTime(value)) {
@@ -174,7 +163,7 @@ function valueToNativeType(value: any): any {
     value = value.toString();
   } else if (isDuration(value)) {
     value = value.toString();
-  } else if (typeof value === 'object' && value !== undefined && value !== null) {
+  } else if (typeof value === "object" && value !== undefined && value !== null) {
     value = toNativeTypes(value);
   }
 
@@ -192,8 +181,8 @@ function valueToNativeType(value: any): any {
  */
 export function toNeo4jTypes(properties: any, fields: PropertyConfig[]): Record<string, any> {
   return Object.fromEntries(
-    Object.keys(properties).map(key => {
-      const config: PropertyConfig | undefined = fields.find(field => field.name === key);
+    Object.keys(properties).map((key) => {
+      const config: PropertyConfig | undefined = fields.find((field) => field.name === key);
       const value: any = valueToNeo4jType(properties[key], config);
 
       return [key, value];
@@ -226,7 +215,7 @@ function valueToNeo4jType(value: any, config: Partial<PropertyConfig> | undefine
   }
 
   // Call function recursively when needed if data type is array
-  if (config.type === 'array') {
+  if (config.type === "array") {
     if (value.length === 0) {
       if (isRequired) {
         return [];
@@ -243,7 +232,7 @@ function valueToNeo4jType(value: any, config: Partial<PropertyConfig> | undefine
     }
   }
 
-  if (config.type === 'integer') {
+  if (config.type === "integer") {
     if (valueIsNull) {
       if (!isRequired) {
         return null;
@@ -253,23 +242,23 @@ function valueToNeo4jType(value: any, config: Partial<PropertyConfig> | undefine
     } else {
       return types.Integer.fromValue(value);
     }
-  } else if (config.type === 'number') {
+  } else if (config.type === "number") {
     return value;
-  } else if (config.type === 'string') {
+  } else if (config.type === "string") {
     return value;
-  } else if (config.type === 'date') {
+  } else if (config.type === "date") {
     if (valueIsNull && !isRequired) {
       return null;
     } else {
       return types.Date.fromStandardDate(new Date(value));
     }
-  } else if (config.type === 'date-time') {
+  } else if (config.type === "date-time") {
     if (valueIsNull && !isRequired) {
       return null;
     } else {
       return types.DateTime.fromStandardDate(new Date(value));
     }
-  } else if (config.type === 'time') {
+  } else if (config.type === "time") {
     if (valueIsNull) {
       if (!isRequired) {
         return null;
@@ -279,7 +268,7 @@ function valueToNeo4jType(value: any, config: Partial<PropertyConfig> | undefine
     } else {
       // Needs more work since parsing can fail easily (Dates/Datetimes handle wrong values better)
       try {
-        const items: number[] = (value as string).split(':').map((item: string) => {
+        const items: number[] = (value as string).split(":").map((item: string) => {
           const parsed: number = parseInt(item);
 
           if (isNaN(parsed)) {
@@ -305,7 +294,7 @@ function valueToNeo4jType(value: any, config: Partial<PropertyConfig> | undefine
         return new types.LocalTime(0, 0, 0, 0);
       }
     }
-  } else if (config.type === 'boolean') {
+  } else if (config.type === "boolean") {
     return value;
   } else {
     return value;

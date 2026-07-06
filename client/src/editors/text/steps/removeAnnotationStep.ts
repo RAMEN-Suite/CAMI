@@ -1,7 +1,7 @@
-import { Node, Schema } from '@tiptap/pm/model';
-import { Step, StepResult, Mapping } from '@tiptap/pm/transform';
-import { AnnotationNode } from '../../../models/types';
-import { AddAnnotationStep } from './addAnnotationStep';
+import { Node, Schema } from "@tiptap/pm/model";
+import { Step, StepResult, Mapping } from "@tiptap/pm/transform";
+import { AnnotationNode } from "../../../models/types";
+import { AddAnnotationStep } from "./addAnnotationStep";
 
 /**
  * A custom ProseMirror step that signals the `annotationDecoration` plugin to remove a decoration.
@@ -41,7 +41,7 @@ export class RemoveAnnotationStep extends Step {
     // Kept for consistency, not really needed (JSON serialization is only relevant during collaboration when
     // steps need to be sent over the network). Here, everything is kept in memory anyway.
     return {
-      stepType: 'removeAnnotation',
+      stepType: "removeAnnotation",
       annotation: this.annotation,
       from: this.from,
       to: this.to,

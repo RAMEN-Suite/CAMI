@@ -132,7 +132,7 @@ You have two possiblitities here:
 
 ```css
 .annotation-type-icon-myCustomAnnotationType {
-  background-image: url('https://raw.githubusercontent.com/THM-Graphs/atag-editor/refs/heads/main/client/public/icons/entity.svg');
+  background-image: url("https://raw.githubusercontent.com/THM-Graphs/atag-editor/refs/heads/main/client/public/icons/entity.svg");
 }
 ```
 

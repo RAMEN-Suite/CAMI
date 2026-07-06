@@ -1,35 +1,38 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { ColumnEntry } from '../models/types';
-import NodeTag from './NodeTag.vue';
-import { filterDefaultLabels } from '../utils/helper/helper';
+import { computed } from "vue";
+import { ColumnEntry } from "../models/types";
+import NodeTag from "./NodeTag.vue";
+import { filterDefaultLabels } from "../utils/helper/helper";
 
-const emit = defineEmits(['itemSelected']);
+const emit = defineEmits(["itemSelected"]);
 
 const props = defineProps<{
   collection: ColumnEntry;
   isActive: boolean;
 }>();
 
-const nodeLabels = computed<string[]>(() =>
-  filterDefaultLabels(props.collection.data.node.nodeLabels),
-);
+const nodeLabels = computed<string[]>(() => filterDefaultLabels(props.collection.data.node.nodeLabels));
 
-function handleItemClick(): void {
+function handleItemSelect(): void {
   // Emit the event with the collection data
-  emit('itemSelected', props.collection.data.node.data.uuid);
+  emit("itemSelected", props.collection.data.node.data.uuid);
 }
 </script>
 
 <template>
   <div
     class="container p-1"
+    tabindex="0"
     :class="{ active: props.isActive, temporary: props.collection.status === 'temporary' }"
     :title="`Click to show details of ${props.collection.data.node.data.label}`"
-    @click="handleItemClick"
+    @click="handleItemSelect"
+    @keydown.enter="handleItemSelect"
+    @keydown.space.prevent="handleItemSelect"
   >
     <div class="labels">
       <NodeTag
+        v-for="label in nodeLabels"
+        :key="label"
         :style="{
           fontSize: '0.7rem',
           backgroundColor: 'white',
@@ -40,7 +43,6 @@ function handleItemClick(): void {
           border: '1px solid black',
         }"
         class="test mr-1"
-        v-for="label in nodeLabels"
         :content="label"
         type="Collection"
       />

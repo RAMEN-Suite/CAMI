@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import DataInputComponent from './DataInputComponent.vue';
-import { getDefaultValueForProperty } from '../utils/helper/helper';
-import { PropertyConfig } from '../models/types';
-import Button from 'primevue/button';
+import { computed } from "vue";
+import DataInputComponent from "./DataInputComponent.vue";
+import { getDefaultValueForProperty } from "../utils/helper/helper";
+import { PropertyConfig } from "../models/types";
+import Button from "primevue/button";
 
 const modelValue = defineModel<any[]>();
 const props = defineProps<{
   config: Partial<PropertyConfig>;
-  mode?: 'edit' | 'view';
+  mode?: "edit" | "view";
 }>();
 
 // Check if form either in edit mode or no mode is specified at all (assume edit mode)
-const isEditable = computed(() => props.mode === 'edit' || !props.mode);
+const isEditable = computed(() => props.mode === "edit" || !props.mode);
 
 const minItems: number | null | undefined = props.config.minItems;
 const maxItems: number | null | undefined = props.config.maxItems;
@@ -59,11 +59,7 @@ function handleDeleteItem(itemIndex: number): void {
 <template>
   <div class="w-full">
     <div v-for="(_, index) in modelValue" class="flex gap-1 align-items-center">
-      <DataInputComponent
-        v-model="modelValue[index]"
-        :config="props.config.items"
-        :mode="props.mode"
-      />
+      <DataInputComponent v-model="modelValue[index]" :config="props.config.items" :mode="props.mode" />
       <Button
         v-if="isEditable"
         title="Delete item"

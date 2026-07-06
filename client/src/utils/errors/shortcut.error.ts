@@ -1,4 +1,4 @@
-import AppError from './app.error';
+import AppError from "./app.error";
 
 /**
  * Represents an error related to shortcuts. Currently used for when the user hits a shortcut
@@ -13,10 +13,10 @@ export default class ShortcutError extends AppError {
    * @type {'warn'}
    * @readonly
    */
-  severity: 'warn';
+  severity: "warn";
 
   constructor(message: string) {
     super(message);
-    this.severity = 'warn';
+    this.severity = "warn";
   }
 }

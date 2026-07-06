@@ -1,21 +1,18 @@
 <script setup lang="ts">
-import { PropertyConfig } from '../models/types';
-import InputNumber from 'primevue/inputnumber';
-import InputText from 'primevue/inputtext';
-import Select from 'primevue/select';
-import Textarea from 'primevue/textarea';
-import InputDate from './InputDate.vue';
+import { PropertyConfig } from "../models/types";
+import InputNumber from "primevue/inputnumber";
+import InputText from "primevue/inputtext";
+import Select from "primevue/select";
+import Textarea from "primevue/textarea";
+import InputDate from "./InputDate.vue";
 
 const modelValue = defineModel<any>();
 const props = defineProps<{
   config: Partial<PropertyConfig>;
-  mode?: 'edit' | 'view';
+  mode?: "edit" | "view";
 }>();
 
-const isPrimitive: boolean =
-  props.config.type === 'string' ||
-  props.config.type === 'integer' ||
-  props.config.type === 'number';
+const isPrimitive: boolean = props.config.type === "string" || props.config.type === "integer" || props.config.type === "number";
 
 const minValue: number | null | undefined =
   props.config.exclusiveMinimum != null ? props.config.exclusiveMinimum + 1 : props.config.minimum;
@@ -30,64 +27,64 @@ const maxLength: number | null | undefined = props.config.maxLength;
 <template>
   <Select
     v-if="config.options && isPrimitive"
+    v-model="modelValue"
     :disabled="!config.editable || mode === 'view'"
     :required="config.required"
     :invalid="config.required && !modelValue"
-    v-model="modelValue"
     :options="config.options"
     :placeholder="`Select ${config.name}`"
     class="w-full"
   />
   <InputText
     v-else-if="config.type === 'string' && (config.template === 'input' || !config.template)"
+    v-model="modelValue"
     :disabled="!config.editable || mode === 'view'"
     :required="config.required"
     :invalid="config.required && !modelValue && modelValue?.trim() === ''"
-    v-model="modelValue"
     class="w-full"
     spellcheck="false"
     :pt="{ root: { minLength: minLength, maxLength: maxLength } }"
   />
   <Textarea
     v-else-if="config.type === 'string' && config.template === 'textarea'"
+    v-model="modelValue"
     :disabled="!config.editable || mode === 'view'"
     :required="config.required"
     :invalid="config.required && !modelValue"
-    v-model="modelValue"
     cols="30"
     rows="5"
     class="w-full"
   />
   <InputNumber
     v-else-if="config.type === 'integer'"
+    v-model="modelValue"
     :disabled="!config.editable || mode === 'view'"
     :required="config.required"
     :invalid="config.required && !modelValue"
     :min="minValue"
     :max="maxValue"
-    v-model="modelValue"
-    showButtons
+    show-buttons
   />
   <InputNumber
     v-else-if="config.type === 'number'"
+    v-model="modelValue"
     :disabled="!config.editable || mode === 'view'"
     :required="config.required"
     :invalid="config.required && !modelValue"
     :min="minValue"
     :max="maxValue"
-    :minFractionDigits="0"
-    :maxFractionDigits="20"
-    v-model="modelValue"
-    showButtons
+    :min-fraction-digits="0"
+    :max-fraction-digits="20"
+    show-buttons
   />
   <div v-else-if="config.type === 'date'">
-    <InputDate :config="config" :mode="mode" v-model="modelValue" />
+    <InputDate v-model="modelValue" :config="config" :mode="mode" />
   </div>
   <div v-else-if="config.type === 'date-time'">
-    <InputDate :config="config" :mode="mode" v-model="modelValue" />
+    <InputDate v-model="modelValue" :config="config" :mode="mode" />
   </div>
   <div v-else-if="config.type === 'time'">
-    <InputDate :config="config" :mode="mode" v-model="modelValue" />
+    <InputDate v-model="modelValue" :config="config" :mode="mode" />
   </div>
   <input
     v-else-if="config.type === 'boolean'"

@@ -1,54 +1,34 @@
 <script setup lang="ts">
-import Button from 'primevue/button';
+import Button from "primevue/button";
 
 const isDevelopment: boolean = import.meta.env.DEV;
 
-const emit = defineEmits(['save', 'cancel', 'log-json', 'log-text']);
+const emit = defineEmits(["save", "cancel", "log-json", "log-text"]);
 
 function handleSave(): void {
-  emit('save');
+  emit("save");
 }
 
 function handleLogJson() {
-  emit('log-json');
+  emit("log-json");
 }
 
 function handleLogText() {
-  emit('log-text');
+  emit("log-text");
 }
 
 function handleCancel(): void {
-  emit('cancel');
+  emit("cancel");
 }
 </script>
 
 <template>
   <div class="editor-button-container flex justify-content-center gap-3 p-3">
     <Button aria-label="Save changes" title="Save changes" @click="handleSave">Save</Button>
-    <Button
-      severity="secondary"
-      title="Discard changes"
-      aria-label="Cancel changes"
-      @click="handleCancel"
-      >Cancel</Button
-    >
-    <Button
-      v-if="isDevelopment"
-      aria-label="Log doc"
-      title="Log doc"
-      severity="info"
-      @click="handleLogJson"
-      >JSON</Button
-    >
+    <Button severity="secondary" title="Discard changes" aria-label="Cancel changes" @click="handleCancel">Cancel</Button>
+    <Button v-if="isDevelopment" aria-label="Log doc" title="Log doc" severity="info" @click="handleLogJson">JSON</Button>
 
-    <Button
-      v-if="isDevelopment"
-      aria-label="Log text"
-      title="Log text"
-      severity="info"
-      @click="handleLogText"
-      >Text</Button
-    >
+    <Button v-if="isDevelopment" aria-label="Log text" title="Log text" severity="info" @click="handleLogText">Text</Button>
   </div>
 </template>
 

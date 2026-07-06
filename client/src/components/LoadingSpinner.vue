@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import ProgressSpinner from 'primevue/progressspinner';
+import ProgressSpinner from "primevue/progressspinner";
 </script>
 
 <template>
   <ProgressSpinner
     class="loading-spinner"
     style="width: 80px; height: 80px"
-    strokeWidth="2"
+    stroke-width="2"
     fill="transparent"
-    animationDuration="1.5s"
+    animation-duration="1.5s"
     aria-label="Custom ProgressSpinner"
     :dt="{
       root: {

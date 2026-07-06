@@ -1,6 +1,6 @@
-import { RouteLocationNormalized, RouteLocationRaw } from 'vue-router';
-import { CollectionNode, NodeAncestry, NodeDto } from '../models/types';
-import { useAppStore } from '../store/app';
+import { RouteLocationNormalized, RouteLocationRaw } from "vue-router";
+import { CollectionNode, NodeAncestry, NodeDto } from "../models/types";
+import { useAppStore } from "../store/app";
 
 export function useNavigationGuard() {
   const { activeModal, api } = useAppStore();
@@ -10,9 +10,7 @@ export function useNavigationGuard() {
       return true;
     }
 
-    const answer: boolean = window.confirm(
-      'Do you really want to leave? You should finish the action in the modal',
-    );
+    const answer: boolean = window.confirm("Do you really want to leave? You should finish the action in the modal");
 
     // cancel the navigation and stay on the same page
     if (!answer) {
@@ -35,9 +33,7 @@ export function useNavigationGuard() {
    * @param {RouteLocationNormalized} route - The route object containing the route parameters.
    * @returns {Promise<RouteLocationRaw | boolean>} - A promise that resolves with either the redirect location if the collection has ONLY ONE ancestry path or `true` if not
    */
-  async function redirectToCollectionPath(
-    route: RouteLocationNormalized,
-  ): Promise<RouteLocationRaw | boolean> {
+  async function redirectToCollectionPath(route: RouteLocationNormalized): Promise<RouteLocationRaw | boolean> {
     const uuid: string = route.params.uuid as string;
     const ancestryPaths: NodeAncestry[] = await api.getCollectionAncestry(uuid);
 
@@ -53,17 +49,17 @@ export function useNavigationGuard() {
 
     const singleAncestry: NodeAncestry | null = ancestryPaths[0] ?? null;
 
-    let pathQuery: string = '';
+    let pathQuery: string = "";
 
     // The api response only contains item's the ancestry, not the item itself
     if (singleAncestry?.length > 0) {
-      pathQuery = [...singleAncestry.map(n => n.node.data.uuid), uuid].join(',');
+      pathQuery = [...singleAncestry.map((n) => n.node.data.uuid), uuid].join(",");
     } else {
       pathQuery = uuid;
     }
 
     return {
-      path: '/',
+      path: "/",
       query: {
         path: pathQuery,
       },

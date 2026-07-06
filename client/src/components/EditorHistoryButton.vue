@@ -1,18 +1,16 @@
 <script setup lang="ts">
-import { computed, ComputedRef } from 'vue';
-import Button from 'primevue/button';
-import { useTiptapStore } from '../store/tiptap';
+import { computed, ComputedRef } from "vue";
+import Button from "primevue/button";
+import { useTiptapStore } from "../store/tiptap";
 
 const { tiptap } = useTiptapStore();
 
-const props = defineProps<{ action: 'undo' | 'redo' }>();
+const props = defineProps<{ action: "undo" | "redo" }>();
 
-const title: ComputedRef<string> = computed(() =>
-  props.action === 'undo' ? 'Undo last action' : 'Redo last undone action',
-);
+const title: ComputedRef<string> = computed(() => (props.action === "undo" ? "Undo last action" : "Redo last undone action"));
 
 function handleClick(): void {
-  if (props.action === 'undo') {
+  if (props.action === "undo") {
     tiptap.value?.commands.undo();
   } else {
     tiptap.value?.commands.redo();

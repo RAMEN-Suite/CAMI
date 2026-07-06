@@ -1,5 +1,5 @@
-import { IAnnotation } from '../models/IAnnotation.js';
-import { IGuidelines } from '../models/IGuidelines.js';
+import { IAnnotation } from "../models/IAnnotation.js";
+import { IGuidelines } from "../models/IGuidelines.js";
 import {
   AnnotationNode,
   CollectionNode,
@@ -9,10 +9,10 @@ import {
   NodeUpdateObject,
   PropertyConfig,
   ContentNode,
-} from '../models/types.js';
-import GuidelinesService from '../services/guidelines.service.js';
-import { toNeo4jTypes } from './helper.js';
-import { inferRelationship } from './ramen.js';
+} from "../models/types.js";
+import GuidelinesService from "../services/guidelines.service.js";
+import { toNeo4jTypes } from "./helper.js";
+import { inferRelationship } from "./ramen.js";
 
 function convertNodeToNeo4jFormat(
   node: EntityNode | AnnotationNode | CollectionNode | ContentNode,
@@ -21,19 +21,12 @@ function convertNodeToNeo4jFormat(
   const guidelineService = new GuidelinesService();
   const fields: PropertyConfig[] = [];
 
-  if (node.nodeLabels.includes('Content') || node.nodeLabels.includes('Entity')) {
+  if (node.nodeLabels.includes("Content") || node.nodeLabels.includes("Entity")) {
     return node;
-  } else if (node.nodeLabels.includes('Collection')) {
-    fields.push(
-      ...guidelineService.getCollectionConfigFieldsFromGuidelines(guidelines, node.nodeLabels),
-    );
-  } else if (node.nodeLabels.includes('Annotation')) {
-    fields.push(
-      ...guidelineService.getAnnotationConfigFieldsFromGuidelines(
-        guidelines,
-        (node.data as IAnnotation).type,
-      ),
-    );
+  } else if (node.nodeLabels.includes("Collection")) {
+    fields.push(...guidelineService.getCollectionConfigFieldsFromGuidelines(guidelines, node.nodeLabels));
+  } else if (node.nodeLabels.includes("Annotation")) {
+    fields.push(...guidelineService.getAnnotationConfigFieldsFromGuidelines(guidelines, (node.data as IAnnotation).type));
   } else {
     return node;
   }
@@ -50,25 +43,25 @@ function insertNodeIntoObject(
   obj: NodeUpdateObject,
   guidelines: IGuidelines,
 ): NodeUpdateObject {
-  node.connectedNodes.forEach(child => insertNodeIntoObject(node, child, obj, guidelines));
+  node.connectedNodes.forEach((child) => insertNodeIntoObject(node, child, obj, guidelines));
 
-  if (node.meta.status === 'deleted') {
+  if (node.meta.status === "deleted") {
     obj.delete.push(node.node);
   }
 
-  if (node.meta.status === 'created') {
+  if (node.meta.status === "created") {
     obj.create.push(convertNodeToNeo4jFormat(node.node, guidelines));
   }
 
-  if (node.meta.status === 'modified') {
+  if (node.meta.status === "modified") {
     obj.update.push(convertNodeToNeo4jFormat(node.node, guidelines));
   }
 
-  if (parent && (node.meta.status === 'created' || node.meta.status === 'added')) {
+  if (parent && (node.meta.status === "created" || node.meta.status === "added")) {
     obj.attach.push(inferRelationship(parent.node, node.node));
   }
 
-  if (parent && node.meta.status === 'removed' && parent.meta.status !== 'deleted') {
+  if (parent && node.meta.status === "removed" && parent.meta.status !== "deleted") {
     obj.remove.push(inferRelationship(parent.node, node.node));
   }
 
@@ -110,7 +103,7 @@ export function flattenNodeTree(root: NodeStatusObject, guidelines: IGuidelines)
  *
  * @param rootLabel - `'Content'` or `'Collection'` — the label of the root node that is matched and returned.
  */
-export function buildSubgraphUpdateQuery(rootLabel: 'Content' | 'Collection'): string {
+export function buildSubgraphUpdateQuery(rootLabel: "Content" | "Collection"): string {
   return `
   // Delete nodes and their relationships
   CALL () {

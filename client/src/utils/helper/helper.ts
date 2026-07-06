@@ -1,4 +1,4 @@
-import { Ref } from 'vue';
+import { Ref } from "vue";
 import {
   NodeDto,
   Character,
@@ -12,10 +12,11 @@ import {
   CollectionNode,
   ToCItem,
   Annotation,
-} from '../../models/types';
-import { EditorView } from '@tiptap/pm/view';
-import { Node } from '@tiptap/pm/model';
-import { useGuidelinesStore } from '../../store/guidelines';
+  BaseNodeLabel,
+} from "../../models/types";
+import { EditorView } from "@tiptap/pm/view";
+import { Node } from "@tiptap/pm/model";
+import { useGuidelinesStore } from "../../store/guidelines";
 
 const { getAnnotationType } = useGuidelinesStore();
 
@@ -42,7 +43,7 @@ export function buildDocChildren(node: Node, contentStartPos: number): ToCItem[]
       key: child.attrs.uuid ?? childPos.toString(),
       label: annotationType,
       data: {
-        text: child.textContent ?? '',
+        text: child.textContent ?? "",
         pos: childPos,
         nodeSize: child.nodeSize,
         nodeType: child.type.name,
@@ -80,12 +81,9 @@ export function buildDocStructure(doc: Node): ToCItem[] {
  * @param annotations - The list of annotations.
  * @returns {StandoffJson} The assembled Standoff JSON object.
  */
-export function buildStandoffJson(
-  characters: Character[],
-  annotations: Annotation[],
-): StandoffJson {
-  const text: string = characters.map(c => c.data.text).join('');
-  const standoffAnnotations: StandoffAnnotation[] = annotations.map(a => a.node.data);
+export function buildStandoffJson(characters: Character[], annotations: Annotation[]): StandoffJson {
+  const text: string = characters.map((c) => c.data.text).join("");
+  const standoffAnnotations: StandoffAnnotation[] = annotations.map((a) => a.node.data);
 
   return {
     text,
@@ -101,7 +99,7 @@ export function buildStandoffJson(
  * @return {string} The transformed string in title case.
  */
 export function camelCaseToTitleCase(inputString: string): string {
-  return inputString.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^\w/, char => char.toUpperCase());
+  return inputString.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/^\w/, (char) => char.toUpperCase());
 }
 
 /**
@@ -123,7 +121,7 @@ export function capitalize(inputString: string): string {
  */
 export function cloneDeep<T>(input: T): T {
   if (input instanceof Map) {
-    const clonedMap: Map<any, any> = new Map() as Map<any, any>;
+    const clonedMap = new Map<any, any>();
 
     // new Map(input) would not work since the reference to nested objects would still be the same
     input.forEach((value, key) => {
@@ -137,7 +135,7 @@ export function cloneDeep<T>(input: T): T {
     return JSON.parse(JSON.stringify(input)) as T;
   }
 
-  if (typeof input === 'object' && input !== null) {
+  if (typeof input === "object" && input !== null) {
     return JSON.parse(JSON.stringify(input)) as T;
   }
 
@@ -164,9 +162,9 @@ export function createNewCharacter(char: string): Character {
 export function createNodeStatusObjectFromRawData(rawNode: NodeDto): NodeStatusObject {
   return {
     node: rawNode.node,
-    connectedNodes: rawNode.connectedNodes.map(n => createNodeStatusObjectFromRawData(n)),
+    connectedNodes: rawNode.connectedNodes.map((n) => createNodeStatusObjectFromRawData(n)),
     meta: {
-      status: 'unchanged',
+      status: "unchanged",
     },
   };
 }
@@ -180,10 +178,10 @@ export function createNodeStatusObjectFromRawData(rawNode: NodeDto): NodeStatusO
  */
 export function createCollectionNode(): CollectionNode {
   return {
-    nodeLabels: [],
+    nodeLabels: ["Collection"],
     data: {
       uuid: crypto.randomUUID(),
-      label: '',
+      label: "",
     },
   };
 }
@@ -197,10 +195,10 @@ export function createCollectionNode(): CollectionNode {
  */
 export function createTextNode(): TextNode {
   return {
-    nodeLabels: [],
+    nodeLabels: ["Text"],
     data: {
       uuid: crypto.randomUUID(),
-      text: '',
+      text: "",
     },
   };
 }
@@ -211,41 +209,74 @@ export function createTextNode(): TextNode {
  *
  * @return {TextNode} A new Text object with default values.
  */
-export function createNodeDtoFromNode<
-  T extends AnnotationNode | EntityNode | CollectionNode | TextNode,
->(rawNode: T): NodeDto<T> {
+export function createNodeDtoFromNode<T extends AnnotationNode | EntityNode | CollectionNode | TextNode>(rawNode: T): NodeDto<T> {
   return {
     node: rawNode,
     connectedNodes: [],
   };
 }
 
-export function createExtendedStandoffObject(standoffObject: {
+export function createExtendedStandoffObject(standoffObject: { text: string; annotations: NodeDto[] }): {
   text: string;
   annotations: NodeDto[];
-}): { text: string; annotations: NodeDto[] } {
+} {
   const extended = cloneDeep(standoffObject);
 
-  if (extended.annotations.find(a => a.node.data.type === 'paragraph')) {
+  if (extended.annotations.find((a) => a.node.data.type === "paragraph")) {
     return extended;
   }
 
   extended.annotations.push({
     node: {
-      nodeLabels: ['Annotation'],
+      nodeLabels: ["Annotation"],
       data: {
         text: standoffObject.text,
         startIndex: 0,
         uuid: crypto.randomUUID(),
-        subType: '',
+        subType: "",
         endIndex: standoffObject.text.length - 1,
-        type: 'paragraph',
+        type: "paragraph",
       },
     },
     connectedNodes: [],
   });
 
   return extended;
+}
+
+/**
+ * Returns a list of all labels that are not one of the RAMEN base node labels.
+ *
+ * Mainly used for visual purposes (base node labels do not need to be displayed).
+ *
+ * @param {string[]} labels - All Node labels of a RAMEN-valid node
+ * @returns {string[]} List of all labels that are not one of the RAMEN base node labels
+ */
+export function filterBaseNodeLabel(labels: string[]): string[] {
+  const baseNodeLabels: string[] = ["Annotation", "Collection", "Content", "Entity"];
+
+  return labels.filter((l: string) => !baseNodeLabels.includes(l));
+}
+
+/**
+ * Returns the RAMEN base node label for a node from its full list of labels.
+ *
+ * @param {string[]} labels - All Node labels of a RAMEN-valid node
+ * @returns {BaseNodeLabel} The node's base label
+ * @throws {Error} If none of the base labels is present
+ */
+export function getBaseNodeLabel(labels: string[]): BaseNodeLabel {
+  if (labels.includes("Entity")) {
+    return "Entity";
+  } else if (labels.includes("Collection")) {
+    return "Collection";
+  } else if (labels.includes("Content")) {
+    return "Content";
+  } else if (labels.includes("Annotation")) {
+    return "Annotation";
+  } else {
+    throw new Error("Node does not have a valid base label");
+  }
 }
 
 /**
@@ -287,13 +318,28 @@ export function areSetsEqual(setA: Set<string>, setB: Set<string>): boolean {
     return false;
   }
 
-  for (let item of setA) {
+  for (const item of setA) {
     if (!setB.has(item)) {
       return false;
     }
   }
 
   return true;
+}
+
+/**
+ * Truncates a string to a maximum length, appending "..." if truncation is needed.
+ *
+ * @param {string} text - The string to truncate.
+ * @param {string} maxLength - The maximum number of characters to keep before truncation.
+ * @returns The original string if it's within `maxLength`, otherwise the truncated string followed by "...".
+ *
+ * @example
+ * ellipsize("Hello World", 5); // "Hello..."
+ * ellipsize("Hi", 5);          // "Hi"
+ */
+export function ellipsize(text: string, maxLength: number): string {
+  return text.slice(0, maxLength) + (text.length > maxLength ? "..." : "");
 }
 
 /**
@@ -310,9 +356,9 @@ export function areSetsEqual(setA: Set<string>, setB: Set<string>): boolean {
  */
 export function filterDefaultLabels(nodeLabels: string[]): string[] {
   // TODO: Remove "Text" check ("Content") is enough. Only kept for legacy reasons :)
-  const baseNodeLabels: string[] = ['Annotation', 'Collection', 'Content', 'Entity', 'Content'];
+  const baseNodeLabels: string[] = ["Annotation", "Collection", "Content", "Entity", "Content"];
 
-  return nodeLabels.filter(l => !baseNodeLabels.includes(l));
+  return nodeLabels.filter((l) => !baseNodeLabels.includes(l));
 }
 
 /**
@@ -323,7 +369,7 @@ export function filterDefaultLabels(nodeLabels: string[]): string[] {
  */
 export function formatFileSize(bytes: number): string {
   const k: number = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+  const sizes = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
 
   if (bytes === 0) {
     return `0 ${sizes[0]}`;
@@ -359,10 +405,8 @@ export function getOuterRangeBoundaries(range: Range): {
 } {
   const { startSpan, endSpan } = getRangeBoundaries(range);
 
-  const leftSpan: HTMLSpanElement | null =
-    (startSpan?.previousElementSibling as HTMLSpanElement) ?? null;
-  const rightSpan: HTMLSpanElement | null =
-    (endSpan?.nextElementSibling as HTMLSpanElement) ?? null;
+  const leftSpan: HTMLSpanElement | null = (startSpan?.previousElementSibling as HTMLSpanElement) ?? null;
+  const rightSpan: HTMLSpanElement | null = (endSpan?.nextElementSibling as HTMLSpanElement) ?? null;
 
   const leftUuid: string | null = leftSpan?.id ?? null;
   const rightUuid: string | null = rightSpan?.id ?? null;
@@ -387,13 +431,13 @@ export function getSpansToAnnotate(): HTMLSpanElement[] {
   const { range, type } = getSelectionData();
   let spans: HTMLSpanElement[] = [];
 
-  if (type === 'Range') {
+  if (type === "Range") {
     const firstSpan: HTMLSpanElement = getParentCharacterSpan(range.startContainer);
     const lastSpan: HTMLSpanElement = getParentCharacterSpan(range.endContainer);
     spans = findSpansWithinBoundaries(firstSpan, lastSpan);
   }
 
-  if (type === 'Caret') {
+  if (type === "Caret") {
     const referenceSpanElement: HTMLSpanElement = getParentCharacterSpan(range.startContainer);
     let leftSpan: HTMLSpanElement;
     let rightSpan: HTMLSpanElement;
@@ -425,7 +469,11 @@ export function getSpansToAnnotate(): HTMLSpanElement[] {
  */
 export function getVisibleDocRange(editorView: EditorView): { from: number; to: number } {
   // TODO: Add viewport buffer so that annotation directly above/below are included...
-  const rect: DOMRect | undefined = editorView.dom.parentElement!.getBoundingClientRect();
+  const rect: DOMRect | undefined = editorView.dom.parentElement?.getBoundingClientRect();
+
+  if (!rect) {
+    return { from: 0, to: editorView.state.doc.content.size };
+  }
 
   const { top: parentTopOffset, left: parentLeftOffset, height } = rect;
 
@@ -453,10 +501,7 @@ export function getVisibleDocRange(editorView: EditorView): { from: number; to: 
  *
  * @returns {HTMLSpanElement[]} An array of all span elements between (and including) the given `firstChar` and `lastChar`.
  */
-export function findSpansWithinBoundaries(
-  firstChar: HTMLSpanElement,
-  lastChar: HTMLSpanElement,
-): HTMLSpanElement[] {
+export function findSpansWithinBoundaries(firstChar: HTMLSpanElement, lastChar: HTMLSpanElement): HTMLSpanElement[] {
   const spans: HTMLSpanElement[] = [];
   let current: HTMLSpanElement = firstChar;
 
@@ -487,10 +532,8 @@ export function getRangeBoundaries(range: Range): {
   let endReferenceSpanElement: HTMLSpanElement | null = null;
 
   if (isEditorElement(range.startContainer) && isEditorElement(range.endContainer)) {
-    startReferenceSpanElement = (range.startContainer as HTMLDivElement)
-      .firstElementChild as HTMLSpanElement;
-    endReferenceSpanElement = (range.endContainer as HTMLDivElement)
-      .lastElementChild as HTMLSpanElement;
+    startReferenceSpanElement = (range.startContainer as HTMLDivElement).firstElementChild as HTMLSpanElement;
+    endReferenceSpanElement = (range.endContainer as HTMLDivElement).lastElementChild as HTMLSpanElement;
   } else {
     startReferenceSpanElement = getParentCharacterSpan(range.startContainer);
     endReferenceSpanElement = getParentCharacterSpan(range.endContainer);
@@ -501,19 +544,19 @@ export function getRangeBoundaries(range: Range): {
 
 // TODO: These functions should actually check the node, not the status object...refactor later
 export function isEntityNode(node: NodeStatusObject): node is NodeStatusObject<EntityNode> {
-  return node.node.nodeLabels.includes('Entity');
+  return node.node.nodeLabels.includes("Entity");
 }
 
 export function isAnnotationNode(node: NodeStatusObject): node is NodeStatusObject<AnnotationNode> {
-  return node.node.nodeLabels.includes('Annotation');
+  return node.node.nodeLabels.includes("Annotation");
 }
 
 export function isCollectionNode(node: NodeStatusObject): node is NodeStatusObject<CollectionNode> {
-  return node.node.nodeLabels.includes('Collection');
+  return node.node.nodeLabels.includes("Collection");
 }
 
 export function isContentNode(node: NodeStatusObject): node is NodeStatusObject<TextNode> {
-  return node.node.nodeLabels.includes('Content');
+  return node.node.nodeLabels.includes("Content");
 }
 
 /**
@@ -523,7 +566,7 @@ export function isContentNode(node: NodeStatusObject): node is NodeStatusObject<
  * @return {boolean} Returns true if the node is the text container element, false otherwise.
  */
 export function isEditorElement(node: Node): boolean {
-  return node.nodeType === Node.ELEMENT_NODE && (node as HTMLElement).id === 'text';
+  return node.nodeType === Node.ELEMENT_NODE && (node as HTMLElement).id === "text";
 }
 
 /**
@@ -534,13 +577,13 @@ export function isEditorElement(node: Node): boolean {
  * @return {HTMLSpanElement} The parent span element of the given node (or the node itself)
  */
 export function getParentCharacterSpan(node: Node): HTMLSpanElement {
-  if (node.nodeType === Node.ELEMENT_NODE && node.nodeName === 'SPAN') {
+  if (node.nodeType === Node.ELEMENT_NODE && node.nodeName === "SPAN") {
     return node as HTMLSpanElement;
   } else if (node.nodeType === Node.TEXT_NODE) {
     return node.parentElement as HTMLSpanElement;
   }
 
-  throw new Error('The provided node is neither a text node nor a span element.');
+  throw new Error("The provided node is neither a text node nor a span element.");
 }
 
 /**
@@ -560,7 +603,7 @@ export function isWordBoundary(char: string): boolean {
  * @return {string} The text with formatting characters removed.
  */
 export function removeFormatting(text: string): string {
-  const plainText: string = text.replace(/\r\n?|\n/g, '');
+  const plainText: string = text.replace(/\r\n?|\n/g, "");
   return plainText;
 }
 
@@ -584,10 +627,7 @@ export function getSelectionData(): { selection: Selection; range: Range; type: 
  * @param {Ref<HTMLDivElement>} editorElm - The ref to the editor element.
  * @return {boolean} True if the caret is before the first character, false otherwise.
  */
-export function isCaretAtBeginning(
-  characterSpan: HTMLSpanElement,
-  editorElm: Ref<HTMLDivElement>,
-): boolean {
+export function isCaretAtBeginning(characterSpan: HTMLSpanElement, editorElm: Ref<HTMLDivElement>): boolean {
   const { range } = getSelectionData();
   return characterSpan === editorElm.value.firstElementChild && range.startOffset === 0;
 }
@@ -600,10 +640,7 @@ export function isCaretAtBeginning(
  * @param {Ref<HTMLDivElement>} editorElm - The ref to the editor element.
  * @return {boolean} True if the caret is after the last character, false otherwise.
  */
-export function isCaretAtEnd(
-  characterSpan: HTMLSpanElement,
-  editorElm: Ref<HTMLDivElement>,
-): boolean {
+export function isCaretAtEnd(characterSpan: HTMLSpanElement, editorElm: Ref<HTMLDivElement>): boolean {
   const { range } = getSelectionData();
   const lastChild = editorElm.value.lastElementChild;
 
@@ -618,7 +655,7 @@ export function isCaretAtEnd(
  * @param {'on' | 'off'} direction - The direction of the toggle operation.
  * @return {void}
  */
-export function toggleTextHightlighting(annotation: Annotation, direction: 'on' | 'off'): void {
+export function toggleTextHightlighting(annotation: Annotation, direction: "on" | "off"): void {
   const annotatedSpans: NodeListOf<HTMLSpanElement> = document.querySelectorAll(
     `#text > span:has(span[data-anno-uuid="${annotation.node.data.uuid}"])`,
   );
@@ -630,7 +667,11 @@ export function toggleTextHightlighting(annotation: Annotation, direction: 'on' 
   scrollIntoViewIfNeeded(annotatedSpans[0]);
 
   annotatedSpans.forEach((span: HTMLSpanElement) => {
-    direction === 'on' ? span.classList.add('highlight') : span.classList.remove('highlight');
+    if (direction === "on") {
+      span.classList.add("highlight");
+    } else {
+      span.classList.remove("highlight");
+    }
   });
 }
 
@@ -642,12 +683,13 @@ export function toggleTextHightlighting(annotation: Annotation, direction: 'on' 
  */
 export function scrollIntoViewIfNeeded(span: HTMLSpanElement): void {
   const spanRect: DOMRect = span.getBoundingClientRect();
-  const containerRect: DOMRect = document.querySelector('.text-container').getBoundingClientRect();
+  const containerRect: DOMRect = document.querySelector(".text-container").getBoundingClientRect();
 
-  const isOutsideViewport: boolean =
-    spanRect.top <= containerRect.top || spanRect.bottom >= containerRect.bottom;
+  const isOutsideViewport: boolean = spanRect.top <= containerRect.top || spanRect.bottom >= containerRect.bottom;
 
-  isOutsideViewport && span.scrollIntoView({ behavior: 'smooth' });
+  if (isOutsideViewport) {
+    span.scrollIntoView({ behavior: "smooth" });
+  }
 }
 
 /**
@@ -660,25 +702,25 @@ export function scrollIntoViewIfNeeded(span: HTMLSpanElement): void {
  */
 export function getDefaultValueForProperty(type: PropertyConfigDataType): any {
   switch (type) {
-    case 'boolean':
+    case "boolean":
       return false;
-    case 'date':
+    case "date":
       const today: Date = new Date();
       const year: number = today.getUTCFullYear();
       const month: number = today.getUTCMonth();
       const day: number = today.getUTCDate();
       return new Date(Date.UTC(year, month, day, 0, 0, 0)).toISOString();
-    case 'date-time':
+    case "date-time":
       return new Date().toISOString();
-    case 'integer':
+    case "integer":
       return 0;
-    case 'number':
+    case "number":
       return 0;
-    case 'string':
-      return '';
-    case 'time':
-      return '00:00:00';
-    case 'array':
+    case "string":
+      return "";
+    case "time":
+      return "00:00:00";
+    case "array":
       return [];
     default:
       return null;

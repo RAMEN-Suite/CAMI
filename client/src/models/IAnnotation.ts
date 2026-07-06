@@ -1,4 +1,4 @@
-import { BaseNodeData } from './types';
+import { BaseNodeData } from "./types";
 
 export type IAnnotation = BaseNodeData & {
   [keyof: string]: unknown;

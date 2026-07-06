@@ -1,4 +1,4 @@
-import { BaseNodeData, EdgeDescriptor, Node } from '../models/types.js';
+import { BaseNodeData, EdgeDescriptor, Node } from "../models/types.js";
 
 /**
  * Given a parent and child node from a node tree, returns the Neo4j relationship type
@@ -19,10 +19,7 @@ import { BaseNodeData, EdgeDescriptor, Node } from '../models/types.js';
  *
  * @throws If the label combination has no known relationship rule.
  */
-export function inferRelationship(
-  parent: Node<BaseNodeData>,
-  child: Node<BaseNodeData>,
-): EdgeDescriptor {
+export function inferRelationship(parent: Node<BaseNodeData>, child: Node<BaseNodeData>): EdgeDescriptor {
   const parentUuid: string = (parent.data as BaseNodeData).uuid;
   const childUuid: string = (child.data as BaseNodeData).uuid;
 
@@ -30,24 +27,24 @@ export function inferRelationship(
   const c: string[] = child.nodeLabels;
 
   // Annotation → Annotation: sub-annotation (e.g. commentary text)
-  if (p.includes('Annotation') && c.includes('Annotation')) {
-    return { type: 'HAS_ANNOTATION', startUuid: parentUuid, endUuid: childUuid };
+  if (p.includes("Annotation") && c.includes("Annotation")) {
+    return { type: "HAS_ANNOTATION", startUuid: parentUuid, endUuid: childUuid };
   }
 
   // Annotation → Entity | Collection | Content: referenced nodes
-  if (p.includes('Annotation')) {
-    return { type: 'REFERS_TO', startUuid: parentUuid, endUuid: childUuid };
+  if (p.includes("Annotation")) {
+    return { type: "REFERS_TO", startUuid: parentUuid, endUuid: childUuid };
   }
 
   // Content | Collection → Annotation
-  if (c.includes('Annotation')) {
-    return { type: 'HAS_ANNOTATION', startUuid: parentUuid, endUuid: childUuid };
+  if (c.includes("Annotation")) {
+    return { type: "HAS_ANNOTATION", startUuid: parentUuid, endUuid: childUuid };
   }
 
   // Collection → Content | Collection → Collection: edge runs (Content|Collection)-[:PART_OF]->(Collection)
-  if (p.includes('Collection') && (c.includes('Content') || c.includes('Collection'))) {
-    return { type: 'PART_OF', startUuid: childUuid, endUuid: parentUuid };
+  if (p.includes("Collection") && (c.includes("Content") || c.includes("Collection"))) {
+    return { type: "PART_OF", startUuid: childUuid, endUuid: parentUuid };
   }
 
-  throw new Error(`Cannot infer relationship between [${p.join(', ')}] and [${c.join(', ')}]`);
+  throw new Error(`Cannot infer relationship between [${p.join(", ")}] and [${c.join(", ")}]`);
 }

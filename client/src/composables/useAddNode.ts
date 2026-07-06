@@ -1,15 +1,15 @@
-import { ref, readonly, Ref, DeepReadonly } from 'vue';
-import { NodeStatusObject } from '../models/types';
+import { ref, readonly, Ref, DeepReadonly } from "vue";
+import { NodeStatusObject } from "../models/types";
 
-type ErrorMessage = {
+interface ErrorMessage {
   severity: string;
   content: string;
   id: number;
-};
+}
 
-type PipelineStep = null | 'choosing' | 'editing' | 'finishing';
+type PipelineStep = null | "choosing" | "editing" | "finishing";
 
-export type UseAddNodeReturn = {
+export interface UseAddNodeReturn {
   currentStep: Readonly<Ref<PipelineStep, PipelineStep>>;
   errorMessages: DeepReadonly<Ref<ErrorMessage[], ErrorMessage[]>>;
   node: Ref<NodeStatusObject | null>;
@@ -19,7 +19,7 @@ export type UseAddNodeReturn = {
   init: () => Promise<void>;
   setNode: (node: NodeStatusObject | null) => void;
   setPipelineStep: (step: PipelineStep) => void;
-};
+}
 
 /**
  * A composable function that provides a pipeline for importing JSON data into the Editor.
@@ -31,14 +31,14 @@ export type UseAddNodeReturn = {
 export function useAddNode(): UseAddNodeReturn {
   const node = ref<NodeStatusObject | null>(null);
 
-  const currentStep = ref<PipelineStep>('choosing');
+  const currentStep = ref<PipelineStep>("choosing");
   const errorMessages = ref<ErrorMessage[]>([]);
   const errorMessageCount = ref<number>(0);
 
-  function addErrorMessage(error: DOMException | unknown): void {
+  function addErrorMessage(): void {
     errorMessages.value.push({
-      severity: 'error',
-      content: 'An unknown error occurred.',
+      severity: "error",
+      content: "An unknown error occurred.",
       id: errorMessageCount.value++,
     });
   }
@@ -67,9 +67,9 @@ export function useAddNode(): UseAddNodeReturn {
     resetPipeline();
   }
 
-  async function init(): Promise<void> {
+  function init(): void {
     clearErrorMessages();
-    setPipelineStep('choosing');
+    setPipelineStep("choosing");
 
     // setPipelineStep('finishing');
   }

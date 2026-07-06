@@ -1,5 +1,5 @@
-import winston from 'winston';
-import 'winston-daily-rotate-file';
+import winston from "winston";
+import "winston-daily-rotate-file";
 
 const { combine, timestamp, printf, colorize, json, errors } = winston.format;
 
@@ -13,27 +13,27 @@ const logLevels = {
     debug: 5,
   },
   colors: {
-    fatal: 'red',
-    error: 'red',
-    warn: 'yellow',
-    info: 'green',
-    http: 'magenta',
-    debug: 'blue',
+    fatal: "red",
+    error: "red",
+    warn: "yellow",
+    info: "green",
+    http: "magenta",
+    debug: "blue",
   },
 };
 
 // Custom format for console output
 const consoleFormat: winston.Logform.Format = combine(
   timestamp({
-    format: 'YYYY-MM-DD HH:mm:ss.SSS',
+    format: "YYYY-MM-DD HH:mm:ss.SSS",
   }),
   errors({ stack: true }),
   colorize({ all: true, colors: logLevels.colors }),
   printf(({ timestamp, level, message, stack, ...meta }) => {
     // Add meta data if present (currently request data from the middleware)
-    const metaStr: string = Object.keys(meta).length ? `\n${JSON.stringify(meta, null, 2)}` : '';
+    const metaStr: string = Object.keys(meta).length ? `\n${JSON.stringify(meta, null, 2)}` : "";
     // Error stack if present (used for error handling)
-    const stackStr: string = stack ? `\n${stack}` : '';
+    const stackStr: string = stack ? `\n${stack}` : "";
 
     return `${timestamp} [${level}]: ${message}${stackStr}${metaStr}`;
   }),
@@ -42,7 +42,7 @@ const consoleFormat: winston.Logform.Format = combine(
 // Output for log files, no need for coloring
 const fileFormat: winston.Logform.Format = combine(
   timestamp({
-    format: 'YYYY-MM-DD HH:mm:ss.SSS',
+    format: "YYYY-MM-DD HH:mm:ss.SSS",
   }),
   errors({ stack: true }),
   json(),
@@ -50,12 +50,12 @@ const fileFormat: winston.Logform.Format = combine(
 
 // Base options for the file transports, used for error and combined logs
 const baseFileTransportOptions = {
-  dirname: 'logs',
+  dirname: "logs",
   // Keep for 14 days
-  maxFiles: '14d',
-  maxSize: '20m',
+  maxFiles: "14d",
+  maxSize: "20m",
   // Files will look like `combined-2023-10-05.log`
-  datePattern: 'YYYY-MM-DD',
+  datePattern: "YYYY-MM-DD",
 };
 
 const allTransports = [
@@ -64,14 +64,14 @@ const allTransports = [
   }),
   new winston.transports.DailyRotateFile({
     ...baseFileTransportOptions,
-    filename: 'combined-%DATE%.log',
-    level: 'http',
+    filename: "combined-%DATE%.log",
+    level: "http",
     format: fileFormat,
   }),
   new winston.transports.DailyRotateFile({
     ...baseFileTransportOptions,
-    filename: 'errors-%DATE%.log',
-    level: 'error',
+    filename: "errors-%DATE%.log",
+    level: "error",
     format: fileFormat,
   }),
 ];
@@ -82,13 +82,11 @@ const allTransports = [
  * @param {string | undefined} mode The mode to select transports for. Comes from environment variables and can therefore be undefined.
  * @returns {winston.transport[]} The transports to use.
  */
-function getTransports(
-  mode: 'development' | 'production' | string | undefined,
-): winston.transport[] {
-  if (mode === 'development') {
-    return allTransports.filter(t => t instanceof winston.transports.Console);
-  } else if (mode === 'production') {
-    return allTransports.filter(t => t instanceof winston.transports.DailyRotateFile);
+function getTransports(mode: "development" | "production" | string | undefined): winston.transport[] {
+  if (mode === "development") {
+    return allTransports.filter((t) => t instanceof winston.transports.Console);
+  } else if (mode === "production") {
+    return allTransports.filter((t) => t instanceof winston.transports.DailyRotateFile);
   }
 
   return allTransports;
@@ -96,7 +94,7 @@ function getTransports(
 
 const logger = winston.createLogger({
   levels: logLevels.levels,
-  level: process.env.LOG_LEVEL || 'debug',
+  level: process.env.LOG_LEVEL || "debug",
   transports: getTransports(process.env.NODE_ENV),
 }) as winston.Logger & {
   fatal: winston.LeveledLogMethod;

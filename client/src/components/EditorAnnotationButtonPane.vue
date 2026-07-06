@@ -1,49 +1,45 @@
 <script setup lang="ts">
-import { useTemplateRef, computed, ref, watchEffect } from 'vue';
-import { useGuidelinesStore } from '../store/guidelines';
-import { capitalize } from '../utils/helper/helper';
-import AnnotationButton from './AnnotationButton.vue';
-import { AnnotationType, NodeStatusObject, AnnotationNode, Annotation } from '../models/types';
-import { useCreateAnnotation } from '../composables/useCreateAnnotation';
-import { useFilterStore } from '../store/filter';
-import ShortcutError from '../utils/errors/shortcut.error';
-import AnnotationRangeError from '../utils/errors/annotationRange.error';
-import { useAppStore } from '../store/app';
-import { useDialog } from 'primevue';
-import AnnotationCreateModal from './AnnotationCreateModal.vue';
-import { useTiptapStore } from '../store/tiptap';
-import { useValidateTextSelection } from '../composables/useValidateTextSelection';
-import { Selection } from '@tiptap/pm/state';
-import Button from 'primevue/button';
-import TableInsertPopover from './TableInsertPopover.vue';
-import Tabs from 'primevue/tabs';
-import TabList from 'primevue/tablist';
-import Tab from 'primevue/tab';
-import TabPanels from 'primevue/tabpanels';
-import TabPanel from 'primevue/tabpanel';
+import { useTemplateRef, computed, ref, watchEffect } from "vue";
+import { useGuidelinesStore } from "../store/guidelines";
+import { capitalize } from "../utils/helper/helper";
+import AnnotationButton from "./AnnotationButton.vue";
+import { AnnotationType, NodeStatusObject, AnnotationNode, Annotation } from "../models/types";
+import { useCreateAnnotation } from "../composables/useCreateAnnotation";
+import { useFilterStore } from "../store/filter";
+import ShortcutError from "../utils/errors/shortcut.error";
+import AnnotationRangeError from "../utils/errors/annotationRange.error";
+import { useAppStore } from "../store/app";
+import { useDialog } from "primevue";
+import AnnotationCreateModal from "./AnnotationCreateModal.vue";
+import { useTiptapStore } from "../store/tiptap";
+import { useValidateTextSelection } from "../composables/useValidateTextSelection";
+import { Selection } from "@tiptap/pm/state";
+import Button from "primevue/button";
+import TableInsertPopover from "./TableInsertPopover.vue";
+import TieredMenu from "primevue/tieredmenu";
+import { MenuItem, MenuItemCommandEvent } from "primevue/menuitem";
+import type { ChainedCommands } from "@tiptap/core";
+import Tabs from "primevue/tabs";
+import TabList from "primevue/tablist";
+import Tab from "primevue/tab";
+import TabPanels from "primevue/tabpanels";
+import TabPanel from "primevue/tabpanel";
 
 const { isValid: isSelectionValid } = useValidateTextSelection();
-const {
-  groupedAnnotationTypes,
-  annotationHasConstraints,
-  getAnnotationConfig,
-  isBuiltinStructuralType,
-  isZeroPoint,
-} = useGuidelinesStore();
+const { groupedAnnotationTypes, annotationHasConstraints, getAnnotationConfig, isBuiltinStructuralType, isZeroPoint } =
+  useGuidelinesStore();
 const { addToastMessage, createModalInstance, destroyModalInstance } = useAppStore();
 const { selectedOptions } = useFilterStore();
-const { tiptap, annotations, structuralAnnotations } = useTiptapStore();
-const { createTextAnnotation: createAnnotation } = useCreateAnnotation('Content');
+const { tiptap, annotations } = useTiptapStore();
+const { createTextAnnotation: createAnnotation } = useCreateAnnotation("Content");
 
-const selectedTab = ref<'annotations' | 'structure'>('annotations');
+const selectedTab = ref<"annotations" | "structure">("annotations");
 
 const annotationCategories = computed(() =>
-  Object.entries(groupedAnnotationTypes.value ?? {}).filter(
-    ([category]) => category !== 'structure',
-  ),
+  Object.entries(groupedAnnotationTypes.value ?? {}).filter(([category]) => category !== "structure"),
 );
 
-const selectedCategory = ref<string>('');
+const selectedCategory = ref<string>("");
 
 watchEffect(() => {
   if (!selectedCategory.value && annotationCategories.value.length > 0) {
@@ -51,15 +47,115 @@ watchEffect(() => {
   }
 });
 
-const tablePopover = useTemplateRef<InstanceType<typeof TableInsertPopover>>('table-popover');
+const tablePopover = useTemplateRef<InstanceType<typeof TableInsertPopover>>("table-popover");
+const tableMenu = useTemplateRef<InstanceType<typeof TieredMenu>>("table-menu");
+const tableMenuItems = ref<MenuItem[]>([]);
 const dialog: ReturnType<typeof useDialog> = useDialog();
+
+/**
+ * Wrapper for running TipTap table chain commands on the focused editor (e.g., `mergeCells`)
+ *
+ * @param {(chain: ChainedCommands) => ChainedCommands} fn - Callback that receives the focused command chain
+ * and returns the modified chain to be executed.
+ * @example runTableCommand((c) => c.mergeCells())
+ */
+function runTableCommand(fn: (chain: ChainedCommands) => ChainedCommands): void {
+  if (!tiptap.value) {
+    return;
+  }
+
+  const chain: ChainedCommands = tiptap.value.chain().focus();
+
+  fn(chain).run();
+}
+
+/**
+ * Builds the table menu model. Rebuilt on each open (see `openTableMenu`) so that `disabled` reflects the
+ * current caret position — TipTap's `isActive` is not Vue-reactive, so a static/computed model would go stale.
+ *
+ * @returns {MenuItem[]} The tiered menu items
+ */
+function buildTableMenuItems(): MenuItem[] {
+  const inTable: boolean = tiptap.value?.isActive("table") ?? false;
+
+  return [
+    {
+      label: "Insert table",
+      title: "Insert table",
+      icon: "pi pi-table",
+      command: (e: MenuItemCommandEvent) => tablePopover.value?.toggle(e.originalEvent),
+    },
+    { label: "Delete table", icon: "pi pi-trash", command: () => runTableCommand((c) => c.deleteTable()) },
+
+    { separator: true },
+    {
+      label: "Add",
+      title: "Add row or column",
+      icon: "pi pi-plus",
+      disabled: !inTable,
+      items: [
+        { label: "Row above", title: "Add row above", command: () => runTableCommand((c) => c.addRowBefore()) },
+        { label: "Row below", title: "Add row below", command: () => runTableCommand((c) => c.addRowAfter()) },
+        { label: "Column left", title: "Add column left", command: () => runTableCommand((c) => c.addColumnBefore()) },
+        { label: "Column right", title: "Add column right", command: () => runTableCommand((c) => c.addColumnAfter()) },
+      ],
+    },
+    {
+      label: "Remove",
+      title: "Remove row or column",
+      icon: "pi pi-minus",
+      disabled: !inTable,
+      items: [
+        { label: "Delete row", title: "Delete row", command: () => runTableCommand((c) => c.deleteRow()) },
+        { label: "Delete column", title: "Delete column", command: () => runTableCommand((c) => c.deleteColumn()) },
+      ],
+    },
+    {
+      label: "Merge / Split",
+      title: "Merge or split cells",
+      icon: "pi pi-arrows-h",
+      disabled: !inTable,
+      items: [
+        { label: "Merge cells", title: "Merge cells", command: () => runTableCommand((c) => c.mergeCells()) },
+        { label: "Split cell", title: "Split cell", command: () => runTableCommand((c) => c.splitCell()) },
+        { label: "Merge or split", title: "Merge or split cell", command: () => runTableCommand((c) => c.mergeOrSplit()) },
+      ],
+    },
+    {
+      label: "Header",
+      title: "Toggle header row or column",
+      icon: "pi pi-list",
+      disabled: !inTable,
+      items: [
+        { label: "Toggle header row", title: "Toggle header row", command: () => runTableCommand((c) => c.toggleHeaderRow()) },
+        {
+          label: "Toggle header column",
+          title: "Toggle header column",
+          command: () => runTableCommand((c) => c.toggleHeaderColumn()),
+        },
+      ],
+    },
+  ];
+}
+
+/**
+ */
+
+/**
+ * Opens the TieredMenu for table commands.
+ *
+ * @param {PointerEvent} event - The click event
+ * @returns {void} This function does not return any value
+ */
+function openTableMenu(event: Event): void {
+  tableMenuItems.value = buildTableMenuItems();
+  tableMenu.value?.toggle(event);
+}
 
 // Project-defined custom block types: isBlock:true entries that are not pre-configured built-ins.
 // These get a generic wrapIn/lift toggle button rather than a dedicated tiptap command button.
 const customStructureTypes = computed(() =>
-  (groupedAnnotationTypes.value?.['structure'] ?? []).filter(
-    t => t.isBlock && !isBuiltinStructuralType(t.type),
-  ),
+  (groupedAnnotationTypes.value?.structure ?? []).filter((t) => t.isBlock && !isBuiltinStructuralType(t.type)),
 );
 
 /**
@@ -94,8 +190,7 @@ function handleInlineAnnotationButtonClick(data: { type: string; subType?: strin
     // Needs to be captured since modal opening collapses editor selection
     const capturedSelection = { from: selection.from, to: selection.to };
 
-    const textInSelection: string =
-      tiptap.value?.state.doc.textBetween(selection.from, selection.to) ?? '';
+    const textInSelection: string = tiptap.value?.state.doc.textBetween(selection.from, selection.to) ?? "";
 
     const newAnnotationTemplate: NodeStatusObject<AnnotationNode> = createAnnotation({
       ...data,
@@ -110,7 +205,7 @@ function handleInlineAnnotationButtonClick(data: { type: string; subType?: strin
             closable: false,
             closeOnEscape: true,
             dismissableMask: true,
-            style: { width: '25rem', height: '35rem' },
+            style: { width: "25rem", height: "35rem" },
             pt: {
               content: {
                 style: {
@@ -137,20 +232,20 @@ function handleInlineAnnotationButtonClick(data: { type: string; subType?: strin
   } catch (error: unknown) {
     if (error instanceof AnnotationRangeError) {
       addToastMessage({
-        severity: 'warn',
-        summary: 'Invalid selection',
+        severity: "warn",
+        summary: "Invalid selection",
         detail: error.message,
         life: 3000,
       });
     } else if (error instanceof ShortcutError) {
       addToastMessage({
-        severity: 'warn',
-        summary: 'Annotation type not enabled',
+        severity: "warn",
+        summary: "Annotation type not enabled",
         detail: error.message,
         life: 3000,
       });
     } else {
-      console.error('Unexpected error:', error);
+      console.error("Unexpected error:", error);
     }
   } finally {
     tiptap.value
@@ -186,51 +281,44 @@ function addAnnotation(annotation: Annotation, selection: { from: number; to: nu
 function handleBlockAnnotationClick(data: { type: string; subType?: string | number }): void {
   const selection: Selection | undefined = tiptap.value?.state.selection;
 
+  if (!selection) {
+    return;
+  }
+
   try {
     const config: AnnotationType = getAnnotationConfig(data.type);
-
-    console.log(config);
 
     isAnnotationTypeEnabled(data.type);
     isSelectionValid(selection, config);
 
     // Needs to be captured since modal opening collapses editor selection
-    const capturedSelection = { from: selection!.from, to: selection!.to };
+    const capturedSelection = { from: selection.from, to: selection.to };
 
-    const textInSelection: string =
-      tiptap.value?.state.doc.textBetween(capturedSelection.from, capturedSelection.to) ?? '';
+    const textInSelection: string = tiptap.value?.state.doc.textBetween(capturedSelection.from, capturedSelection.to) ?? "";
 
     const newAnnotationTemplate: NodeStatusObject<AnnotationNode> = createAnnotation({
       ...data,
       selectedText: textInSelection,
     });
 
-    // Add block annotation to all nodes in selection
-    tiptap.value?.commands.addSemanticBlockLabel(
-      newAnnotationTemplate,
-      capturedSelection.from,
-      capturedSelection.to,
-    );
-
-    // Add to store
-    structuralAnnotations.value?.set(newAnnotationTemplate.node.data.uuid, newAnnotationTemplate);
+    tiptap.value?.commands.addSemanticBlock(newAnnotationTemplate, capturedSelection.from, capturedSelection.to);
   } catch (error: unknown) {
     if (error instanceof AnnotationRangeError) {
       addToastMessage({
-        severity: 'warn',
-        summary: 'Invalid selection',
+        severity: "warn",
+        summary: "Invalid selection",
         detail: error.message,
         life: 3000,
       });
     } else if (error instanceof ShortcutError) {
       addToastMessage({
-        severity: 'warn',
-        summary: 'Annotation type not enabled',
+        severity: "warn",
+        summary: "Annotation type not enabled",
         detail: error.message,
         life: 3000,
       });
     } else {
-      console.error('Unexpected error:', error);
+      console.error("Unexpected error:", error);
     }
   }
 }
@@ -256,25 +344,17 @@ function handleBlockAnnotationClick(data: { type: string; subType?: string | num
       <TabPanel value="annotations">
         <Tabs v-model:value="selectedCategory">
           <TabList>
-            <Tab
-              v-for="[category, types] in annotationCategories"
-              :key="category"
-              :value="category"
-            >
+            <Tab v-for="[category, types] in annotationCategories" :key="category" :value="category">
               {{ capitalize(category) }} ({{ types.length }})
             </Tab>
           </TabList>
           <TabPanels>
-            <TabPanel
-              v-for="[category, types] in annotationCategories"
-              :key="category"
-              :value="category"
-            >
+            <TabPanel v-for="[category, types] in annotationCategories" :key="category" :value="category">
               <div class="buttons">
                 <AnnotationButton
                   v-for="type in types"
-                  :type="type.type"
                   :key="type.type"
+                  :type="type.type"
                   :disabled="!selectedOptions.includes(type.type)"
                   :config="getAnnotationConfig(type.type)"
                   @clicked="handleInlineAnnotationButtonClick($event)"
@@ -287,50 +367,58 @@ function handleBlockAnnotationClick(data: { type: string; subType?: string | num
       <TabPanel value="structure">
         <div class="flex flex-wrap gap-3">
           <Button
-            severity="secondary"
             v-tooltip.hover.top="{ value: 'h1', showDelay: 50 }"
-            @click="tiptap?.chain().focus().toggleHeading({ level: 1 }).run()"
+            severity="secondary"
             :class="{ 'is-active': tiptap?.isActive('heading', { level: 1 }) }"
+            @click="tiptap?.chain().focus().toggleHeading({ level: 1 }).run()"
           >
             H1
           </Button>
           <Button
-            severity="secondary"
             v-tooltip.hover.top="{ value: 'h2', showDelay: 50 }"
-            @click="tiptap?.chain().focus().toggleHeading({ level: 2 }).run()"
+            severity="secondary"
             :class="{ 'is-active': tiptap?.isActive('heading', { level: 2 }) }"
+            @click="tiptap?.chain().focus().toggleHeading({ level: 2 }).run()"
           >
             H2
           </Button>
           <Button
-            severity="secondary"
             v-tooltip.hover.top="{ value: 'h3', showDelay: 50 }"
-            @click="tiptap?.chain().focus().toggleHeading({ level: 3 }).run()"
+            severity="secondary"
             :class="{ 'is-active': tiptap?.isActive('heading', { level: 3 }) }"
+            @click="tiptap?.chain().focus().toggleHeading({ level: 3 }).run()"
           >
             H3
           </Button>
           <Button
+            v-tooltip.hover.top="{ value: 'paragraph', showDelay: 50 }"
             severity="secondary"
             icon="pi pi-align-justify"
-            v-tooltip.hover.top="{ value: 'paragraph', showDelay: 50 }"
-            @click="tiptap?.chain().focus().setNode('paragraph').run()"
             :class="{ 'is-active': tiptap?.isActive('paragraph') }"
+            @click="tiptap?.chain().focus().setNode('paragraph').run()"
           >
           </Button>
           <Button
+            v-tooltip.hover.top="{ value: 'list', showDelay: 50 }"
+            severity="secondary"
+            icon="pi pi-list"
+            :class="{ 'is-active': tiptap?.isActive('bulletList') }"
+            @click="tiptap?.chain().focus().toggleBulletList().run()"
+          ></Button>
+          <Button
+            v-tooltip.hover.top="{ value: 'table', showDelay: 50 }"
             severity="secondary"
             icon="pi pi-table"
-            v-tooltip.hover.top="{ value: 'table', showDelay: 50 }"
+            aria-haspopup="true"
             :class="{ 'is-active': tiptap?.isActive('table') }"
-            @click="tablePopover?.toggle($event)"
+            @click="openTableMenu($event)"
           >
           </Button>
           <Button
             v-for="blockType in customStructureTypes"
             :key="blockType.type"
-            severity="secondary"
             v-tooltip.hover.top="{ value: blockType.type, showDelay: 50 }"
+            severity="secondary"
             :class="{ 'is-active': true }"
             @click="handleBlockAnnotationClick({ type: blockType.type })"
           >
@@ -341,6 +429,15 @@ function handleBlockAnnotationClick(data: { type: string; subType?: string | num
     </TabPanels>
   </Tabs>
 
+  <TieredMenu
+    ref="table-menu"
+    :model="tableMenuItems"
+    popup
+    :pt="{
+      submenuLabel: { style: { display: 'none' } },
+      item: ({ context }) => ({ title: context.item.title }),
+    }"
+  />
   <TableInsertPopover ref="table-popover" />
 </template>
 

@@ -1,42 +1,40 @@
 <script setup lang="ts">
-import { EntityNode, NodeStatus, NodeStatusObject } from '../models/types';
-import Button from 'primevue/button';
-import { Popover } from 'primevue';
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
-import NodeCardHeader from './NodeCardHeader.vue';
-import { capitalize, useTemplateRef } from 'vue';
+import { EntityNode, NodeStatus, NodeStatusObject } from "../models/types";
+import Button from "primevue/button";
+import { Popover } from "primevue";
+import DataTable from "primevue/datatable";
+import Column from "primevue/column";
+import NodeCardHeader from "./NodeCardHeader.vue";
+import { capitalize, useTemplateRef } from "vue";
 
 const props = defineProps<{
-  mode: 'edit' | 'view';
+  mode: "edit" | "view";
 }>();
 
-const emit = defineEmits<{
-  (e: 'remove-node'): void;
-}>();
+const emit = defineEmits<(e: "remove-node") => void>();
 
-const node = defineModel<NodeStatusObject<EntityNode>>();
+const node = defineModel<NodeStatusObject<EntityNode>>({ required: true });
 
-const infoIcon = useTemplateRef('info-icon');
+const infoIcon = useTemplateRef("info-icon");
 
 function handleRemoveNode(): void {
-  console.log('handle remove :)');
-  if (node.value!.meta.status === 'added') {
-    emit('remove-node');
+  console.log("handle remove :)");
+  if (node.value.meta.status === "added") {
+    emit("remove-node");
   } else {
-    setNodeStatus('removed');
+    setNodeStatus("removed");
   }
 }
 
 function setNodeStatus(status: NodeStatus): void {
-  node.value!.meta.status = status;
+  node.value.meta.status = status;
 }
 
 function togglePopover(event: MouseEvent): void {
   infoIcon.value?.toggle(event);
 }
 
-const tableData = Object.entries(node.value!.node.data).map(([property, value]) => {
+const tableData = Object.entries(node.value.node.data).map(([property, value]) => {
   return { property, value };
 });
 </script>
@@ -70,20 +68,20 @@ const tableData = Object.entries(node.value!.node.data).map(([property, value]) 
       <DataTable
         :value="tableData"
         scrollable
-        scrollHeight="flex"
-        resizableColumns
-        rowHover
-        tableStyle="table-layout: fixed;"
+        scroll-height="flex"
+        resizable-columns
+        row-hover
+        table-style="table-layout: fixed;"
         size="small"
       >
         <Column field="property" header="Property">
           <template #body="{ data }">
-            <span>{{ capitalize(data['property']) }}</span>
+            <span>{{ capitalize(data["property"]) }}</span>
           </template>
         </Column>
         <Column field="value" header="Value">
           <template #body="{ data }">
-            <span style="white-space: normal">{{ data['value'] }}</span>
+            <span style="white-space: normal">{{ data["value"] }}</span>
           </template>
         </Column>
       </DataTable>

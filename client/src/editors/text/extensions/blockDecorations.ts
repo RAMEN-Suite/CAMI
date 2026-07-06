@@ -1,30 +1,30 @@
-import { Extension } from '@tiptap/core';
-import { Plugin, PluginKey, Transaction } from '@tiptap/pm/state';
-import { Node } from '@tiptap/pm/model';
-import { Decoration, DecorationSet } from '@tiptap/pm/view';
-import { EditorSettings } from '../../../models/types';
-import { useGuidelinesStore } from '../../../store/guidelines';
+import { Extension } from "@tiptap/core";
+import { Plugin, PluginKey, Transaction } from "@tiptap/pm/state";
+import { Node } from "@tiptap/pm/model";
+import { Decoration, DecorationSet } from "@tiptap/pm/view";
+import { EditorSettings } from "../../../models/types";
+import { useGuidelinesStore } from "../../../store/guidelines";
 
 const { getAnnotationType } = useGuidelinesStore();
 
-type BlockDecorationState = {
+interface BlockDecorationState {
   decoSet: DecorationSet;
   settings: EditorSettings | null;
-};
+}
 
-type SettingsChangedMeta = {
-  type: 'settingsChanged';
+interface SettingsChangedMeta {
+  type: "settingsChanged";
   settings: EditorSettings;
-};
+}
 
-type TagData = {
-  kind: 'base' | 'semantic';
+interface TagData {
+  kind: "base" | "semantic";
   label: string;
   type: string;
   uuid: string;
-};
+}
 
-declare module '@tiptap/core' {
+declare module "@tiptap/core" {
   interface Commands<ReturnType> {
     blockDecorations: {
       setBlockDecorationSettings: (settings: EditorSettings) => ReturnType;
@@ -32,23 +32,14 @@ declare module '@tiptap/core' {
   }
 }
 
-export const BLOCK_DECORATION_KEY = new PluginKey<BlockDecorationState>('blockDecorations');
+export const BLOCK_DECORATION_KEY = new PluginKey<BlockDecorationState>("blockDecorations");
 
 // Tiptap node-type names (editor roles) that receive an outline + tag bar.
-const DECORATED_ROLES: ReadonlySet<string> = new Set([
-  'paragraph',
-  'heading',
-  'bulletList',
-  'table',
-]);
+const DECORATED_ROLES: ReadonlySet<string> = new Set(["paragraph", "heading", "bulletList", "table"]);
 
 // Paragraphs nested directly inside these containers are skipped to avoid visual clutter
 // (paragraphs inside cells e.g. do not have to be displayed)
-const EXCLUDED_PARAGRAPH_PARENTS: ReadonlySet<string> = new Set([
-  'tableCell',
-  'tableHeader',
-  'listItem',
-]);
+const EXCLUDED_PARAGRAPH_PARENTS: ReadonlySet<string> = new Set(["tableCell", "tableHeader", "listItem"]);
 
 /**
  * Build the decoration set, consisting of node decorations and widget decorations depending on the user settings.
@@ -78,7 +69,7 @@ function buildDecorations(doc: Node, settings: EditorSettings | null): Decoratio
     }
 
     if (outline) {
-      decorations.push(Decoration.node(pos, pos + node.nodeSize, { class: 'block-deco-outline' }));
+      decorations.push(Decoration.node(pos, pos + node.nodeSize, { class: "block-deco-outline" }));
     }
 
     const tags: TagData[] = buildTags(node, base, semantic);
@@ -109,7 +100,7 @@ function buildTags(node: Node, showBase: boolean, showSemantic: boolean): TagDat
 
   if (showBase) {
     tags.push({
-      kind: 'base',
+      kind: "base",
       label: getBaseLabel(node),
       type: node.type.name,
       uuid: node.attrs.uuid,
@@ -121,7 +112,7 @@ function buildTags(node: Node, showBase: boolean, showSemantic: boolean): TagDat
 
     for (const block of semanticBlocks) {
       tags.push({
-        kind: 'semantic',
+        kind: "semantic",
         label: getSemanticLabel(block.type),
         type: block.type,
         uuid: block.uuid,
@@ -135,7 +126,7 @@ function buildTags(node: Node, showBase: boolean, showSemantic: boolean): TagDat
 // Stable widget key so ProseMirror reuses the DOM across edits (no flicker), yet
 // rebuilds it whenever the tags' data change.
 function createTagKey(node: Node, tags: TagData[]): string {
-  const signature: string = tags.map(p => `${p.kind}:${p.type}:${p.label}`).join('|');
+  const signature: string = tags.map((p) => `${p.kind}:${p.type}:${p.label}`).join("|");
 
   return `${node.attrs.uuid}#${signature}`;
 }
@@ -152,20 +143,20 @@ function getBaseLabel(node: Node): string {
   // TODO: Use the configured names instead (projects might use list instead of bulletList e.g.)
   const role: string = node.type.name;
 
-  if (role === 'paragraph') {
-    return 'p';
+  if (role === "paragraph") {
+    return "p";
   }
 
-  if (role === 'heading') {
+  if (role === "heading") {
     return `h#-${node.attrs.level ?? 1}`;
   }
 
-  if (role === 'bulletList') {
-    return 'list';
+  if (role === "bulletList") {
+    return "list";
   }
 
-  if (role === 'table') {
-    return 'table';
+  if (role === "table") {
+    return "table";
   }
 
   // Return the canonical configured type as fallback, derived from the live node's editor role.
@@ -199,7 +190,7 @@ function needsDecoration(node: Node, parent: Node | null): boolean {
     return false;
   }
 
-  if (role === 'paragraph' && parent && EXCLUDED_PARAGRAPH_PARENTS.has(parent.type.name)) {
+  if (role === "paragraph" && parent && EXCLUDED_PARAGRAPH_PARENTS.has(parent.type.name)) {
     return false;
   }
 
@@ -213,22 +204,22 @@ function needsDecoration(node: Node, parent: Node | null): boolean {
  * @returns {HTMLElement} The HTML Element that holds all tag HTML elements.
  */
 function renderTagBar(tags: TagData[]): HTMLElement {
-  const bar: HTMLElement = document.createElement('div');
+  const bar: HTMLElement = document.createElement("div");
 
-  bar.className = 'block-deco-tags';
-  bar.contentEditable = 'false';
+  bar.className = "block-deco-tags";
+  bar.contentEditable = "false";
 
   for (const tag of tags) {
-    const el: HTMLElement = document.createElement('span');
+    const el: HTMLElement = document.createElement("span");
 
     el.className = `block-deco-tag block-deco-tag-${tag.kind}`;
     el.textContent = tag.label;
-    el.dataset.uuid = tag.uuid ?? '';
+    el.dataset.uuid = tag.uuid ?? "";
     el.dataset.type = tag.type;
 
     el.title = `Block type: ${tag.label}`;
 
-    if (tag.kind === 'semantic') {
+    if (tag.kind === "semantic") {
       el.title = `Semantic block type: ${tag.label}`;
       // Carried for future interactivity (click-to-select / remove); unused today.
     }
@@ -240,14 +231,14 @@ function renderTagBar(tags: TagData[]): HTMLElement {
 }
 
 export const BlockDecorations = Extension.create({
-  name: 'blockDecorations',
+  name: "blockDecorations",
 
   addCommands() {
     return {
       setBlockDecorationSettings:
         (settings: EditorSettings) =>
         ({ tr, dispatch }) => {
-          const meta: SettingsChangedMeta = { type: 'settingsChanged', settings };
+          const meta: SettingsChangedMeta = { type: "settingsChanged", settings };
 
           tr.setMeta(BLOCK_DECORATION_KEY, meta);
 
@@ -270,7 +261,7 @@ export const BlockDecorations = Extension.create({
           apply(tr: Transaction, oldState: BlockDecorationState): BlockDecorationState {
             const meta: SettingsChangedMeta | undefined = tr.getMeta(BLOCK_DECORATION_KEY);
 
-            if (meta?.type === 'settingsChanged') {
+            if (meta?.type === "settingsChanged") {
               return {
                 decoSet: buildDecorations(tr.doc, meta.settings),
                 settings: meta.settings,

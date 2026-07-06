@@ -1,4 +1,4 @@
-import { AnnotationConfigEntity, AnnotationType, PropertyConfig } from './types.js';
+import { AnnotationConfigEntity, AnnotationType, PropertyConfig } from "./types.js";
 
 export interface IGuidelines {
   collections: {
@@ -8,9 +8,7 @@ export interface IGuidelines {
     };
     types: {
       additionalLabel: string;
-      level:
-        | 'primary'
-        | 'secondary' /* Quick fix to determine which collections should be loaded into the overview table */;
+      level: "primary" | "secondary" /* Quick fix to determine which collections should be loaded into the overview table */;
       properties: PropertyConfig[];
       annotations: {
         additionalTexts: string[];

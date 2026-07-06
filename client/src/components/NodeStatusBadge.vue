@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { NodeStatus } from '../models/types';
-import { Tag } from 'primevue';
-import { capitalize } from '../utils/helper/helper';
+import { computed } from "vue";
+import { NodeStatus } from "../models/types";
+import { Tag } from "primevue";
+import { capitalize } from "../utils/helper/helper";
 
 const props = defineProps<{
   status: NodeStatus;
@@ -13,14 +13,14 @@ const htmlTitle = computed<string>(() => capitalize(props.status));
 
 const severity = computed<string>(() => {
   switch (props.status) {
-    case 'added':
-      return 'success';
-    case 'removed':
-      return 'danger';
-    case 'modified':
-      return 'warn';
+    case "added":
+      return "success";
+    case "removed":
+      return "danger";
+    case "modified":
+      return "warn";
     default:
-      return 'secondary';
+      return "secondary";
   }
 });
 </script>

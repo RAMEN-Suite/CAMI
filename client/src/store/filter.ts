@@ -1,5 +1,5 @@
-import { ref } from 'vue';
-import { IGuidelines } from '../models/IGuidelines';
+import { ref } from "vue";
+import { IGuidelines } from "../models/IGuidelines";
 
 const allOptions = ref<string[]>([]);
 const defaultOptions = ref<string[]>([]);
@@ -17,10 +17,8 @@ export function useFilterStore() {
    * @return {void} This function does not return anything.
    */
   function initializeFilter(guidelines: IGuidelines): void {
-    allOptions.value = guidelines.annotations.types.map(type => type.type);
-    defaultOptions.value = guidelines.annotations.types
-      .filter(type => type.defaultSelected)
-      .map(type => type.type);
+    allOptions.value = guidelines.annotations.types.map((type) => type.type);
+    defaultOptions.value = guidelines.annotations.types.filter((type) => type.defaultSelected).map((type) => type.type);
     selectedOptions.value = [...defaultOptions.value];
   }
 

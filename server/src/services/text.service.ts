@@ -1,18 +1,11 @@
-import { int, QueryResult } from 'neo4j-driver';
-import Neo4jDriver from '../database/neo4j.js';
-import NotFoundError from '../errors/notFound.error.js';
-import {
-  NodeSearchParams,
-  PaginationResult,
-  TextNode,
-  TextAccessObject,
-  TextUpdateDto,
-  NodeDto,
-} from '../models/types.js';
-import { ancestryPaths } from '../utils/cypher.js';
-import { toNativeTypes } from '../utils/helper.js';
-import { flattenNodeTree, buildSubgraphUpdateQuery } from '../utils/nodeUpdate.js';
-import GuidelinesService from './guidelines.service.js';
+import { int, QueryResult } from "neo4j-driver";
+import Neo4jDriver from "../database/neo4j.js";
+import NotFoundError from "../errors/notFound.error.js";
+import { NodeSearchParams, PaginationResult, TextNode, TextAccessObject, TextUpdateDto, NodeDto } from "../models/types.js";
+import { ancestryPaths } from "../utils/cypher.js";
+import { toNativeTypes } from "../utils/helper.js";
+import { flattenNodeTree, buildSubgraphUpdateQuery } from "../utils/nodeUpdate.js";
+import GuidelinesService from "./guidelines.service.js";
 
 export default class TextService {
   public async getTexts(collectionUuid: string): Promise<NodeDto<TextNode>[]> {
@@ -37,9 +30,9 @@ export default class TextService {
     `;
 
     const result: QueryResult = await Neo4jDriver.runQuery(query, { uuid: collectionUuid });
-    const rawTexts: TextNode[] = result.records[0]?.get('texts') || [];
+    const rawTexts: TextNode[] = result.records[0]?.get("texts") || [];
 
-    return rawTexts.map(text => ({
+    return rawTexts.map((text) => ({
       node: text,
       connectedNodes: [],
     }));
@@ -90,10 +83,10 @@ export default class TextService {
       Neo4jDriver.runQuery(dataQuery, queryParams),
     ]);
 
-    const totalRecords: number = countResult.records[0]?.get('totalRecords') || 0;
+    const totalRecords: number = countResult.records[0]?.get("totalRecords") || 0;
 
-    const rawData: TextNode[] = dataResult.records[0]?.get('texts') || [];
-    const data: TextNode[] = rawData.map(t => toNativeTypes(t)) as TextNode[];
+    const rawData: TextNode[] = dataResult.records[0]?.get("texts") || [];
+    const data: TextNode[] = rawData.map((t) => toNativeTypes(t)) as TextNode[];
 
     return {
       data,
@@ -120,7 +113,7 @@ export default class TextService {
     OPTIONAL MATCH (t)-[:PART_OF]->(c:Collection)
     
     CALL (t) {
-        ${ancestryPaths('t')}
+        ${ancestryPaths("t")}
     }
 
     RETURN {
@@ -140,7 +133,7 @@ export default class TextService {
     `;
 
     const result: QueryResult = await Neo4jDriver.runQuery(query, { uuid });
-    const rawText: TextAccessObject = result.records[0]?.get('text');
+    const rawText: TextAccessObject = result.records[0]?.get("text");
 
     if (!rawText) {
       throw new NotFoundError(`Text with UUID ${uuid} not found`);
@@ -155,12 +148,9 @@ export default class TextService {
     const guidelineService: GuidelinesService = new GuidelinesService();
     const guidelines = await guidelineService.getGuidelines();
 
-    const flatNodeTree = flattenNodeTree(
-      { ...data.text, connectedNodes: data.annotations },
-      guidelines,
-    );
+    const flatNodeTree = flattenNodeTree({ ...data.text, connectedNodes: data.annotations }, guidelines);
 
-    const query: string = buildSubgraphUpdateQuery('Content');
+    const query: string = buildSubgraphUpdateQuery("Content");
 
     const result: QueryResult = await Neo4jDriver.runQuery(query, {
       uuid,
@@ -171,7 +161,7 @@ export default class TextService {
       attach: flatNodeTree.attach,
     });
 
-    const updatedText: TextNode = result.records[0]?.get('node');
+    const updatedText: TextNode = result.records[0]?.get("node");
 
     if (!updatedText) {
       throw new NotFoundError(`Text with UUID ${uuid} not found`);

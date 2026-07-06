@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import type { Ref } from 'vue';
-import DatePicker from 'primevue/datepicker';
-import { PropertyConfig } from '../models/types';
+import { ref, watch } from "vue";
+import type { Ref } from "vue";
+import DatePicker from "primevue/datepicker";
+import { PropertyConfig } from "../models/types";
 
 // Accepts ISO string for date/date-time, HH:mm:ss for time, or null
 const dateModelValue = defineModel<string | null>();
 
 const props = defineProps<{
   config: Partial<PropertyConfig>;
-  mode?: 'edit' | 'view';
+  mode?: "edit" | "view";
 }>();
 
 // This Date object will represent the UTC time, independent from the user's timezone
@@ -17,11 +17,11 @@ const internalDate: Ref<Date | null> = ref(null);
 
 // Variables (don't need to be reactive since they won't change)
 const dateType: string = props.config.type;
-const showTime: boolean = dateType === 'date-time' || dateType === 'time';
-const timeOnly: boolean = dateType === 'time';
-const dateFormat: string | undefined = dateType !== 'time' ? 'yy-mm-dd' : undefined;
+const showTime: boolean = dateType === "date-time" || dateType === "time";
+const timeOnly: boolean = dateType === "time";
+const dateFormat: string | undefined = dateType !== "time" ? "yy-mm-dd" : undefined;
 const inputPlaceholder: string = getDefaultPlaceholder();
-const inputIconClass: string = timeOnly ? 'pi pi-clock' : 'pi pi-calendar';
+const inputIconClass: string = timeOnly ? "pi pi-clock" : "pi pi-calendar";
 
 /**
  * Pads a number with leading zeros to ensure it is at least two digits.
@@ -32,7 +32,7 @@ const inputIconClass: string = timeOnly ? 'pi pi-clock' : 'pi pi-calendar';
  * @returns A string representation of the number, padded with leading zeros if necessary.
  */
 function pad(num: number): string {
-  return num.toString().padStart(2, '0');
+  return num.toString().padStart(2, "0");
 }
 
 /**
@@ -81,12 +81,12 @@ function createTimeString(date: Date): string {
  */
 function getDefaultPlaceholder(): string {
   switch (dateType) {
-    case 'date':
-      return 'YYYY-MM-DD';
-    case 'date-time':
-      return 'YYYY-MM-DD HH:mm:ss';
-    case 'time':
-      return 'HH:mm:ss';
+    case "date":
+      return "YYYY-MM-DD";
+    case "date-time":
+      return "YYYY-MM-DD HH:mm:ss";
+    case "time":
+      return "HH:mm:ss";
     default:
       return `Select ${dateType}`;
   }
@@ -116,9 +116,9 @@ function setInternalDateFromModelValue(value: string | null): void {
   }
 
   try {
-    if (dateType === 'time') {
+    if (dateType === "time") {
       // Time only: Parse HH:mm:ss
-      const splitted: number[] = value.split(':').map(part => parseInt(part));
+      const splitted: number[] = value.split(":").map((part) => parseInt(part));
       const [hours, minutes, seconds] = splitted;
       const dateIsValid: boolean = splitted.length >= 2 && !isNaN(hours) && !isNaN(minutes);
 
@@ -188,13 +188,13 @@ function updateModelValue(date: Date | null): void {
   // Only possible if provided date is a real date and not null
   if (date instanceof Date && !isNaN(date.getTime())) {
     try {
-      if (dateType === 'time') {
+      if (dateType === "time") {
         newModelValue = createTimeString(date);
       } else {
         newModelValue = createIsoDateTimeString(date);
       }
     } catch (e) {
-      console.error('Error formatting date to model value:', date, e);
+      console.error("Error formatting date to model value:", date, e);
     }
   }
 
@@ -222,16 +222,16 @@ watch(internalDate, (newLocalDate: Date | null) => updateModelValue(newLocalDate
     :disabled="!config.editable || mode === 'view'"
     :required="config.required"
     :invalid="config.required && !modelValue"
-    :showTime="showTime"
-    :timeOnly="timeOnly"
-    :dateFormat="dateFormat"
-    hourFormat="24"
-    :showIcon="true"
+    :show-time="showTime"
+    :time-only="timeOnly"
+    :date-format="dateFormat"
+    hour-format="24"
+    :show-icon="true"
     :icon="inputIconClass"
-    :showSeconds="true"
+    :show-seconds="true"
     :placeholder="inputPlaceholder"
     style="width: 100%"
-    :showOnFocus="false"
+    :show-on-focus="false"
     :pt="{
       pcInputText: {
         root: {

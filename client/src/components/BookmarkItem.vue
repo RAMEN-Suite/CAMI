@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useBookmarks } from '../composables/useBookmarks';
-import { Bookmark, CollectionNode } from '../models/types';
-import router from '../router';
-import NodeTag from './NodeTag.vue';
-import Button from 'primevue/button';
-import Card from 'primevue/card';
+import { computed } from "vue";
+import { useBookmarks } from "../composables/useBookmarks";
+import { Bookmark, CollectionNode, TextNode } from "../models/types";
+import router from "../router";
+import NodeTag from "./NodeTag.vue";
+import Button from "primevue/button";
+import Card from "primevue/card";
 
 const props = defineProps<{
   bookmarkData: Bookmark;
@@ -14,34 +14,49 @@ const props = defineProps<{
 const { removeBookmark } = useBookmarks();
 
 const uuid: string = props.bookmarkData.data.data.uuid;
-const isCollection: boolean = props.bookmarkData.type === 'collection';
+const isCollection: boolean = props.bookmarkData.type === "collection";
 
-function handleItemClick(): void {
-  router.push(`/${props.bookmarkData.type}s/${uuid}`);
+async function handleItemSelect(): Promise<void> {
+  const urlParam: "collections" | "contents" = isCollection ? "collections" : "contents";
+
+  await router.push(`/${urlParam}/${uuid}`);
 }
 
 const htmlTitle = computed<string>(
   () =>
-    `Go go ${props.bookmarkData.type} ${isCollection ? (props.bookmarkData.data as CollectionNode).data.label : 'with UUID ' + props.bookmarkData.data.data.uuid}`,
+    `Go go ${props.bookmarkData.type} ${isCollection ? (props.bookmarkData.data as CollectionNode).data.label : "with UUID " + props.bookmarkData.data.data.uuid}`,
 );
 
 // TODO: This should be in a helper function
 const PREVIEW_LENGTH: number = 120;
 
-const displayedText = computed<string>(
-  () =>
-    props.bookmarkData.data.data?.text.slice(0, PREVIEW_LENGTH) +
-    (props.bookmarkData.data.data?.text.length > PREVIEW_LENGTH ? '...' : ''),
-);
+const displayedText = computed<string>(() => {
+  const text: string | undefined = (props.bookmarkData.data as TextNode).data.text;
+
+  if (!text) {
+    return "";
+  } else {
+    return text.slice(0, PREVIEW_LENGTH) + (text.length > PREVIEW_LENGTH ? "..." : "");
+  }
+});
 </script>
 
 <template>
   <Card :title="htmlTitle" class="container" :pt="{ body: { class: 'p-1' } }">
     <template #content>
-      <div class="flex align-items-center p-1" @click="handleItemClick">
+      <div
+        class="flex align-items-center p-1"
+        role="link"
+        tabindex="0"
+        @keydown.enter="handleItemSelect"
+        @keydown.space.prevent="handleItemSelect"
+        @click="handleItemSelect"
+      >
         <div class="data flex-grow-1">
           <div class="labels">
             <NodeTag
+              v-for="label in props.bookmarkData.data.nodeLabels"
+              :key="label"
               :style="{
                 fontSize: '0.7rem',
                 backgroundColor: 'white',
@@ -52,7 +67,6 @@ const displayedText = computed<string>(
                 border: '1px solid black',
               }"
               class="test mr-1"
-              v-for="label in props.bookmarkData.data.nodeLabels"
               :content="label"
               type="Collection"
             />

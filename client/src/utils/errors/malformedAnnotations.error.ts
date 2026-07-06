@@ -1,4 +1,4 @@
-import AppError from './app.error';
+import AppError from "./app.error";
 
 /**
  * Represents an error that occurs when there are malformed annotations during import. This can be because of
@@ -12,10 +12,10 @@ export default class MalformedAnnotationsError extends AppError {
    * @type {'error'}
    * @readonly
    */
-  severity: 'error';
+  severity: "error";
 
   constructor(message: string) {
     super(message);
-    this.severity = 'error';
+    this.severity = "error";
   }
 }

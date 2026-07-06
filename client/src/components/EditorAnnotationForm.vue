@@ -1,24 +1,25 @@
 <script setup lang="ts">
-import { computed, ref, toRef } from 'vue';
-import { useEditorStore } from '../store/editor.ts';
-import { useGuidelinesStore } from '../store/guidelines.ts';
-import Button from 'primevue/button';
-import ConfirmPopup from 'primevue/confirmpopup';
-import Fieldset from 'primevue/fieldset';
-import { useConfirm } from 'primevue/useconfirm';
-import {
-  Annotation,
-  AnnotationNode,
-  AnnotationType,
-  NodeStatusObject,
-  PropertyConfig,
-} from '../models/types.ts';
-import AnnotationTypeIcon from './AnnotationTypeIcon.vue';
-import FormPropertiesSection from './FormPropertiesSection.vue';
-import { useTiptapStore } from '../store/tiptap.ts';
-import AnnotationFormAdditionalNodesSection from './AnnotationFormAdditionalNodesSection.vue';
-import { cloneDeep } from '../utils/helper/helper.ts';
-import NodeStatusBadge from './NodeStatusBadge.vue';
+import { computed, ref, toRef, useTemplateRef } from "vue";
+import { useEditorStore } from "../store/editor.ts";
+import { useGuidelinesStore } from "../store/guidelines.ts";
+import Button from "primevue/button";
+import ConfirmPopup from "primevue/confirmpopup";
+import Fieldset from "primevue/fieldset";
+import { useConfirm } from "primevue/useconfirm";
+import { Annotation, AnnotationNode, AnnotationType, NodeStatusObject, PropertyConfig } from "../models/types.ts";
+import AnnotationTypeIcon from "./AnnotationTypeIcon.vue";
+import FormPropertiesSection from "./FormPropertiesSection.vue";
+import { useTiptapStore } from "../store/tiptap.ts";
+import AnnotationReferencesSection from "./AnnotationReferencesSection.vue";
+import AnnotationAnnotationsSection from "./AnnotationAnnotationsSection.vue";
+import { cloneDeep } from "../utils/helper/helper.ts";
+import NodeStatusBadge from "./NodeStatusBadge.vue";
+import { Range } from "../models/types.ts";
+import { findDecorationBoundariesByUuid, findNodeBoundariesByUuid } from "../utils/helper/tiptapHelper.ts";
+import { DecorationSet } from "@tiptap/pm/view";
+import { ANNOTATION_DECORATION_KEY } from "../editors/text/extensions/annotationDecoration.ts";
+import { onClickOutside } from "@vueuse/core";
+import { useAppStore } from "../store/app.ts";
 
 const props = defineProps<{
   annotation: NodeStatusObject<AnnotationNode>;
@@ -29,6 +30,7 @@ const workingData = ref<NodeStatusObject<AnnotationNode>>(cloneDeep(props.annota
 
 const confirm = useConfirm();
 
+const { addToastMessage } = useAppStore();
 const { tiptap, annotations } = useTiptapStore();
 const { isRedrawMode, redrawMode } = useEditorStore();
 const { getAnnotationConfig, getAnnotationFields } = useGuidelinesStore();
@@ -37,45 +39,58 @@ const config: AnnotationType = getAnnotationConfig(workingData.value.node.data.t
 // TODO: Maybe give whole config instead of only fields...?
 const propertyFields: PropertyConfig[] = getAnnotationFields(workingData.value.node.data.type);
 
-const mode = ref<'view' | 'edit'>('view');
+const mode = ref<"view" | "edit">("view");
 
 const isCollapsed = ref<boolean>(true);
 const propertiesAreCollapsed = ref<boolean>(false);
 const previewText = computed<string>(() => {
   const sliced: string = workingData.value.node.data.text?.slice(0, 10);
 
-  return workingData.value.node.data.text?.length >= 10
-    ? sliced + '...'
-    : workingData.value.node.data.text;
+  return workingData.value.node.data.text?.length >= 10 ? sliced + "..." : workingData.value.node.data.text;
 });
-const redrawButtonicon = computed<string>(() =>
-  redrawMode.value?.direction === 'on' ? 'pi pi-times' : 'pi pi-pencil',
-);
-const redrawButtonTitle = computed<string>(() =>
-  isRedrawMode.value ? 'Cancel redraw operation' : 'Redraw annotation',
-);
+
+/* eslint-disable -- Will be needed when redraw modes is re-implemented */
+const redrawButtonicon = computed<string>(() => (redrawMode.value?.direction === "on" ? "pi pi-times" : "pi pi-pencil"));
+const redrawButtonTitle = computed<string>(() => (isRedrawMode.value ? "Cancel redraw operation" : "Redraw annotation"));
+
+const formEl = useTemplateRef<HTMLDivElement>("annotationForm");
+
+onClickOutside(formEl, (event) => {
+  if (mode.value === "edit") {
+    event.preventDefault();
+
+    showUnsavedChangesWarning();
+  }
+});
+
+function showUnsavedChangesWarning() {
+  addToastMessage({
+    severity: "warn",
+    summary: "You have unsaved changes in annotation form",
+    detail: "Please save or discard your changes.",
+    life: 3000,
+  });
+}
 
 function handleDeleteAnnotation(event: MouseEvent): void {
   confirm.require({
     target: event.currentTarget as HTMLButtonElement,
-    message: 'Do you want to delete this annotation?',
-    icon: 'pi pi-exclamation-triangle',
+    message: "Do you want to delete this annotation?",
+    icon: "pi pi-exclamation-triangle",
     rejectProps: {
-      label: 'Cancel',
-      severity: 'secondary',
+      label: "Cancel",
+      severity: "secondary",
       outlined: true,
-      title: 'Cancel',
+      title: "Cancel",
     },
     acceptProps: {
-      label: 'Delete',
-      severity: 'danger',
-      title: 'Delete annotation',
+      label: "Delete",
+      severity: "danger",
+      title: "Delete annotation",
     },
     accept: () => {
       // TODO: Might be changed when the "status" behaviour is changed.
-      const annoEntry: Annotation | undefined = annotations.value?.get(
-        workingData.value.node.data.uuid,
-      );
+      const annoEntry: Annotation | undefined = annotations.value?.get(workingData.value.node.data.uuid);
 
       if (!annoEntry) {
         return;
@@ -94,17 +109,17 @@ function handleDeleteAnnotation(event: MouseEvent): void {
 
 function handleEditAnnotation(): void {
   toggleCollapsed(false);
-  toggleFormMode('edit');
+  toggleFormMode("edit");
 }
 
 function handleSaveChanges(): void {
   updateData();
-  toggleFormMode('view');
+  toggleFormMode("view");
 }
 
 function handleCancelChanges(): void {
   resetData();
-  toggleFormMode('view');
+  toggleFormMode("view");
 }
 
 function handleRedraw(): void {
@@ -114,6 +129,8 @@ function handleRedraw(): void {
   //   toggleRedrawMode({ direction: 'on', annotationUuid: workingData.node.data.uuid });
   // }
 }
+
+/* eslint-disable -- These functions will be re-implemented anyway. */
 
 function handleShiftLeft(): void {
   // execCommand('shiftAnnotationLeft', { annotation });
@@ -131,12 +148,42 @@ function handleShrink(): void {
   // execCommand('shrinkAnnotation', { annotation });
 }
 
-function handleSpyHover(direction: 'on' | 'off'): void {
-  const renderType = config.isZeroPoint ? 'zeroPoint' : 'range';
+/* eslint-enable */
 
-  tiptap.value?.commands.toggleAnnotationHighlight(direction, props.annotation.node.data.uuid, {
-    displayType: renderType,
-  });
+function handleSpyClick() {
+  if (!tiptap.value) {
+    return;
+  }
+
+  let range: Range | null = null;
+
+  const uuid: string = workingData.value.node.data.uuid;
+  const renderType: "range" | "zeroPoint" = config.isZeroPoint ? "zeroPoint" : "range";
+
+  if (renderType === "range") {
+    const decorationSet: DecorationSet | undefined = ANNOTATION_DECORATION_KEY.getState(tiptap.value.state)?.all;
+
+    if (!decorationSet) {
+      return;
+    }
+
+    range = findDecorationBoundariesByUuid(decorationSet, uuid);
+  } else if (renderType === "zeroPoint") {
+    range = findNodeBoundariesByUuid(tiptap.value.state.doc, uuid);
+  }
+
+  if (!range) {
+    console.error(`Annotation with uuid ${workingData.value.node.data.uuid} not found`);
+    return;
+  }
+
+  tiptap.value?.chain().focus().toggleAnnotationHighlight("off", uuid, { renderType }).setTextSelection(range.to).run();
+}
+
+function handleSpyHover(direction: "on" | "off"): void {
+  const renderType: "range" | "zeroPoint" = config.isZeroPoint ? "zeroPoint" : "range";
+
+  tiptap.value?.commands.toggleAnnotationHighlight(direction, props.annotation.node.data.uuid, { renderType });
 }
 
 function toggleCollapsed(newState?: boolean): void {
@@ -147,11 +194,11 @@ function resetData() {
   workingData.value = cloneDeep(initialData.value);
 }
 
-function toggleFormMode(newState?: 'view' | 'edit'): void {
+function toggleFormMode(newState?: "view" | "edit"): void {
   if (newState) {
     mode.value = newState;
   } else {
-    mode.value = newState ?? mode.value === 'view' ? 'edit' : 'view';
+    mode.value = newState ?? mode.value === "view" ? "edit" : "view";
   }
 }
 
@@ -160,10 +207,10 @@ function updateData(): void {
 
   console.log(newData);
   // Set status field depeding on whether the annotation freshly created
-  if (initialData.value.meta.status === 'created') {
-    newData.meta.status = 'created';
+  if (initialData.value.meta.status === "created") {
+    newData.meta.status = "created";
   } else {
-    newData.meta.status = 'modified';
+    newData.meta.status = "modified";
   }
 
   const uuid: string = workingData.value.node.data.uuid;
@@ -181,28 +228,33 @@ function updateData(): void {
 
 <template>
   <div
+    :id="props.annotation.node.data.uuid"
+    ref="annotationForm"
     class="annotation-card mb-3"
     :data-annotation-uuid="workingData.node.data.uuid"
     :data-mode="mode"
   >
     <div class="annotation-card-header">
-      <div class="flex items-center gap-1 align-items-center">
+      <div class="flex items-center gap-1 align-items-center flex-grow-1">
         <div class="icon-container">
-          <AnnotationTypeIcon
-            :annotationType="workingData.node.data.subType ?? workingData.node.data.type"
-          />
+          <AnnotationTypeIcon :annotation-type="workingData.node.data.subType ?? workingData.node.data.type" />
         </div>
-        <span class="font-bold">{{
-          workingData.node.data.subType ?? workingData.node.data.type
-        }}</span>
+        <span class="font-bold">{{ workingData.node.data.subType ?? workingData.node.data.type }}</span>
         <span class="font-italic text-xs text-color-secondary" :title="workingData.node.data.text">
           {{ previewText }}
         </span>
         <div
           class="spy pi pi-eye cursor-pointer"
           title="Show annotated text"
+          role="button"
+          tabindex="0"
           @mouseover="handleSpyHover('on')"
           @mouseleave="handleSpyHover('off')"
+          @focus="handleSpyHover('on')"
+          @blur="handleSpyHover('off')"
+          @keydown.enter="handleSpyClick"
+          @keydown.space.prevent="handleSpyClick"
+          @click="handleSpyClick"
         ></div>
       </div>
       <NodeStatusBadge :status="workingData.meta.status" />
@@ -229,17 +281,10 @@ function updateData(): void {
         <template #toggleicon>
           <span :class="`pi pi-chevron-${propertiesAreCollapsed ? 'down' : 'up'}`"></span>
         </template>
-        <FormPropertiesSection
-          v-model="workingData.node.data"
-          :fields="propertyFields"
-          :mode="mode"
-        />
+        <FormPropertiesSection v-model="workingData.node.data" :fields="propertyFields" :mode="mode" />
       </Fieldset>
-      <AnnotationFormAdditionalNodesSection
-        v-model="workingData.connectedNodes"
-        :mode="mode"
-        :annotation-config="config"
-      />
+      <AnnotationReferencesSection v-model="workingData.connectedNodes" :mode="mode" />
+      <AnnotationAnnotationsSection v-model="workingData.connectedNodes" :mode="mode" />
     </div>
 
     <div class="annotation-card-footer">
@@ -301,21 +346,21 @@ function updateData(): void {
       <div class="action-buttons flex gap-1 justify-content-center">
         <Button
           v-if="mode === 'view'"
-          title="Delete annotation"
-          severity="danger"
-          icon="pi pi-trash"
-          size="small"
-          @click="handleDeleteAnnotation"
-          :style="{ width: '25px', height: '25px' }"
-        />
-        <Button
-          v-if="mode === 'view'"
           title="Edit annotation"
           severity="contrast"
           icon="pi pi-pencil"
           size="small"
-          @click="handleEditAnnotation"
           :style="{ width: '25px', height: '25px' }"
+          @click="handleEditAnnotation"
+        />
+        <Button
+          v-if="mode === 'view'"
+          title="Delete annotation"
+          severity="danger"
+          icon="pi pi-trash"
+          size="small"
+          :style="{ width: '25px', height: '25px' }"
+          @click="handleDeleteAnnotation"
         />
         <Button
           v-if="mode === 'edit'"
@@ -375,10 +420,6 @@ function updateData(): void {
 .icon-container {
   width: 20px;
   height: 20px;
-}
-
-.highlight {
-  background-color: yellow !important;
 }
 
 .hidden {

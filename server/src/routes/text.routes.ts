@@ -1,15 +1,15 @@
-import express, { Request, Response, Router, NextFunction } from 'express';
-import characterRoutes from './characters.routes.js';
-import annotationRoutes from './annotations.routes.js';
-import TextService from '../services/text.service.js';
-import { TextNode, TextAccessObject, TextUpdateDto, NodeDto } from '../models/types.js';
+import express, { Request, Response, Router, NextFunction } from "express";
+import characterRoutes from "./characters.routes.js";
+import annotationRoutes from "./annotations.routes.js";
+import TextService from "../services/text.service.js";
+import { TextNode, TextAccessObject, TextUpdateDto, NodeDto } from "../models/types.js";
 
 const router: Router = express.Router({ mergeParams: true });
 
 const textService: TextService = new TextService();
 
 // GET /collections/:collectionUuid/texts
-router.get('/', async (req: Request, res: Response, next: NextFunction) => {
+router.get("/", async (req: Request, res: Response, next: NextFunction) => {
   const collectionUuid: string = req.params.collectionUuid; // This is the collection UUID
 
   try {
@@ -21,7 +21,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-router.post('/:uuid', async (req: Request, res: Response, next: NextFunction) => {
+router.post("/:uuid", async (req: Request, res: Response, next: NextFunction) => {
   const uuid: string = req.params.uuid;
   const data: TextUpdateDto = req.body;
 
@@ -42,7 +42,7 @@ router.post('/:uuid', async (req: Request, res: Response, next: NextFunction) =>
 });
 
 // GET /collections/:collectionUuid/texts/:textUuid
-router.get('/:textUuid', async (req: Request, res: Response, next: NextFunction) => {
+router.get("/:textUuid", async (req: Request, res: Response, next: NextFunction) => {
   const textUuid: string = req.params.textUuid; // This is the specific text UUID
 
   try {
@@ -54,7 +54,7 @@ router.get('/:textUuid', async (req: Request, res: Response, next: NextFunction)
   }
 });
 
-router.use('/:textUuid/characters', characterRoutes);
-router.use('/:textUuid/annotations', annotationRoutes);
+router.use("/:textUuid/characters", characterRoutes);
+router.use("/:textUuid/annotations", annotationRoutes);
 
 export default router;

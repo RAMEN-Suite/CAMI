@@ -1,18 +1,19 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import CollectionTopMenu from '../components/CollectionTopMenu.vue';
-import LoadingSpinner from '../components/LoadingSpinner.vue';
-import Splitter from 'primevue/splitter';
-import SplitterPanel from 'primevue/splitterpanel';
-import { useCollectionManagerStore } from '../store/collectionManager';
-import CollectionBreadcrumbs from '../components/CollectionBreadcrumbs.vue';
-import CollectionsColumn from '../components/CollectionsColumn.vue';
-import CollectionEditPane from '../components/CollectionEditPane.vue';
-import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router';
-import { CollectionNode } from '../models/types';
-import CollectionPathError from '../components/CollectionPathError.vue';
-import { useAppStore } from '../store/app';
-import PageOverlay from '../components/PageOverlay.vue';
+import { ref, watch } from "vue";
+import CollectionTopMenu from "../components/CollectionTopMenu.vue";
+import LoadingSpinner from "../components/LoadingSpinner.vue";
+import Splitter from "primevue/splitter";
+import SplitterPanel from "primevue/splitterpanel";
+import { useCollectionManagerStore } from "../store/collectionManager";
+import CollectionBreadcrumbs from "../components/CollectionBreadcrumbs.vue";
+import CollectionsColumn from "../components/CollectionsColumn.vue";
+import CollectionEditPane from "../components/CollectionEditPane.vue";
+import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from "vue-router";
+import { CollectionNode, NodeDto } from "../models/types";
+import CollectionPathError from "../components/CollectionPathError.vue";
+import { useAppStore } from "../store/app";
+import PageOverlay from "../components/PageOverlay.vue";
+import { LocationQueryValue } from "vue-router";
 
 // Initial pageload
 const isLoading = ref<boolean>(true);
@@ -35,17 +36,17 @@ const router = useRouter();
 
 watch(
   () => route.query.path,
-  async (newValue: string) => {
+  async (newValue: LocationQueryValue | LocationQueryValue[]) => {
     // TODO: This can be refactored...
     // On first page load
     if (isLoading.value) {
       try {
         // If path exists on page load, validate it. Else, just fetch top-level collections
-        const newPath: CollectionNode[] = newValue ? await validatePath(newValue) : [];
-        updateLevelsAndFetchData(newPath);
+        const newPath: NodeDto<CollectionNode>[] = newValue ? await validatePath(newValue as string) : [];
+        await updateLevelsAndFetchData(newPath);
 
         isPathValid.value = true;
-      } catch (error: unknown) {
+      } catch {
         isPathValid.value = false;
       } finally {
         isLoading.value = false;
@@ -55,17 +56,17 @@ watch(
     }
 
     // Empty path query -> Restore default view
-    if (!newValue || newValue === '') {
-      await restoreDefaultView();
+    if (!newValue || newValue === "") {
+      restoreDefaultView();
       return;
     }
 
     try {
-      const newPath: CollectionNode[] = await validatePath(newValue as string);
-      updateLevelsAndFetchData(newPath);
+      const newPath: NodeDto<CollectionNode>[] = await validatePath(newValue as string);
+      await updateLevelsAndFetchData(newPath);
 
       isPathValid.value = true;
-    } catch (error: unknown) {
+    } catch {
       isPathValid.value = false;
     } finally {
       isLoading.value = false;
@@ -92,7 +93,7 @@ onBeforeRouteUpdate(() => {
   return true;
 });
 
-function handleBreadcrumbItemClick(data: { index: number; uuid: string }): void {
+async function handleBreadcrumbItemClick(data: { index: number; uuid: string }): Promise<void> {
   if (!canNavigate.value) {
     showUnsavedChangesWarning();
     return;
@@ -100,23 +101,23 @@ function handleBreadcrumbItemClick(data: { index: number; uuid: string }): void 
 
   const { index, uuid } = data;
 
-  router.push({ query: { path: createNewUrlPath(uuid, index) } });
+  await router.push({ query: { path: createNewUrlPath(uuid, index) } });
 }
 
-function handleBreadcrumbHomeClick(): void {
+async function handleBreadcrumbHomeClick(): Promise<void> {
   if (!canNavigate.value) {
     showUnsavedChangesWarning();
     return;
   }
 
-  router.push({ query: {} });
+  await router.push({ query: {} });
 }
 
 function showUnsavedChangesWarning() {
   addToastMessage({
-    severity: 'warn',
-    summary: 'You have unsaved changes.',
-    detail: 'Please save or discard your changes before selecting other collections.',
+    severity: "warn",
+    summary: "You have unsaved changes.",
+    detail: "Please save or discard your changes before selecting other collections.",
     life: 3000,
   });
 }
@@ -161,11 +162,7 @@ function showUnsavedChangesWarning() {
           >
             <SplitterPanel class="overflow-y-auto">
               <div class="columns-container h-full flex overflow-x-scroll">
-                <CollectionsColumn
-                  v-for="(_, index) in levels"
-                  :index="index"
-                  :parentUuid="levels[index].parentUuid"
-                />
+                <CollectionsColumn v-for="(_, index) in levels" :index="index" :parent-uuid="levels[index].parentUuid" />
               </div>
             </SplitterPanel>
             <SplitterPanel :size="20" class="overflow-y-auto">

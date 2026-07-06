@@ -1,7 +1,7 @@
-import { QueryResult } from 'neo4j-driver';
-import Neo4jDriver from '../database/neo4j.js';
-import ICharacter from '../models/ICharacter.js';
-import { Character } from '../models/types.js';
+import { QueryResult } from "neo4j-driver";
+import Neo4jDriver from "../database/neo4j.js";
+import ICharacter from "../models/ICharacter.js";
+import { Character } from "../models/types.js";
 
 export default class CharacterService {
   /**
@@ -29,7 +29,7 @@ export default class CharacterService {
 
     const result: QueryResult = await Neo4jDriver.runQuery(query, { textUuid });
 
-    return result.records[0]?.get('characters');
+    return result.records[0]?.get("characters");
   }
 
   /**
@@ -70,6 +70,6 @@ export default class CharacterService {
       text,
     });
 
-    return result.records[0]?.get('characters');
+    return result.records[0]?.get("characters");
   }
 }

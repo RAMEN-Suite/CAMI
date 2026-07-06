@@ -1,5 +1,5 @@
-import { DeepReadonly } from 'vue';
-import { IGuidelines } from '../models/IGuidelines';
+import { DeepReadonly } from "vue";
+import { IGuidelines } from "../models/IGuidelines";
 import {
   NodeDto,
   Character,
@@ -17,11 +17,11 @@ import {
   TextUpdateDto,
   AnnotationNode,
   NodeStatusObject,
-} from '../models/types';
-import DatabaseConnectionError from '../utils/errors/databaseConnection.error';
-import ApiError from '../utils/errors/api.error';
-import NotFoundError from '../utils/errors/notFound.error';
-import ExternalServiceError from '../utils/errors/externalService.error';
+} from "../models/types";
+import DatabaseConnectionError from "../utils/errors/databaseConnection.error";
+import ApiError from "../utils/errors/api.error";
+import NotFoundError from "../utils/errors/notFound.error";
+import ExternalServiceError from "../utils/errors/externalService.error";
 
 /**
  * The ApiService class provides methods for making API requests to the backend server.
@@ -32,7 +32,7 @@ export default class ApiService {
 
   constructor() {
     // Earlier built with a function, but now managed by Vite proxy configuration
-    this.baseUrl = '/api';
+    this.baseUrl = "/api";
   }
 
   /**
@@ -50,24 +50,20 @@ export default class ApiService {
     if (!response.ok) {
       const body = await response.json().catch(() => null);
 
+      /* eslint-disable @typescript-eslint/prefer-nullish-coalescing -- empty message string should be handled */
       switch (response.status) {
         case 404:
-          throw new NotFoundError(response.status, body?.message || 'Not found');
+          throw new NotFoundError(response.status, body?.message || "Not found");
         case 500:
-          throw new ApiError(response.status, body?.message || 'Internal server error');
+          throw new ApiError(response.status, body?.message || "Internal server error");
         case 502:
-          throw new ExternalServiceError(
-            response.status,
-            body?.message || 'External service error',
-          );
+          throw new ExternalServiceError(response.status, body?.message || "External service error");
         case 503:
-          throw new DatabaseConnectionError(
-            response.status,
-            body?.message || 'Database connection error',
-          );
+          throw new DatabaseConnectionError(response.status, body?.message || "Database connection error");
         default:
-          throw new ApiError(response.status, body?.message || 'API response was not ok');
+          throw new ApiError(response.status, body?.message || "API response was not ok");
       }
+      /* eslint-enable*/
     }
   }
 
@@ -92,21 +88,18 @@ export default class ApiService {
     }
   }
 
-  public async createOrAddCollection(
-    uuid: string,
-    data: NodeStatusObject,
-  ): Promise<NodeDto<CollectionNode>> {
+  public async createOrAddCollection(uuid: string, data: NodeStatusObject): Promise<NodeDto<CollectionNode>> {
     try {
       const url: string = `${this.baseUrl}/collections`;
 
       const response: Response = await fetch(url, {
-        method: 'POST',
-        cache: 'no-cache',
-        credentials: 'same-origin',
+        method: "POST",
+        cache: "no-cache",
+        credentials: "same-origin",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        referrerPolicy: 'no-referrer',
+        referrerPolicy: "no-referrer",
         body: JSON.stringify({
           uuid: uuid,
           data: data,
@@ -126,13 +119,13 @@ export default class ApiService {
       const url: string = `${this.baseUrl}/collections/${uuid}`;
 
       const response: Response = await fetch(url, {
-        method: 'DELETE',
-        cache: 'no-cache',
-        credentials: 'same-origin',
+        method: "DELETE",
+        cache: "no-cache",
+        credentials: "same-origin",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        referrerPolicy: 'no-referrer',
+        referrerPolicy: "no-referrer",
       });
 
       await this.assertResponseOk(response);
@@ -143,10 +136,7 @@ export default class ApiService {
     }
   }
 
-  public async getAnnotations(
-    nodeType: 'collection' | 'text',
-    nodeUuid: string,
-  ): Promise<NodeDto<AnnotationNode>[]> {
+  public async getAnnotations(nodeType: "collection" | "text", nodeUuid: string): Promise<NodeDto<AnnotationNode>[]> {
     try {
       const url: string = `${this.baseUrl}/${nodeType}s/${nodeUuid}/annotations`;
 
@@ -216,14 +206,14 @@ export default class ApiService {
 
     const urlParams: URLSearchParams = new URLSearchParams();
 
-    urlParams.set('scope', baseNodeLabel);
-    urlParams.set('order', sortDirection);
-    urlParams.set('search', searchInput);
-    urlParams.set('nodeLabels', nodeLabels.join(','));
-    urlParams.set('limit', rowCount?.toString() ?? DEFAULT_ROW_COUNT.toString());
+    urlParams.set("scope", baseNodeLabel);
+    urlParams.set("order", sortDirection);
+    urlParams.set("search", searchInput);
+    urlParams.set("nodeLabels", nodeLabels.join(","));
+    urlParams.set("limit", rowCount?.toString() ?? DEFAULT_ROW_COUNT.toString());
 
     if (offset) {
-      urlParams.set('offset', offset.toString() ?? '');
+      urlParams.set("offset", offset.toString() ?? "");
     }
 
     const fetchUrl: string = `${path}?${urlParams.toString()}`;
@@ -248,22 +238,20 @@ export default class ApiService {
   ): Promise<PaginationResult<NodeDto<CollectionNode>[]>> {
     const DEFAULT_ROW_COUNT: number | null = 10;
 
-    const path: string = parentUuid
-      ? `${this.baseUrl}/collections/${parentUuid}/collections`
-      : `${this.baseUrl}/collections`;
+    const path: string = parentUuid ? `${this.baseUrl}/collections/${parentUuid}/collections` : `${this.baseUrl}/collections`;
 
     const urlParams: URLSearchParams = new URLSearchParams();
 
     const { filters, cursor } = params;
 
-    urlParams.set('order', filters.sortDirection);
-    urlParams.set('search', filters.searchInput);
-    urlParams.set('nodeLabels', filters.nodeLabels.join(','));
-    urlParams.set('limit', filters.rowCount?.toString() ?? DEFAULT_ROW_COUNT.toString());
+    urlParams.set("order", filters.sortDirection);
+    urlParams.set("search", filters.searchInput);
+    urlParams.set("nodeLabels", filters.nodeLabels.join(","));
+    urlParams.set("limit", filters.rowCount?.toString() ?? DEFAULT_ROW_COUNT.toString());
 
     if (cursor) {
-      urlParams.set('cursorUuid', cursor.uuid ?? '');
-      urlParams.set('cursorLabel', cursor.label ?? '');
+      urlParams.set("cursorUuid", cursor.uuid ?? "");
+      urlParams.set("cursorLabel", cursor.label ?? "");
     }
 
     const fetchUrl: string = `${path}?${urlParams.toString()}`;
@@ -365,21 +353,18 @@ export default class ApiService {
     throw error;
   }
 
-  public async updateCharacterChain(
-    textUuid: string,
-    characterPostData: CharacterPostData,
-  ): Promise<void> {
+  public async updateCharacterChain(textUuid: string, characterPostData: CharacterPostData): Promise<void> {
     try {
       const url: string = `${this.baseUrl}/texts/${textUuid}/characters`;
 
       const response: Response = await fetch(url, {
-        method: 'POST',
-        cache: 'no-cache',
-        credentials: 'same-origin',
+        method: "POST",
+        cache: "no-cache",
+        credentials: "same-origin",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        referrerPolicy: 'no-referrer',
+        referrerPolicy: "no-referrer",
         body: JSON.stringify(characterPostData),
       });
 
@@ -389,21 +374,18 @@ export default class ApiService {
     }
   }
 
-  public async updateCollection(
-    uuid: string,
-    data: NodeStatusObject,
-  ): Promise<NodeDto<CollectionNode>> {
+  public async updateCollection(uuid: string, data: NodeStatusObject): Promise<NodeDto<CollectionNode>> {
     const url: string = `${this.baseUrl}/collections/${uuid}`;
 
     try {
       const response: Response = await fetch(url, {
-        method: 'POST',
-        cache: 'no-cache',
-        credentials: 'same-origin',
+        method: "POST",
+        cache: "no-cache",
+        credentials: "same-origin",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        referrerPolicy: 'no-referrer',
+        referrerPolicy: "no-referrer",
         body: JSON.stringify(data),
       });
 
@@ -420,13 +402,13 @@ export default class ApiService {
 
     try {
       const response: Response = await fetch(url, {
-        method: 'POST',
-        cache: 'no-cache',
-        credentials: 'same-origin',
+        method: "POST",
+        cache: "no-cache",
+        credentials: "same-origin",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        referrerPolicy: 'no-referrer',
+        referrerPolicy: "no-referrer",
         body: JSON.stringify(data),
       });
 
@@ -443,13 +425,13 @@ export default class ApiService {
       const url: string = `${this.baseUrl}/texts/${uuid}`;
 
       const response: Response = await fetch(url, {
-        method: 'POST',
-        cache: 'no-cache',
-        credentials: 'same-origin',
+        method: "POST",
+        cache: "no-cache",
+        credentials: "same-origin",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        referrerPolicy: 'no-referrer',
+        referrerPolicy: "no-referrer",
         body: JSON.stringify(text),
       });
 

@@ -1,10 +1,10 @@
-import fs from 'fs/promises';
-import path from 'path';
-import { IGuidelines } from '../models/IGuidelines.js';
-import { AnnotationConfigEntity, AnnotationType, PropertyConfig } from '../models/types.js';
-import ExternalServiceError from '../errors/externalService.error.js';
-import { CONFIG_DIR } from '../constants.js';
-import { isValidConfigFile, isValidHttpUrl } from '../utils/helper.js';
+import fs from "fs/promises";
+import path from "path";
+import { IGuidelines } from "../models/IGuidelines.js";
+import { AnnotationConfigEntity, AnnotationType, PropertyConfig } from "../models/types.js";
+import ExternalServiceError from "../errors/externalService.error.js";
+import { CONFIG_DIR } from "../constants.js";
+import { isValidConfigFile, isValidHttpUrl } from "../utils/helper.js";
 
 export default class GuidelinesService {
   /**
@@ -18,14 +18,11 @@ export default class GuidelinesService {
    * @param {string} type - The type of the annotation.
    * @return {PropertyConfig[]} The field configuration for the annotation type.
    */
-  public getAnnotationConfigFieldsFromGuidelines(
-    guidelines: IGuidelines,
-    type: string,
-  ): PropertyConfig[] {
+  public getAnnotationConfigFieldsFromGuidelines(guidelines: IGuidelines, type: string): PropertyConfig[] {
     const system: PropertyConfig[] = guidelines.annotations.properties.system;
     const base: PropertyConfig[] = guidelines.annotations.properties.base;
     const additional: PropertyConfig[] =
-      guidelines.annotations.types.find(annoConfig => annoConfig.type === type)?.properties ?? [];
+      guidelines.annotations.types.find((annoConfig) => annoConfig.type === type)?.properties ?? [];
 
     return [...system, ...base, ...additional];
   }
@@ -43,11 +40,11 @@ export default class GuidelinesService {
 
     const baseAnnotationResources: AnnotationConfigEntity[] = guidelines.annotations.entities ?? [];
 
-    const baseCollectionResources: AnnotationConfigEntity[] =
-      guidelines.collections.annotations.entities ?? [];
+    const baseCollectionResources: AnnotationConfigEntity[] = guidelines.collections.annotations.entities ?? [];
 
-    const additionalCollectionResources: AnnotationConfigEntity[] =
-      guidelines.collections.types.flatMap(c => c.annotations?.entities ?? []);
+    const additionalCollectionResources: AnnotationConfigEntity[] = guidelines.collections.types.flatMap(
+      (c) => c.annotations?.entities ?? [],
+    );
 
     const combined: AnnotationConfigEntity[] = [
       ...baseAnnotationResources,
@@ -55,15 +52,12 @@ export default class GuidelinesService {
       ...additionalCollectionResources,
     ];
 
-    const unique: AnnotationConfigEntity[] = combined.reduce<AnnotationConfigEntity[]>(
-      (total, curr) => {
-        if (!total.some(r => r.category === curr.category && r.nodeLabel === curr.nodeLabel)) {
-          total.push(curr);
-        }
-        return total;
-      },
-      [],
-    );
+    const unique: AnnotationConfigEntity[] = combined.reduce<AnnotationConfigEntity[]>((total, curr) => {
+      if (!total.some((r) => r.category === curr.category && r.nodeLabel === curr.nodeLabel)) {
+        total.push(curr);
+      }
+      return total;
+    }, []);
 
     return unique;
   }
@@ -83,16 +77,13 @@ export default class GuidelinesService {
     collectionNodeLabels: string[],
   ): AnnotationType[] {
     const base: AnnotationType[] = guidelines.collections.annotations.types;
-    const additional: AnnotationType[] = guidelines.collections.types.reduce(
-      (total: AnnotationType[], curr) => {
-        if (collectionNodeLabels.includes(curr.additionalLabel)) {
-          const nested: AnnotationType[] = curr.annotations?.types ?? [];
-          total.push(...nested);
-        }
-        return total;
-      },
-      [],
-    );
+    const additional: AnnotationType[] = guidelines.collections.types.reduce((total: AnnotationType[], curr) => {
+      if (collectionNodeLabels.includes(curr.additionalLabel)) {
+        const nested: AnnotationType[] = curr.annotations?.types ?? [];
+        total.push(...nested);
+      }
+      return total;
+    }, []);
 
     return [...base, ...additional];
   }
@@ -122,25 +113,21 @@ export default class GuidelinesService {
     ];
 
     // Default properties for annotations that exists in the collections with given node labels
-    const byCollectionType: PropertyConfig[] = guidelines.collections.types.reduce(
-      (total: PropertyConfig[], curr) => {
-        if (collectionNodeLabels.includes(curr.additionalLabel)) {
-          const nested: PropertyConfig[] = curr.annotations?.properties ?? [];
+    const byCollectionType: PropertyConfig[] = guidelines.collections.types.reduce((total: PropertyConfig[], curr) => {
+      if (collectionNodeLabels.includes(curr.additionalLabel)) {
+        const nested: PropertyConfig[] = curr.annotations?.properties ?? [];
 
-          total.push(...nested);
-        }
+        total.push(...nested);
+      }
 
-        return total;
-      },
-      [],
-    );
+      return total;
+    }, []);
 
     // Properties for the given annotation type (no matter which level)
     const byAnnotationType: PropertyConfig[] =
-      this.getAvailableCollectionAnnotationConfigsFromGuidelines(
-        guidelines,
-        collectionNodeLabels,
-      ).find(t => t.type === annotationType)?.properties ?? [];
+      this.getAvailableCollectionAnnotationConfigsFromGuidelines(guidelines, collectionNodeLabels).find(
+        (t) => t.type === annotationType,
+      )?.properties ?? [];
 
     return [...byDefault, ...byCollectionType, ...byAnnotationType];
   }
@@ -156,21 +143,15 @@ export default class GuidelinesService {
    * @param {string[]} nodeLabels - The additional labels of the collection.
    * @return {PropertyConfig[]} The field configuration for the collection type.
    */
-  public getCollectionConfigFieldsFromGuidelines(
-    guidelines: IGuidelines,
-    nodeLabels: string[],
-  ): PropertyConfig[] {
+  public getCollectionConfigFieldsFromGuidelines(guidelines: IGuidelines, nodeLabels: string[]): PropertyConfig[] {
     const system: PropertyConfig[] = guidelines.collections.properties.system;
     const base: PropertyConfig[] = guidelines.collections.properties.base;
-    const additional: PropertyConfig[] = guidelines.collections.types.reduce(
-      (total: PropertyConfig[], curr) => {
-        if (nodeLabels.includes(curr.additionalLabel)) {
-          total.push(...curr.properties);
-        }
-        return total;
-      },
-      [],
-    );
+    const additional: PropertyConfig[] = guidelines.collections.types.reduce((total: PropertyConfig[], curr) => {
+      if (nodeLabels.includes(curr.additionalLabel)) {
+        total.push(...curr.properties);
+      }
+      return total;
+    }, []);
 
     return [...system, ...base, ...additional];
   }
@@ -191,15 +172,12 @@ export default class GuidelinesService {
 
     const system: PropertyConfig[] = guidelines.collections.properties.system;
     const base: PropertyConfig[] = guidelines.collections.properties.base;
-    const additional: PropertyConfig[] = guidelines.collections.types.reduce(
-      (total: PropertyConfig[], curr) => {
-        if (nodeLabels.includes(curr.additionalLabel)) {
-          total.push(...curr.properties);
-        }
-        return total;
-      },
-      [],
-    );
+    const additional: PropertyConfig[] = guidelines.collections.types.reduce((total: PropertyConfig[], curr) => {
+      if (nodeLabels.includes(curr.additionalLabel)) {
+        total.push(...curr.properties);
+      }
+      return total;
+    }, []);
 
     return [...system, ...base, ...additional];
   }
@@ -243,7 +221,7 @@ export default class GuidelinesService {
     let fileContent: string;
 
     try {
-      fileContent = await fs.readFile(filePath, 'utf-8');
+      fileContent = await fs.readFile(filePath, "utf-8");
     } catch (err: unknown) {
       throw new ExternalServiceError(`Failed to read guidelines from the provided file`);
     }

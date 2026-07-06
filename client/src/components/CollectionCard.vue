@@ -1,62 +1,68 @@
 <script setup lang="ts">
-import { CollectionNode, NodeStatus, NodeStatusObject } from '../models/types';
-import Button from 'primevue/button';
-import { Popover } from 'primevue';
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
-import NodeCardHeader from './NodeCardHeader.vue';
-import { capitalize, useTemplateRef } from 'vue';
+import { CollectionNode, NodeStatus, NodeStatusObject } from "../models/types";
+import Button from "primevue/button";
+import { Popover } from "primevue";
+import DataTable from "primevue/datatable";
+import Column from "primevue/column";
+import NodeCardHeader from "./NodeCardHeader.vue";
+import { capitalize, useTemplateRef } from "vue";
 
 const props = defineProps<{
-  mode: 'edit' | 'view';
+  mode: "edit" | "view";
 }>();
 
-const emit = defineEmits<{
-  (e: 'remove-node'): void;
-}>();
+const emit = defineEmits<(e: "remove-node") => void>();
 
-const node = defineModel<NodeStatusObject<CollectionNode>>();
+const node = defineModel<NodeStatusObject<CollectionNode>>({ required: true });
 
-const infoIcon = useTemplateRef('info-icon');
+const infoIcon = useTemplateRef("info-icon");
 
 function handleRemoveNode(): void {
-  if (node.value!.meta.status === 'added') {
-    emit('remove-node');
+  if (node.value.meta.status === "added") {
+    emit("remove-node");
   } else {
-    setNodeStatus('removed');
+    setNodeStatus("removed");
   }
 }
 
 function setNodeStatus(status: NodeStatus): void {
-  node.value!.meta.status = status;
+  node.value.meta.status = status;
 }
 
 /**
  * Handles a click event on the Card component, which will the corresponding text in a new tab. The click event is ignored
  * if the click target is part of button.
  *
- * @param {PointerEvent} event - The click event.
+ * @param {PointerEvent | KeyboardEvent} event - The click or enter/space key event.
  * @returns {void} This function does not return any value.
  */
-function handleClickContainer(event: PointerEvent): void {
-  if ((event.target as HTMLElement).closest('button')) {
+function handleSelectContainer(event: PointerEvent | KeyboardEvent): void {
+  if ((event.target as HTMLElement).closest("button")) {
     return;
   }
 
-  window.open(`/collections/${node.value!.node.data.uuid}`, '_blank', 'noopener noreferrer');
+  window.open(`/collections/${node.value.node.data.uuid}`, "_blank", "noopener noreferrer");
 }
 
 function togglePopover(event: MouseEvent): void {
   infoIcon.value?.toggle(event);
 }
 
-const tableData = Object.entries(node.value!.node.data).map(([property, value]) => {
+const tableData = Object.entries(node.value.node.data).map(([property, value]) => {
   return { property, value };
 });
 </script>
 
 <template>
-  <div class="node-card-container" @click="handleClickContainer" title="Open collection in Editor">
+  <div
+    class="node-card-container"
+    title="Open collection in Editor"
+    tabindex="0"
+    role="link"
+    @keydown.enter="handleSelectContainer"
+    @keydown.space="handleSelectContainer"
+    @click="handleSelectContainer"
+  >
     <NodeCardHeader :node="node!" :mode="props.mode" @remove="handleRemoveNode" />
     <span>
       {{ node!.node.data.label }}
@@ -84,20 +90,20 @@ const tableData = Object.entries(node.value!.node.data).map(([property, value]) 
       <DataTable
         :value="tableData"
         scrollable
-        scrollHeight="flex"
-        resizableColumns
-        rowHover
-        tableStyle="table-layout: fixed;"
+        scroll-height="flex"
+        resizable-columns
+        row-hover
+        table-style="table-layout: fixed;"
         size="small"
       >
         <Column field="property" header="Property">
           <template #body="{ data }">
-            <span>{{ capitalize(data['property']) }}</span>
+            <span>{{ capitalize(data["property"]) }}</span>
           </template>
         </Column>
         <Column field="value" header="Value">
           <template #body="{ data }">
-            <span style="white-space: normal">{{ data['value'] }}</span>
+            <span style="white-space: normal">{{ data["value"] }}</span>
           </template>
         </Column>
       </DataTable>

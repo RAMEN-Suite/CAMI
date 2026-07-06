@@ -1,56 +1,59 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import NodeCardHeader from './NodeCardHeader.vue';
-import { TextNode, NodeStatusObject, NodeStatus } from '../models/types';
+import { computed } from "vue";
+import NodeCardHeader from "./NodeCardHeader.vue";
+import { TextNode, NodeStatusObject, NodeStatus } from "../models/types";
 
 const props = defineProps<{
-  mode: 'edit' | 'view';
+  mode: "edit" | "view";
 }>();
 
-const emit = defineEmits<{
-  (e: 'remove-node'): void;
-}>();
+const emit = defineEmits<(e: "remove-node") => void>();
 
-const node = defineModel<NodeStatusObject<TextNode>>();
+const node = defineModel<NodeStatusObject<TextNode>>({ required: true });
 
 const PREVIEW_LENGTH: number = 100;
 
 const displayedText = computed<string>(
-  () =>
-    node.value!.node.data.text.slice(0, PREVIEW_LENGTH) +
-    (node.value!.node.data.text.length > PREVIEW_LENGTH ? '...' : ''),
+  () => node.value.node.data.text.slice(0, PREVIEW_LENGTH) + (node.value.node.data.text.length > PREVIEW_LENGTH ? "..." : ""),
 );
 
 /**
  * Handles a click event on the Card component, which will the corresponding text in a new tab. The click event is ignored
  * if the click target is part of button.
  *
- * @param {PointerEvent} event - The click event.
+ * @param {PointerEvent | KeyboardEvent} event - The click or enter/space key event.
  * @returns {void} This function does not return any value.
  */
-function handleClickContainer(event: PointerEvent): void {
-  if ((event.target as HTMLElement).closest('button')) {
+function handleSelectContainer(event: PointerEvent | KeyboardEvent): void {
+  if ((event.target as HTMLElement).closest("button")) {
     return;
   }
 
-  window.open(`/editor/${node.value!.node.data.uuid}`, '_blank', 'noopener noreferrer');
+  window.open(`/contents/${node.value.node.data.uuid}`, "_blank", "noopener noreferrer");
 }
 
 function handleRemoveNode(): void {
-  if (node.value!.meta.status === 'added') {
-    emit('remove-node');
+  if (node.value.meta.status === "added") {
+    emit("remove-node");
   } else {
-    setNodeStatus('removed');
+    setNodeStatus("removed");
   }
 }
 
 function setNodeStatus(status: NodeStatus): void {
-  node.value!.meta.status = status;
+  node.value.meta.status = status;
 }
 </script>
 
 <template>
-  <div class="node-card-container" @click="handleClickContainer" title="Open text in Editor">
+  <div
+    class="node-card-container"
+    title="Open text in Editor"
+    tabindex="0"
+    @click="handleSelectContainer"
+    @keydown.enter="handleSelectContainer"
+    @keydown.space.prevent="handleSelectContainer"
+  >
     <NodeCardHeader :node="node!" :mode="props.mode" @remove="handleRemoveNode" />
     <div class="text-xs">
       {{ displayedText }}

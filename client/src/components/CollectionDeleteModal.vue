@@ -1,14 +1,20 @@
 <script setup lang="ts">
-import { computed, inject, ref, watch } from 'vue';
-import Button from 'primevue/button';
-import { CollectionAccessObject } from '../models/types';
-import { useAppStore } from '../store/app';
-import { useRoute } from 'vue-router';
+import { computed, inject, Ref, ref, watch } from "vue";
+import Button from "primevue/button";
+import { CollectionAccessObject } from "../models/types";
+import { useAppStore } from "../store/app";
+import { useRoute } from "vue-router";
+import { DynamicDialogInstance } from "primevue/dynamicdialogoptions";
 
-const emit = defineEmits(['deleted', 'canceled']);
+const dialogRef = inject<Ref<DynamicDialogInstance>>("dialogRef");
+
+if (!dialogRef) {
+  throw new Error("dialogRef not provided - component must be used inside a DynamicDialog");
+}
+
+const emit = defineEmits(["deleted", "canceled"]);
 
 const route = useRoute();
-const dialogRef: any = inject('dialogRef');
 
 const { api, addToastMessage } = useAppStore();
 
@@ -16,32 +22,30 @@ const asyncOperationRunning = ref<boolean>(false);
 
 // Must be computed since PrimeVue's Dialog Service does not allow custom props for components
 const collection = computed<CollectionAccessObject>(() => {
-  return dialogRef?.value?.data?.collection || null;
+  return dialogRef?.value?.data?.collection ?? null;
 });
 
 const deleteMessage = computed<string>(() => {
-  const label: string = collection.value?.collection.node.data.label ?? '';
+  const label: string = collection.value?.collection.node.data.label ?? "";
   const textsCount: number = collection.value?.texts?.length ?? 0;
   const annotationsCount: number = collection.value?.annotations?.length ?? 0;
 
   const parts: string[] = [];
 
   if (textsCount > 0) {
-    parts.push(`${textsCount} ${textsCount === 1 ? 'Text' : 'Texts'}`);
+    parts.push(`${textsCount} ${textsCount === 1 ? "Text" : "Texts"}`);
   }
 
   if (annotationsCount > 0) {
-    parts.push(`${annotationsCount} ${annotationsCount === 1 ? 'Annotation' : 'Annotations'}`);
+    parts.push(`${annotationsCount} ${annotationsCount === 1 ? "Annotation" : "Annotations"}`);
   }
 
-  const itemsPart: string = parts.length > 0 ? `, including ${parts.join(' and ')}` : '';
+  const itemsPart: string = parts.length > 0 ? `, including ${parts.join(" and ")}` : "";
 
   return `The Collection with label "${label}" will be deleted${itemsPart}. Are you sure?`;
 });
 
 watch(() => route.path, closeModal);
-
-// ------------------------- UI stuff ------------------------
 
 async function handleSubmitClick(): Promise<void> {
   asyncOperationRunning.value = true;
@@ -51,9 +55,9 @@ async function handleSubmitClick(): Promise<void> {
 
     closeModal();
 
-    emit('deleted');
+    emit("deleted");
   } catch (error: unknown) {
-    showMessage('error', error as Error);
+    showMessage("error", error as Error);
   } finally {
     asyncOperationRunning.value = false;
   }
@@ -63,24 +67,22 @@ function closeModal(): void {
   dialogRef.value.close();
 }
 
-function showMessage(result: 'success' | 'error', error?: Error) {
+function showMessage(result: "success" | "error", error?: Error) {
   addToastMessage({
     severity: result,
-    summary: result === 'success' ? 'Changes saved successfully' : 'Error saving changes',
-    detail: error?.message ?? '',
+    summary: result === "success" ? "Changes saved successfully" : "Error saving changes",
+    detail: error?.message ?? "",
     life: 2000,
   });
 }
 
-async function handleCancelClick(): Promise<void> {
+function handleCancelClick(): void {
   closeModal();
 }
 </script>
 
 <template>
-  <h2 class="w-full text-center m-0">
-    Delete collection "{{ collection.collection.node.data.label }}"
-  </h2>
+  <h2 class="w-full text-center m-0">Delete collection "{{ collection.collection.node.data.label }}"</h2>
 
   <div class="content text-center mb-2">
     <p>
@@ -96,13 +98,7 @@ async function handleCancelClick(): Promise<void> {
       :loading="asyncOperationRunning"
       @click="handleSubmitClick"
     ></Button>
-    <Button
-      type="button"
-      label="Cancel"
-      title="Cancel"
-      severity="secondary"
-      @click="handleCancelClick"
-    ></Button>
+    <Button type="button" label="Cancel" title="Cancel" severity="secondary" @click="handleCancelClick"></Button>
   </div>
 </template>
 

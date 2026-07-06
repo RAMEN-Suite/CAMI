@@ -1,4 +1,4 @@
-import { computed, readonly, ref } from 'vue';
+import { computed, readonly, ref } from "vue";
 import {
   CollectionNode,
   CollectionAccessObject,
@@ -8,10 +8,10 @@ import {
   CollectionAccessStatusObject,
   TextNode,
   NodeDto,
-} from '../models/types';
-import { useAppStore } from './app';
-import { useRefHistory } from '@vueuse/core';
-import { createNodeStatusObjectFromRawData } from '../utils/helper/helper';
+} from "../models/types";
+import { useAppStore } from "./app";
+import { useRefHistory } from "@vueuse/core";
+import { createNodeStatusObjectFromRawData } from "../utils/helper/helper";
 
 const { api } = useAppStore();
 
@@ -24,16 +24,10 @@ const previousPaths = useRefHistory(pathToActiveCollection, {
   capacity: 5,
 });
 
-const mode = ref<'view' | 'edit' | 'create'>('view');
+const mode = ref<"view" | "edit">("view");
 const asyncOperationRunning = ref<boolean>(false);
 const isFetchingCollectionDetails = ref<boolean>(false);
-const canNavigate = computed<boolean>(() => {
-  if (mode.value === 'edit' || mode.value === 'create') {
-    return false;
-  }
-
-  return true;
-});
+const canNavigate = computed<boolean>(() => mode.value === "view");
 
 export function useCollectionManagerStore() {
   /**
@@ -48,7 +42,7 @@ export function useCollectionManagerStore() {
     // TODO: Handle errors
     const [collection, annotations, texts] = await Promise.all([
       api.getCollection(uuid),
-      api.getAnnotations('collection', uuid),
+      api.getAnnotations("collection", uuid),
       api.getChildTexts(uuid),
     ]);
 
@@ -66,8 +60,8 @@ export function useCollectionManagerStore() {
    * from the column.
    */
   function removeTemporaryCollectionItems() {
-    levels.value.forEach(level => {
-      level.collections = level.collections.filter(c => c.status !== 'temporary');
+    levels.value.forEach((level) => {
+      level.collections = level.collections.filter((c) => c.status !== "temporary");
     });
   }
 
@@ -97,7 +91,7 @@ export function useCollectionManagerStore() {
    * @returns {string} The new URL path as a string.
    */
   function createNewUrlPath(uuid: string, index: number): string {
-    return createNewUrlPathElements(uuid, index).join(',');
+    return createNewUrlPathElements(uuid, index).join(",");
   }
 
   /**
@@ -108,7 +102,7 @@ export function useCollectionManagerStore() {
    * @returns {ColumnEntry | null} The collection if found, or null if not found.
    */
   function findCollectionInHierarchy(uuid: string, index: number): ColumnEntry | null {
-    return levels.value[index].collections.find(c => c.data.node.data.uuid === uuid) ?? null;
+    return levels.value[index].collections.find((c) => c.data.node.data.uuid === uuid) ?? null;
   }
 
   /**
@@ -120,9 +114,9 @@ export function useCollectionManagerStore() {
    * @returns {string[]} The URL path as an array of UUIDs. If the 'path' parameter is not found, an empty array is returned.
    */
   function getUrlPath(): string[] {
-    const uuidPath: string | null = new URLSearchParams(window.location.search).get('path');
+    const uuidPath: string | null = new URLSearchParams(window.location.search).get("path");
 
-    return uuidPath?.split(',') ?? [];
+    return uuidPath?.split(",") ?? [];
   }
 
   /**
@@ -130,9 +124,9 @@ export function useCollectionManagerStore() {
    *
    * Called when the user clicks on the home button of the breadcrumbs.
    *
-   * @returns {Promise<void>} A promise that resolves when the operation is complete.
+   * @returns {void} This function does not return a value
    */
-  async function restoreDefaultView(): Promise<void> {
+  function restoreDefaultView(): void {
     // Reset path selection (no selected item in column, nothing displayed in edit pane)
     levels.value[0].activeCollection = null;
     setPathToActiveCollection([]);
@@ -185,7 +179,7 @@ export function useCollectionManagerStore() {
    *
    * @param {string} newMode - The new mode to set. Must be one of 'view', 'edit', 'create'.
    */
-  function setMode(newMode: 'view' | 'edit' | 'create'): void {
+  function setMode(newMode: "view" | "edit" | "create"): void {
     mode.value = newMode;
   }
 
@@ -209,18 +203,12 @@ export function useCollectionManagerStore() {
       return;
     }
 
-    const rawCao: CollectionAccessObject = await fetchCollectionDetails(
-      newPath[newPath.length - 1].node.data.uuid,
-    );
+    const rawCao: CollectionAccessObject = await fetchCollectionDetails(newPath[newPath.length - 1].node.data.uuid);
 
     const cao: CollectionAccessStatusObject = {
-      collection: createNodeStatusObjectFromRawData(
-        rawCao.collection,
-      ) as NodeStatusObject<CollectionNode>,
-      texts: rawCao.texts.map(t =>
-        createNodeStatusObjectFromRawData(t),
-      ) as NodeStatusObject<TextNode>[],
-      annotations: rawCao.annotations.map(a => createNodeStatusObjectFromRawData(a)),
+      collection: createNodeStatusObjectFromRawData(rawCao.collection) as NodeStatusObject<CollectionNode>,
+      texts: rawCao.texts.map((t) => createNodeStatusObjectFromRawData(t)) as NodeStatusObject<TextNode>[],
+      annotations: rawCao.annotations.map((a) => createNodeStatusObjectFromRawData(a)),
     };
 
     setCollectionActive(cao);
@@ -267,8 +255,7 @@ export function useCollectionManagerStore() {
     });
 
     const lastActiveCollectionIsSame: boolean =
-      levels.value[levels.value.length - 1]?.activeCollection?.node.data.uuid ===
-      currentLastColumn?.parentUuid;
+      levels.value[levels.value.length - 1]?.activeCollection?.node.data.uuid === currentLastColumn?.parentUuid;
 
     // Then: Add level for the children of last selection in path. Is either an empty level
     // or an existing level (see comments above)

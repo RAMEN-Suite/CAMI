@@ -1,31 +1,29 @@
-import { RouteRecordRaw, Router, createWebHistory, createRouter } from 'vue-router';
-import Editor from './views/Editor.vue';
-import CollectionManager from './views/CollectionManager.vue';
-import CollectionSingleView from './views/CollectionSingleView.vue';
-import { useNavigationGuard } from './composables/useNavigationGuard';
-import Playground from './views/Playground.vue';
+import { Router, createWebHistory, createRouter } from "vue-router";
+import Editor from "./views/Editor.vue";
+import CollectionManager from "./views/CollectionManager.vue";
+import CollectionSingleView from "./views/CollectionSingleView.vue";
+import { useNavigationGuard } from "./composables/useNavigationGuard";
 
 const { hasOpenModal, redirectToCollectionPath } = useNavigationGuard();
 
 const allRoutes = [
-  { path: '/', component: CollectionManager },
+  { path: "/", component: CollectionManager },
   {
-    path: '/collections/:uuid',
+    path: "/collections/:uuid",
     component: CollectionSingleView,
     beforeEnter: redirectToCollectionPath,
   },
-  { path: '/texts/:uuid', component: Editor },
-  { path: '/editor/:uuid', component: Editor },
-  { path: '/playground', component: Playground },
+  { path: "/texts/:uuid", component: Editor },
+  { path: "/contents/:uuid", component: Editor },
 ];
 
-const prodRoutes = allRoutes.filter(r => !['/test', '/playground'].includes(r.path));
+const prodRoutes = allRoutes.filter((r) => !["/test", "/playground"].includes(r.path));
 
 const usedRoutes = import.meta.env.DEV ? allRoutes : prodRoutes;
 
 const router: Router = createRouter({
   history: createWebHistory(),
-  routes: usedRoutes as RouteRecordRaw[],
+  routes: usedRoutes,
 });
 
 router.beforeEach(() => hasOpenModal());

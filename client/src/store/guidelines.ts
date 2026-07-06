@@ -1,6 +1,6 @@
-import { computed, readonly, ref } from 'vue';
-import { IGuidelines } from '../models/IGuidelines';
-import { useFilterStore } from './filter';
+import { computed, readonly, ref } from "vue";
+import { IGuidelines } from "../models/IGuidelines";
+import { useFilterStore } from "./filter";
 import {
   AnnotationConfigEntity,
   AnnotationType,
@@ -10,9 +10,9 @@ import {
   BuiltinEditorAttribute,
   BuiltinStructuralType,
   AnnotationMapping,
-} from '../models/types';
-import { BUILTIN_STRUCTURAL_CONFIGS } from '../config/constants';
-import { EDITOR_OWNED_ATTRIBUTES, DEFAULT_ANNOTATION_MAPPING } from '../config/editor';
+} from "../models/types";
+import { BUILTIN_STRUCTURAL_CONFIGS } from "../config/constants";
+import { EDITOR_OWNED_ATTRIBUTES, DEFAULT_ANNOTATION_MAPPING } from "../config/editor";
 
 const { initializeFilter } = useFilterStore();
 const guidelines = ref<IGuidelines>();
@@ -79,7 +79,7 @@ export function useGuidelinesStore() {
     groupedAndSortedAnnotationTypes.value = sortAnnotationTypesInGroup();
     availableCollectionLabels.value = getAvailableCollectionLabels();
     availableEntityLabels.value = getAvailableEntityLabels();
-    availableTextLabels.value = getAvailableTextLabels();
+    availableTextLabels.value = getAvailableContentLabels();
 
     initializeFilter(guidelines.value);
   }
@@ -110,7 +110,7 @@ export function useGuidelinesStore() {
    */
   function annotationHasConstraints(config: AnnotationType): boolean {
     // TODO: The subType field requires a lot of hacks -> Refactor later
-    if (config.properties?.some(p => p.required === true && p.name !== 'subType')) {
+    if (config.properties?.some((p) => p.required && p.name !== "subType")) {
       return true;
     }
 
@@ -131,11 +131,11 @@ export function useGuidelinesStore() {
    * @return {AnnotationType} The configuration of the annotation type.
    */
   function getAnnotationConfig(type: string): AnnotationType {
-    return guidelines.value.annotations.types.find(t => t.type === type);
+    return guidelines.value.annotations.types.find((t) => t.type === type);
   }
 
   function getStructuralAnnotationConfig(type: string): AnnotationType | undefined {
-    return mergedStructuralConfigs.value.find(t => t.type === type);
+    return mergedStructuralConfigs.value.find((t) => t.type === type);
   }
 
   /**
@@ -164,10 +164,7 @@ export function useGuidelinesStore() {
    * @param {string} annotationType - The type of the annotation.
    * @return {PropertyConfig[]} The fields for the annotation type in the context of the Collection.
    */
-  function getCollectionAnnotationFields(
-    collectionNodeLabels: string[],
-    annotationType: string,
-  ): PropertyConfig[] {
+  function getCollectionAnnotationFields(collectionNodeLabels: string[], annotationType: string): PropertyConfig[] {
     // TODO: This is a hack since the guidelines structure can change. It should be refactored to use the same structure as the annotations.
 
     // Default properties for annotations that are in ALL collections
@@ -177,37 +174,28 @@ export function useGuidelinesStore() {
     ];
 
     // Default properties for annotations that exists in the collections with given node labels
-    const byCollectionType: PropertyConfig[] = guidelines.value.collections.types.reduce(
-      (total: PropertyConfig[], curr) => {
-        if (collectionNodeLabels.includes(curr.additionalLabel)) {
-          const nestedFields: PropertyConfig[] = curr.annotations?.properties ?? [];
+    const byCollectionType: PropertyConfig[] = guidelines.value.collections.types.reduce((total: PropertyConfig[], curr) => {
+      if (collectionNodeLabels.includes(curr.additionalLabel)) {
+        const nestedFields: PropertyConfig[] = curr.annotations?.properties ?? [];
 
-          total.push(...nestedFields);
-        }
+        total.push(...nestedFields);
+      }
 
-        return total;
-      },
-      [],
-    );
+      return total;
+    }, []);
 
     // Properties for the given annotation type (no matter which level)
     const byAnnotationType: PropertyConfig[] =
-      getAvailableCollectionAnnotationConfigs(collectionNodeLabels).find(
-        t => t.type === annotationType,
-      )?.properties ?? [];
+      getAvailableCollectionAnnotationConfigs(collectionNodeLabels).find((t) => t.type === annotationType)?.properties ?? [];
 
     return [...byDefault, ...byCollectionType, ...byAnnotationType];
   }
 
   // TODO: This is a hack since the guidelines structure can change. It should be refactored to use the same structure as the annotations.
-  function getCollectionAnnotationConfig(
-    collectionLabels: string[],
-    annotationType: string,
-  ): AnnotationType {
-    const availableConfigs: AnnotationType[] =
-      getAvailableCollectionAnnotationConfigs(collectionLabels);
+  function getCollectionAnnotationConfig(collectionLabels: string[], annotationType: string): AnnotationType {
+    const availableConfigs: AnnotationType[] = getAvailableCollectionAnnotationConfigs(collectionLabels);
 
-    const desired: AnnotationType = availableConfigs.find(t => t.type === annotationType);
+    const desired: AnnotationType = availableConfigs.find((t) => t.type === annotationType);
 
     return desired;
   }
@@ -221,14 +209,13 @@ export function useGuidelinesStore() {
    * @return {AnnotationConfigEntity[]} The combined and deduplicated entities.
    */
   function getAvailableAnnotationEntityConfigs(): AnnotationConfigEntity[] {
-    const baseAnnotationEntities: AnnotationConfigEntity[] =
-      guidelines.value.annotations.entities ?? [];
+    const baseAnnotationEntities: AnnotationConfigEntity[] = guidelines.value.annotations.entities ?? [];
 
-    const baseCollectionEntities: AnnotationConfigEntity[] =
-      guidelines.value.collections.annotations.entities ?? [];
+    const baseCollectionEntities: AnnotationConfigEntity[] = guidelines.value.collections.annotations.entities ?? [];
 
-    const additionalCollectionEntities: AnnotationConfigEntity[] =
-      guidelines.value.collections.types.flatMap(c => c.annotations?.entities ?? []);
+    const additionalCollectionEntities: AnnotationConfigEntity[] = guidelines.value.collections.types.flatMap(
+      (c) => c.annotations?.entities ?? [],
+    );
 
     const combined: AnnotationConfigEntity[] = [
       ...baseAnnotationEntities,
@@ -236,33 +223,25 @@ export function useGuidelinesStore() {
       ...additionalCollectionEntities,
     ];
 
-    const unique: AnnotationConfigEntity[] = combined.reduce<AnnotationConfigEntity[]>(
-      (total, curr) => {
-        if (!total.some(r => r.category === curr.category && r.nodeLabel === curr.nodeLabel)) {
-          total.push(curr);
-        }
-        return total;
-      },
-      [],
-    );
+    const unique: AnnotationConfigEntity[] = combined.reduce<AnnotationConfigEntity[]>((total, curr) => {
+      if (!total.some((r) => r.category === curr.category && r.nodeLabel === curr.nodeLabel)) {
+        total.push(curr);
+      }
+      return total;
+    }, []);
 
     return unique;
   }
 
-  function getAvailableCollectionAnnotationConfigs(
-    collectionNodeLabels: string[],
-  ): AnnotationType[] {
+  function getAvailableCollectionAnnotationConfigs(collectionNodeLabels: string[]): AnnotationType[] {
     const base: AnnotationType[] = guidelines.value.collections.annotations.types;
-    const additional: AnnotationType[] = guidelines.value.collections.types.reduce(
-      (total: AnnotationType[], curr) => {
-        if (collectionNodeLabels.includes(curr.additionalLabel)) {
-          const nested: AnnotationType[] = curr.annotations?.types ?? [];
-          total.push(...nested);
-        }
-        return total;
-      },
-      [],
-    );
+    const additional: AnnotationType[] = guidelines.value.collections.types.reduce((total: AnnotationType[], curr) => {
+      if (collectionNodeLabels.includes(curr.additionalLabel)) {
+        const nested: AnnotationType[] = curr.annotations?.types ?? [];
+        total.push(...nested);
+      }
+      return total;
+    }, []);
 
     return [...base, ...additional];
   }
@@ -273,7 +252,7 @@ export function useGuidelinesStore() {
    * @return {string[]} The available labels.
    */
   function getAvailableCollectionLabels(): string[] {
-    return guidelines.value?.collections.types.map(collection => collection.additionalLabel) ?? [];
+    return guidelines.value?.collections.types.map((collection) => collection.additionalLabel) ?? [];
   }
 
   /**
@@ -282,15 +261,15 @@ export function useGuidelinesStore() {
    * @return {string[]} The available labels.
    */
   function getAvailableEntityLabels(): string[] {
-    return guidelines.value?.annotations.entities.map(e => e.nodeLabel) ?? [];
+    return guidelines.value?.annotations.entities.map((e) => e.nodeLabel) ?? [];
   }
 
   /**
-   * Retrieves the available labels that can be assigned to a a Text node.
+   * Retrieves the available labels that can be assigned to a a Content node.
    *
    * @return {string[]} The available labels.
    */
-  function getAvailableTextLabels(): string[] {
+  function getAvailableContentLabels(): string[] {
     return guidelines.value?.texts.additionalLabels ?? [];
   }
 
@@ -303,11 +282,11 @@ export function useGuidelinesStore() {
    */
   function getAvailableNodeLabels(baseLabel: BaseNodeLabel): string[] {
     switch (baseLabel) {
-      case 'Collection':
+      case "Collection":
         return availableCollectionLabels.value;
-      case 'Entity':
+      case "Entity":
         return availableEntityLabels.value;
-      case 'Content':
+      case "Content":
         return availableTextLabels.value;
       default:
         return [];
@@ -355,20 +334,17 @@ export function useGuidelinesStore() {
    * @return {Record<string, AnnotationType[]>} An object where the keys are the categories and the values are arrays of annotation types belonging to that category.
    */
   function groupAnnotationTypes(): Record<string, AnnotationType[]> {
-    return guidelines.value.annotations.types.reduce(
-      (grouped: Record<string, AnnotationType[]>, current: AnnotationType) => {
-        const category = current.category;
+    return guidelines.value.annotations.types.reduce((grouped: Record<string, AnnotationType[]>, current: AnnotationType) => {
+      const category = current.category;
 
-        if (!grouped[category]) {
-          grouped[category] = [];
-        }
+      if (!grouped[category]) {
+        grouped[category] = [];
+      }
 
-        grouped[category].push(current);
+      grouped[category].push(current);
 
-        return grouped;
-      },
-      {},
-    );
+      return grouped;
+    }, {});
   }
 
   /**
@@ -382,9 +358,7 @@ export function useGuidelinesStore() {
     const config: AnnotationType | undefined = getAnnotationConfig(annotation.data.type);
 
     if (!config) {
-      console.error(
-        `The configuration of annotation type "${annotation.data.type} could not be found`,
-      );
+      console.error(`The configuration of annotation type "${annotation.data.type} could not be found`);
 
       return false;
     }
@@ -407,7 +381,7 @@ export function useGuidelinesStore() {
   }
 
   function getPriorityForType(type: string): number {
-    return mergedStructuralConfigs.value.find(c => c.type === type)?.priority ?? 0;
+    return mergedStructuralConfigs.value.find((c) => c.type === type)?.priority ?? 0;
   }
 
   /**
@@ -428,20 +402,16 @@ export function useGuidelinesStore() {
    *    property: 'n',
    * }]
    */
-  function getEditorOwnedProperties(
-    annotationType: string,
-  ): { property: string; attribute: BuiltinEditorAttribute }[] {
+  function getEditorOwnedProperties(annotationType: string): { property: string; attribute: BuiltinEditorAttribute }[] {
     const editorRole: BuiltinStructuralType | string = getEditorRole(annotationType);
     const propertyByAttribute: Partial<Record<BuiltinEditorAttribute, string | undefined>> =
       annotationMapping.value.attrByRole[editorRole as BuiltinStructuralType] ?? {};
 
-    const config: AnnotationType | undefined = BUILTIN_STRUCTURAL_CONFIGS.find(
-      c => c.type === editorRole,
-    );
+    const config: AnnotationType | undefined = BUILTIN_STRUCTURAL_CONFIGS.find((c) => c.type === editorRole);
 
     const attributes: BuiltinEditorAttribute[] = (config?.properties ?? [])
-      .filter(p => EDITOR_OWNED_ATTRIBUTES.includes(p.name as BuiltinEditorAttribute))
-      .map(p => p.name as BuiltinEditorAttribute);
+      .filter((p) => EDITOR_OWNED_ATTRIBUTES.includes(p.name as BuiltinEditorAttribute))
+      .map((p) => p.name as BuiltinEditorAttribute);
 
     return attributes.map((attribute: BuiltinEditorAttribute) => ({
       attribute,
@@ -460,14 +430,11 @@ export function useGuidelinesStore() {
    * @param {PropertyConfig[]} incoming Project-defined properties
    * @returns {PropertyConfig[]} The merged property list
    */
-  function mergeDomainProperties(
-    base: PropertyConfig[],
-    incoming: PropertyConfig[],
-  ): PropertyConfig[] {
+  function mergeDomainProperties(base: PropertyConfig[], incoming: PropertyConfig[]): PropertyConfig[] {
     const combined: PropertyConfig[] = [...base];
 
     for (const prop of incoming) {
-      const index: number = combined.findIndex(p => p.name === prop.name);
+      const index: number = combined.findIndex((p) => p.name === prop.name);
 
       if (index !== -1) {
         combined[index] = { ...combined[index], ...prop };
@@ -490,7 +457,7 @@ export function useGuidelinesStore() {
   function isBuiltinStructuralType(annotationType: string): boolean {
     const editorRole: string = getEditorRole(annotationType);
 
-    return BUILTIN_STRUCTURAL_CONFIGS.some(c => c.type === editorRole);
+    return BUILTIN_STRUCTURAL_CONFIGS.some((c) => c.type === editorRole);
   }
 
   /**
@@ -539,14 +506,12 @@ export function useGuidelinesStore() {
    */
   function buildMergedStructuralConfigs(guidelinesData: IGuidelines): AnnotationType[] {
     // 1. Built-in types, renamed to the project's type/property names if configured
-    const builtInDerived: AnnotationType[] = BUILTIN_STRUCTURAL_CONFIGS.map(config => {
+    const builtInDerived: AnnotationType[] = BUILTIN_STRUCTURAL_CONFIGS.map((config) => {
       const editorRole: string = config.type;
-      const annotationType: string =
-        annotationMapping.value.typeByRole[editorRole as BuiltinStructuralType] ?? editorRole;
-      const propertyByAttribute =
-        annotationMapping.value.attrByRole[editorRole as BuiltinStructuralType] ?? {};
+      const annotationType: string = annotationMapping.value.typeByRole[editorRole as BuiltinStructuralType] ?? editorRole;
+      const propertyByAttribute = annotationMapping.value.attrByRole[editorRole as BuiltinStructuralType] ?? {};
 
-      const properties: PropertyConfig[] = (config.properties ?? []).map(p => ({
+      const properties: PropertyConfig[] = (config.properties ?? []).map((p) => ({
         ...p,
         name: propertyByAttribute[p.name as BuiltinEditorAttribute] ?? p.name,
       }));
@@ -564,13 +529,10 @@ export function useGuidelinesStore() {
         continue;
       }
 
-      const existing: AnnotationType | undefined = builtInDerived.find(c => c.type === entry.type);
+      const existing: AnnotationType | undefined = builtInDerived.find((c) => c.type === entry.type);
 
       if (existing) {
-        existing.properties = mergeDomainProperties(
-          existing.properties ?? [],
-          entry.properties ?? [],
-        );
+        existing.properties = mergeDomainProperties(existing.properties ?? [], entry.properties ?? []);
       } else {
         builtInDerived.push({
           ...entry,
@@ -605,7 +567,7 @@ export function useGuidelinesStore() {
     getAvailableCollectionLabels,
     getAvailableEntityLabels,
     getAvailableNodeLabels,
-    getAvailableTextLabels,
+    getAvailableContentLabels,
     getCollectionAnnotationFields,
     getCollectionAnnotationConfig,
     getCollectionConfigFields,

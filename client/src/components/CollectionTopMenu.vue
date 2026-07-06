@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BookmarkButton from './BookmarkButton.vue';
+import BookmarkButton from "./BookmarkButton.vue";
 </script>
 
 <template>

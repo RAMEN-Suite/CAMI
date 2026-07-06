@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { ComponentPublicInstance, nextTick, ref, useTemplateRef } from 'vue';
-import AutoComplete from 'primevue/autocomplete';
-import InputGroup from 'primevue/inputgroup';
-import Button from 'primevue/button';
-import { useTiptapStore } from '../store/tiptap';
+import { ComponentPublicInstance, nextTick, ref, useTemplateRef } from "vue";
+import AutoComplete from "primevue/autocomplete";
+import InputGroup from "primevue/inputgroup";
+import Button from "primevue/button";
+import { useTiptapStore } from "../store/tiptap";
 
 /**
  *  Enriches Search with an html key that contains the formatted search result
  */
-type SearchResult = {
+interface SearchResult {
   index: number;
   match: string;
   startIndex: number;
   endIndex: number;
   html: string;
-};
+}
 
 /**
  * Interface for relevant state information about the text search
@@ -22,11 +22,9 @@ type SearchResult = {
 interface TextSearchObject {
   fetchedItems: SearchResult[];
   searchStr: string | null;
-  mode: 'edit' | 'view';
+  mode: "edit" | "view";
   elm: ReturnType<typeof useTemplateRef<ComponentPublicInstance>>;
 }
-
-const PREVIEW_CHARACTER_SIZE: number = 25;
 
 const { hasUnsavedChanges } = useTiptapStore();
 
@@ -34,75 +32,42 @@ const isSearchActive = ref<boolean>(false);
 
 const textSearchObject = ref<TextSearchObject>({
   fetchedItems: [],
-  searchStr: '',
-  mode: 'view',
-  elm: useTemplateRef<ComponentPublicInstance>('searchbar'),
+  searchStr: "",
+  mode: "view",
+  elm: useTemplateRef<ComponentPublicInstance>("searchbar"),
 });
 
 function resetSearch(): void {
-  textSearchObject.value.searchStr = '';
+  textSearchObject.value.searchStr = "";
   textSearchObject.value.fetchedItems = [];
 
   setIsSearchActive(false);
 }
 
-async function searchTextMatches(searchString: string): Promise<void> {}
-
 function setIsSearchActive(mode: boolean): void {
   isSearchActive.value = mode;
 
-  if (mode === false) {
+  if (!mode) {
     return;
   }
 
-  nextTick(() => {
-    const inputElm: HTMLInputElement = textSearchObject.value.elm?.$el?.querySelector('input');
+  void nextTick(() => {
+    const inputElm: HTMLInputElement = textSearchObject.value.elm?.$el?.querySelector("input");
 
     inputElm?.focus();
   });
 }
 
-/**
- * Generates an HTML string with the matched text highlighted and surrounding context preview.
- *
- * The function takes a RegExp match result and constructs an HTML snippet
- * that highlights the matched portion of the text, showing a preview of
- * characters before and after the match.
- *
- * Called for each search result of a fulltext search operation.
- *
- * @param {RegExpExecArray} match - The regex match result containing details of the match.
- * @returns {string} HTML string with the matched text highlighted and context preview.
- */
-
-function renderHtml(match: RegExpExecArray): string {
-  const textToSearch: string = match.input;
-
-  const startIndex: number = match.index;
-  const endIndex: number = startIndex + match[0].length - 1;
-
-  const prevText: string = textToSearch.slice(startIndex - PREVIEW_CHARACTER_SIZE, startIndex);
-  const nextText: string = textToSearch.slice(endIndex + 1, endIndex + 1 + PREVIEW_CHARACTER_SIZE);
-
-  const hasMoreBefore: boolean = startIndex - PREVIEW_CHARACTER_SIZE > 0;
-  const hasMoreAfter: boolean = endIndex + 1 + PREVIEW_CHARACTER_SIZE < textToSearch.length;
-
-  const ellipsesBefore: string = hasMoreBefore ? '...' : '';
-  const ellipsesAfter: string = hasMoreAfter ? '...' : '';
-
-  return `<small>${ellipsesBefore}${prevText}<b>${match[0]}</b>${nextText}${ellipsesAfter}</small>`;
-}
-
 function handleResultItemSelect(item: SearchResult): void {
   if (hasUnsavedChanges()) {
     const answer: boolean = window.confirm(
-      'Save your changes before jumping to a new snippet. Be aware that if you have unsaved changes and still decide to jump to the snippet, the result might not be correct',
+      "Save your changes before jumping to a new snippet. Be aware that if you have unsaved changes and still decide to jump to the snippet, the result might not be correct",
     );
 
     if (!answer) {
       // Next tick necessary to prevent race conditions between state updates of this component and
       // PrimeVue's component
-      nextTick(() => {
+      void nextTick(() => {
         textSearchObject.value.searchStr = item.match;
       });
       return;
@@ -115,7 +80,7 @@ function handleResultItemSelect(item: SearchResult): void {
   // by PrimeVue's focus and selection management. The emitted event is registered by an event listener
   // in EditorText.vue. Bit hacky, but it works. 100ms is currently enough, but might be adapted later...
   setTimeout(() => {
-    window.dispatchEvent(new CustomEvent('forceCaretPlacement'));
+    window.dispatchEvent(new CustomEvent("forceCaretPlacement"));
   }, 100);
 }
 </script>
@@ -124,23 +89,23 @@ function handleResultItemSelect(item: SearchResult): void {
   <InputGroup class="mr-1" :pt="{ root: { style: { width: 'auto' } } }">
     <AutoComplete
       v-if="isSearchActive"
-      :class="isSearchActive ? 'active' : 'inactive'"
+      ref="searchbar"
       v-model="textSearchObject.searchStr"
+      :class="isSearchActive ? 'active' : 'inactive'"
       :placeholder="`Search for text`"
       :suggestions="textSearchObject.fetchedItems"
       class="searchbar h-2rem"
       variant="filled"
-      ref="searchbar"
       title="Enter search term"
       @complete="searchTextMatches($event.query)"
       @option-select="handleResultItemSelect($event.value)"
       @blur="isSearchActive = textSearchObject.searchStr === '' ? false : true"
     >
-      <template #header v-if="textSearchObject.fetchedItems.length > 0">
+      <template v-if="textSearchObject.fetchedItems.length > 0" #header>
         <div class="font-medium px-3 py-2">{{ textSearchObject.fetchedItems.length }} Results</div>
       </template>
       <template #option="slotProps">
-        <span v-html="slotProps.option.html" :title="slotProps.option.match"></span>
+        <span :title="slotProps.option.match" v-html="slotProps.option.html"></span>
       </template>
     </AutoComplete>
     <Button
@@ -148,8 +113,8 @@ function handleResultItemSelect(item: SearchResult): void {
       severity="secondary"
       size="small"
       icon="pi pi-search"
-      @click="setIsSearchActive(true)"
       title="Open search bar"
+      @click="setIsSearchActive(true)"
     />
     <Button
       v-if="isSearchActive"

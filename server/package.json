@@ -1,6 +1,6 @@
 {
   "name": "atag_editor_backend",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "BE Express",
   "type": "module",
   "scripts": {
@@ -8,7 +8,11 @@
     "compile": "tsc -p ./",
     "compile:watch": "tsc -p ./ --watch",
     "start": "node ./dist/start.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --check src",
+    "format:fix": "prettier --write src"
   },
   "repository": {
     "type": "git",
@@ -25,13 +29,18 @@
     "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/morgan": "^1.9.10",
     "@types/node": "^20.12.10",
+    "eslint": "^10.2.1",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.6.0",
     "concurrently": "^8.2.2",
     "nodemon": "^3.1.0",
     "prettier": "^3.2.5",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.59.3"
   }
 }

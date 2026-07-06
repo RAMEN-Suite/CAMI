@@ -1,46 +1,42 @@
-import { TreeNode } from 'primevue/treenode';
-import { IAnnotation } from './IAnnotation';
-import ICharacter from './ICharacter';
-import { ICollection } from './ICollection';
-import { IEntity } from './IEntity';
-import { IText } from './IText';
-import type { BuiltinEditorAttribute } from '../config/editor';
-import type { AnnotationMapping } from '../config/editor';
+import { TreeNode } from "primevue/treenode";
+import { IAnnotation } from "./IAnnotation";
+import ICharacter from "./ICharacter";
+import { ICollection } from "./ICollection";
+import { IEntity } from "./IEntity";
+import { IText } from "./IText";
+import type { BuiltinEditorAttribute } from "../config/editor";
+import type { AnnotationMapping } from "../config/editor";
 
-export type AdditionalText = {
+export interface AdditionalText {
   annotation: IAnnotation;
   text: TextNode;
-};
+}
 
 /** A status object for nodes in the frontend and for API requests */
-export type NodeStatusObject<
-  T extends Node<BaseNodeData> = AnnotationNode | EntityNode | CollectionNode | TextNode,
-> = {
+export interface NodeStatusObject<T extends Node<BaseNodeData> = AnnotationNode | EntityNode | CollectionNode | TextNode> {
   node: T;
   connectedNodes: NodeStatusObject<T>[];
   meta: {
     status: NodeStatus;
     [key: string]: unknown;
   };
-};
+}
 
 /**
  * A status field for nodes in the frontend and for API requests. Is accessed during editing
  * (to display the current edit state) and before saving to tell the backend how to process the data.
  */
-export type NodeStatus = 'added' | 'removed' | 'created' | 'deleted' | 'modified' | 'unchanged';
+export type NodeStatus = "added" | "removed" | "created" | "deleted" | "modified" | "unchanged";
 
 export type Annotation = NodeStatusObject<AnnotationNode>;
 
 export type AnnotationNode = Node<IAnnotation>;
 
 /** A node object for retrieving data */
-export type NodeDto<
-  T extends Node<BaseNodeData> = AnnotationNode | EntityNode | CollectionNode | TextNode,
-> = {
+export interface NodeDto<T extends Node<BaseNodeData> = AnnotationNode | EntityNode | CollectionNode | TextNode> {
   node: T;
   connectedNodes: NodeDto[];
-};
+}
 
 export interface AnnotationData {
   additionalTexts: AdditionalText[];
@@ -48,7 +44,7 @@ export interface AnnotationData {
   properties: IAnnotation;
 }
 
-export type AnnotationType = {
+export interface AnnotationType {
   category: string; // CAMI
   defaultSelected: boolean; // CAMI
   isZeroPoint?: boolean; // CAMI and NORI
@@ -63,141 +59,141 @@ export type AnnotationType = {
   contains?: string[]; // CAMI -> only for builtin structural elements
   topLevel?: boolean; // CAMI -> deprecated, but keep for now
   priority?: number; // CAMI
-};
+}
 
-export type AnnotationReference = {
+export interface AnnotationReference {
   isFirstCharacter: boolean;
   isLastCharacter: boolean;
   subType: string | null;
   type: string;
   uuid: string;
-};
+}
 
-export type AnnotationConfigEntity = {
+export interface AnnotationConfigEntity {
   category: string;
   nodeLabel: string;
-};
+}
 
-export type ApiJson = {
+export interface ApiJson {
   text: string;
   annotations: NodeDto[];
-};
+}
 
 export type BuiltinStructuralType =
-  | 'paragraph'
-  | 'heading'
-  | 'hardBreak'
-  | 'table'
-  | 'tableRow'
-  | 'tableCell'
-  | 'tableHeader'
-  | 'bulletList'
-  | 'listItem';
+  | "paragraph"
+  | "heading"
+  | "hardBreak"
+  | "table"
+  | "tableRow"
+  | "tableCell"
+  | "tableHeader"
+  | "bulletList"
+  | "listItem";
 
 // Editor-framework facts live in `config/editor` (imported above). Re-exported here for convenience
 // so existing model-type importers keep working.
 export type { BuiltinEditorAttribute };
 export type { AnnotationMapping };
 
-export type TiptapMark = {
+export interface TiptapMark {
   type: string;
   attrs: Record<string, any>;
-};
+}
 
 export type AllowedTiptapNodeTypes = string;
 
-export type TiptapNode = {
+export interface TiptapNode {
   type: AllowedTiptapNodeTypes;
   attrs?: Record<string, any>;
   content?: TiptapNode[];
   marks?: TiptapMark[];
   text?: string;
-};
+}
 
 export type TiptapJson = TiptapNode;
 
-export type BaseNodeData = {
+export interface BaseNodeData {
   uuid: string;
-};
+}
 
 /** Base node labels in RAMEN */
-export type BaseNodeLabel = 'Annotation' | 'Character' | 'Collection' | 'Entity' | 'Content';
+export type BaseNodeLabel = "Annotation" | "Character" | "Collection" | "Entity" | "Content";
 
-export type Bookmark = {
+export interface Bookmark {
   data: CollectionNode | TextNode;
-  type: 'collection' | 'text';
+  type: "collection" | "text";
   createdAt: string; // ISO 8601 string
   updatedAt: string; // ISO 8601 string
-};
+}
 
-export type Character = {
+export interface Character {
   data: ICharacter;
   annotations: AnnotationReference[];
-};
+}
 
-export type CharacterPostData = {
+export interface CharacterPostData {
   characters: ICharacter[];
   text: string;
   textUuid: string;
   uuidEnd: string;
   uuidStart: string;
-};
+}
 
 export type CollectionNode = Node<ICollection>;
 
-export type CollectionAccessObject = {
+export interface CollectionAccessObject {
   annotations: NodeDto<AnnotationNode>[];
   collection: NodeDto<CollectionNode>;
   texts: NodeDto<TextNode>[];
-};
+}
 
-export type CollectionAccessStatusObject = {
+export interface CollectionAccessStatusObject {
   collection: NodeStatusObject<CollectionNode>;
   texts: NodeStatusObject<TextNode>[];
   annotations: NodeStatusObject[];
-};
+}
 
 export type CollectionCreationData = CollectionAccessObject & {
   parentCollection: CollectionNode | null;
 };
 
-export type CollectionNetworkActionType = 'move' | 'reference' | 'dereference' | 'delete';
+export type CollectionNetworkActionType = "move" | "reference" | "dereference" | "delete";
 
-export type CollectionPostData = {
+export interface CollectionPostData {
   data: CollectionAccessObject;
   initialData: CollectionAccessObject;
-};
+}
 
-export type CollectionPreview = {
+export interface CollectionPreview {
   collection: CollectionNode;
   nodeCounts: {
     annotations: number;
     texts: number;
     collections: number;
   };
-};
+}
 
-export type EditorSettings = {
+export interface EditorSettings {
   blockDecorations: {
     outline: boolean;
     baseType: boolean;
     semanticTypes: boolean;
   };
-};
+}
 
-export type NodeSearchParams = {
+export interface NodeSearchParams {
   searchInput?: string;
   nodeLabels?: string[];
   offset?: number;
   rowCount?: number;
-  sortDirection?: 'asc' | 'desc';
-};
+  sortDirection?: "asc" | "desc";
+}
 
 export type EntityNode = Node<IEntity>;
 
 export type HistoryStack = HistoryRecord[];
 
-export type HistoryRecord = {
+export interface HistoryRecord {
   caretPosition: string | null;
   timestamp: Date;
   data: {
@@ -206,60 +202,60 @@ export type HistoryRecord = {
     beforeStartCharacter: Character | null;
     characters: Character[];
   };
-};
+}
 
 export type IndexMap = Map<string, { startIndex: number; endIndex: number }>;
 
-export type ColumnEntry = {
+export interface ColumnEntry {
   data: NodeDto<CollectionNode>;
-  status: 'existing' | 'temporary';
-};
+  status: "existing" | "temporary";
+}
 
-export type Level = {
+export interface Level {
   collections: ColumnEntry[];
   activeCollection: NodeDto<CollectionNode> | null;
   parentUuid: string | null;
-};
+}
 
-export type MalformedAnnotation = {
-  reason: 'indexOutOfBounds' | 'unconfiguredType';
+export interface MalformedAnnotation {
+  reason: "indexOutOfBounds" | "unconfiguredType";
   data: StandoffAnnotation;
-};
+}
 
-export type NetworkPostData = {
+export interface NetworkPostData {
   type: CollectionNetworkActionType;
   nodes: (CollectionNode | TextNode)[];
   origin: CollectionNode | null;
   target: CollectionNode | null;
-};
+}
 
-export type Node<T = AnnotationNode | CollectionNode | EntityNode | TextNode> = {
+export interface Node<T = AnnotationNode | CollectionNode | EntityNode | TextNode> {
   data: T;
   nodeLabels: string[];
-};
+}
 
 export type NodeAncestry = NodeDto<CollectionNode>[];
 
-export type PaginationData = {
+export interface PaginationData {
   limit: number;
   offset?: number | null;
   order: string;
   search: string;
   totalRecords: number;
   nextCursor?: CursorData | null;
-};
+}
 
-export type CursorData = {
+export interface CursorData {
   label: string;
   uuid: string;
-};
+}
 
-export type PaginationResult<T> = {
+export interface PaginationResult<T> {
   data: T;
   pagination: PaginationData;
-};
+}
 
-export type PropertyConfig = {
+export interface PropertyConfig {
   /** folioEnd, label, websiteUrl */
   name: string; // CAMI -> name to display. Or remove kompletely, type is type
   /** data type (raw string, dropdown, multiple options) */
@@ -286,63 +282,67 @@ export type PropertyConfig = {
   minLength?: number;
   maxLength?: number;
   options?: string[] | number[] /* Options if type is dropdown */;
-};
+}
 
-export type PropertyConfigDataType =
-  | 'array'
-  | 'boolean'
-  | 'date'
-  | 'date-time'
-  | 'integer'
-  | 'number'
-  | 'string'
-  | 'time';
+export type PropertyConfigDataType = "array" | "boolean" | "date" | "date-time" | "integer" | "number" | "string" | "time";
 
-export type PropertyConfigStringTemplate = 'input' | 'textarea';
+export type PropertyConfigStringTemplate = "input" | "textarea";
 
-export type RedrawModeOptions = {
-  direction: 'on' | 'off';
-  cause?: 'success' | 'cancel';
+export interface Range {
+  from: number;
+  to: number;
+}
+
+export interface RedrawModeOptions {
+  direction: "on" | "off";
+  cause?: "success" | "cancel";
   annotationUuid?: string;
-};
+}
 
-export type StandoffAnnotation = {
+export interface SemanticBlockRange {
+  startPos: number;
+  endPos: number;
+  type: string;
+  uuid: string;
+}
+
+export interface StandoffAnnotation {
   [key: string]: any;
   startIndex: number;
   endIndex: number;
   text: string;
   type: string;
   subType?: string | number;
-};
+}
 
-export type StandoffJson = {
+export interface StandoffJson {
   annotations: StandoffAnnotation[];
   text: string;
-};
+}
 
 export type TextNode = Node<IText>;
 // TODO: Remove TextNode (or remove IText) -> ContentNode will be default
 export type ContentNode = Node<IText>;
 
-export type TextAccessObject = {
+export interface TextAccessObject {
   collection: CollectionNode | null;
   paths: NodeAncestry[];
   text: TextNode;
-};
+}
 
 /**
  * Type for updating text + annotations.
  */
-export type TextUpdateDto = {
+export interface TextUpdateDto {
   text: NodeStatusObject<TextNode>;
   annotations: Annotation[];
-};
+}
 
-export type TextOperationResult = {
+export interface TextOperationResult {
   leftBoundary?: string | null;
   rightBoundary?: string | null;
   changeSet?: Character[];
-};
+}
 
 export type ToCItem = TreeNode & {
   data: {

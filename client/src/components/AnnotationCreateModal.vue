@@ -1,19 +1,25 @@
 <script setup lang="ts">
-import { computed, inject, ref, watch } from 'vue';
-import Button from 'primevue/button';
-import { useRoute } from 'vue-router';
-import Fieldset from 'primevue/fieldset';
-import FormPropertiesSection from './FormPropertiesSection.vue';
-import { Annotation, AnnotationType, PropertyConfig } from '../models/types';
-import { useGuidelinesStore } from '../store/guidelines';
-import AnnotationFormAdditionalNodesSection from './AnnotationFormAdditionalNodesSection.vue';
+import { computed, inject, Ref, ref, watch } from "vue";
+import Button from "primevue/button";
+import { useRoute } from "vue-router";
+import Fieldset from "primevue/fieldset";
+import FormPropertiesSection from "./FormPropertiesSection.vue";
+import { Annotation, AnnotationType, PropertyConfig } from "../models/types";
+import { useGuidelinesStore } from "../store/guidelines";
+import AnnotationReferencesSection from "./AnnotationReferencesSection.vue";
+import AnnotationAnnotationsSection from "./AnnotationAnnotationsSection.vue";
+import { DynamicDialogInstance } from "primevue/dynamicdialogoptions";
 
 const route = useRoute();
-const dialogRef: any = inject('dialogRef');
+const dialogRef = inject<Ref<DynamicDialogInstance>>("dialogRef");
+
+if (!dialogRef) {
+  throw new Error("dialogRef not provided - component must be used inside a DynamicDialog");
+}
 
 const emit = defineEmits<{
-  (e: 'close'): void;
-  (e: 'submit', annotation: Annotation): void;
+  (e: "close"): void;
+  (e: "submit", annotation: Annotation): void;
 }>();
 
 const { getAnnotationConfig, getAnnotationFields } = useGuidelinesStore();
@@ -43,7 +49,7 @@ function checkAnnotationValidity() {
       return false;
     }
 
-    if (field.type === 'string' && (value as string).trim().length === 0) {
+    if (field.type === "string" && (value as string).trim().length === 0) {
       return false;
     }
 
@@ -62,7 +68,7 @@ function handleCancelClick(): void {
 function handleSubmitClick(): void {
   closeModal();
 
-  emit('submit', annotationTemplate);
+  emit("submit", annotationTemplate);
 }
 </script>
 
@@ -72,7 +78,7 @@ function handleSubmitClick(): void {
       Add new <span class="font-italic">{{ annotationTemplate.node.data.type }}</span> Annotation
     </h2>
 
-    <div class="content mb-2" v-if="annotationTemplate">
+    <div v-if="annotationTemplate" class="content mb-2">
       <Fieldset
         legend="Properties"
         :toggle-button-props="{
@@ -84,17 +90,10 @@ function handleSubmitClick(): void {
         <template #toggleicon>
           <span :class="`pi pi-chevron-${propertiesAreCollapsed ? 'down' : 'up'}`"></span>
         </template>
-        <FormPropertiesSection
-          v-model="annotationTemplate.node.data"
-          :fields="propertyFields"
-          mode="edit"
-        />
+        <FormPropertiesSection v-model="annotationTemplate.node.data" :fields="propertyFields" mode="edit" />
       </Fieldset>
-      <AnnotationFormAdditionalNodesSection
-        :mode="'edit'"
-        :annotation-config="config"
-        v-model="annotationTemplate.connectedNodes"
-      />
+      <AnnotationReferencesSection v-model="annotationTemplate.connectedNodes" mode="edit" />
+      <AnnotationAnnotationsSection v-model="annotationTemplate.connectedNodes" mode="edit" />
     </div>
 
     <div class="footer flex justify-content-center gap-2">

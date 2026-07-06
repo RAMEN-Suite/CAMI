@@ -1,34 +1,34 @@
 <script setup lang="ts">
-import { AnnotationNode, NodeStatus, NodeStatusObject } from '../models/types';
-import Button from 'primevue/button';
-import { Popover } from 'primevue';
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
-import NodeTag from './NodeTag.vue';
-import { capitalize, useTemplateRef } from 'vue';
-import { filterDefaultLabels } from '../utils/helper/helper';
-import AnnotationTypeIcon from './AnnotationTypeIcon.vue';
+import { AnnotationNode, NodeStatus, NodeStatusObject } from "../models/types";
+import Button from "primevue/button";
+import { Popover } from "primevue";
+import DataTable from "primevue/datatable";
+import Column from "primevue/column";
+import NodeTag from "./NodeTag.vue";
+import { capitalize, useTemplateRef } from "vue";
+import { filterDefaultLabels } from "../utils/helper/helper";
+import AnnotationTypeIcon from "./AnnotationTypeIcon.vue";
 
 const props = defineProps<{
-  mode: 'view';
+  mode: "view";
 }>();
 
-const node = defineModel<NodeStatusObject<AnnotationNode>>();
+const node = defineModel<NodeStatusObject<AnnotationNode>>({ required: true });
 
-const infoIcon = useTemplateRef('info-icon');
+const infoIcon = useTemplateRef("info-icon");
 
-const filteredLabels: string[] = filterDefaultLabels(node.value!.node.nodeLabels);
+const filteredLabels: string[] = filterDefaultLabels(node.value.node.nodeLabels);
 
-const tableData = Object.entries(node.value!.node.data).map(([property, value]) => {
+const tableData = Object.entries(node.value.node.data).map(([property, value]) => {
   return { property, value };
 });
 
 function handleRemoveNode(): void {
-  setNodeStatus('removed');
+  setNodeStatus("removed");
 }
 
 function setNodeStatus(status: NodeStatus): void {
-  node.value!.meta.status = status;
+  node.value.meta.status = status;
 }
 
 function togglePopover(event: MouseEvent): void {
@@ -40,14 +40,9 @@ function togglePopover(event: MouseEvent): void {
   <div class="node-card-container">
     <div class="button-pane flex justify-content-between">
       <div class="node-labels-pane flex">
-        <NodeTag
-          class="test mr-1"
-          v-for="label in filteredLabels"
-          :content="label"
-          type="Annotation"
-        />
+        <NodeTag v-for="label in filteredLabels" :key="label" class="test mr-1" :content="label" type="Annotation" />
         <div class="icon-container">
-          <AnnotationTypeIcon :annotationType="node!.node.data.subType ?? node!.node.data.type" />
+          <AnnotationTypeIcon :annotation-type="node!.node.data.subType ?? node!.node.data.type" />
         </div>
         <div class="annotation-type-container">
           <small class="font-bold">{{ node!.node.data.subType ?? node!.node.data.type }}</small>
@@ -88,20 +83,20 @@ function togglePopover(event: MouseEvent): void {
       <DataTable
         :value="tableData"
         scrollable
-        scrollHeight="flex"
-        resizableColumns
-        rowHover
-        tableStyle="table-layout: fixed;"
+        scroll-height="flex"
+        resizable-columns
+        row-hover
+        table-style="table-layout: fixed;"
         size="small"
       >
         <Column field="property" header="Property">
           <template #body="{ data }">
-            <span>{{ capitalize(data['property']) }}</span>
+            <span>{{ capitalize(data["property"]) }}</span>
           </template>
         </Column>
         <Column field="value" header="Value">
           <template #body="{ data }">
-            <span style="white-space: normal">{{ data['value'] }}</span>
+            <span style="white-space: normal">{{ data["value"] }}</span>
           </template>
         </Column>
       </DataTable>

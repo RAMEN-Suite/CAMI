@@ -1,4 +1,4 @@
-import AppError from './app.error.js';
+import AppError from "./app.error.js";
 
 /**
  * Represents an error for resources that could not be found in the database.

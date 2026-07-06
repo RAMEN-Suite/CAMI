@@ -1,7 +1,7 @@
-import { QueryResult } from 'neo4j-driver';
-import Neo4jDriver from '../database/neo4j.js';
-import NotFoundError from '../errors/notFound.error.js';
-import { TextNode, CollectionNode, NetworkPostData, NodeDto } from '../models/types.js';
+import { QueryResult } from "neo4j-driver";
+import Neo4jDriver from "../database/neo4j.js";
+import NotFoundError from "../errors/notFound.error.js";
+import { TextNode, CollectionNode, NetworkPostData, NodeDto } from "../models/types.js";
 
 /**
  * Service class for managing network operations on Collections and Text nodes.
@@ -35,7 +35,7 @@ export default class NetworkService {
     `;
 
     const result: QueryResult = await Neo4jDriver.runQuery(query, { targetUuid, nodes });
-    const updatedNodes: (CollectionNode | TextNode)[] = result.records[0]?.get('updatedNodes');
+    const updatedNodes: (CollectionNode | TextNode)[] = result.records[0]?.get("updatedNodes");
 
     if (!updatedNodes) {
       throw new NotFoundError(`Collection with UUID ${targetUuid} not found`);
@@ -85,7 +85,7 @@ export default class NetworkService {
 
     const result: QueryResult = await Neo4jDriver.runQuery(query, { originUuid, nodes });
 
-    const updatedNodes: (CollectionNode | TextNode)[] = result.records[0]?.get('updatedNodes');
+    const updatedNodes: (CollectionNode | TextNode)[] = result.records[0]?.get("updatedNodes");
 
     if (!updatedNodes) {
       throw new NotFoundError(`Collection with UUID ${originUuid} not found`);
@@ -131,7 +131,7 @@ export default class NetworkService {
       nodes,
     });
 
-    const updatedNodes: (CollectionNode | TextNode)[] = result.records[0]?.get('updatedNodes');
+    const updatedNodes: (CollectionNode | TextNode)[] = result.records[0]?.get("updatedNodes");
 
     if (!updatedNodes) {
       throw new NotFoundError(`Collection with UUID ${targetUuid} not found`);
@@ -172,13 +172,13 @@ export default class NetworkService {
     `;
 
     const result: QueryResult = await Neo4jDriver.runQuery(query, { uuids });
-    const nodes: CollectionNode[] = result.records[0]?.get('path');
+    const nodes: CollectionNode[] = result.records[0]?.get("path");
 
     if (!nodes) {
       throw new NotFoundError(`The requested path [${uuids}] does not exist`);
     }
 
-    const path: NodeDto<CollectionNode>[] = nodes.map(n => ({
+    const path: NodeDto<CollectionNode>[] = nodes.map((n) => ({
       node: n,
       connectedNodes: [],
     }));

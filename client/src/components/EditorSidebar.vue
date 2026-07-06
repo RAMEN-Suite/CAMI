@@ -1,11 +1,7 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed } from "vue";
 
-const props = defineProps({
-  position: String,
-  isCollapsed: Boolean,
-  width: Number,
-});
+const props = defineProps<{ position: string; isCollapsed: boolean; width: number }>();
 
 const position: string = props.position;
 

@@ -1,9 +1,9 @@
-import { computed, readonly, ref } from 'vue';
-import { useTiptapStore } from '../store/tiptap';
-import { ANNOTATION_DECORATION_KEY } from '../editors/text/extensions/annotationDecoration';
-import { IndexMap } from '../models/types';
-import { Decoration } from '@tiptap/pm/view';
-import { Node } from '@tiptap/pm/model';
+import { readonly, ref } from "vue";
+import { useTiptapStore } from "../store/tiptap";
+import { ANNOTATION_DECORATION_KEY } from "../editors/text/extensions/annotationDecoration";
+import { AnnotationNode, IndexMap, NodeStatusObject } from "../models/types";
+import { Decoration } from "@tiptap/pm/view";
+import { Node } from "@tiptap/pm/model";
 
 /**
  * Composable that builds standoff-annotation index maps from the current ProseMirror document.
@@ -20,10 +20,14 @@ import { Node } from '@tiptap/pm/model';
  */
 export function useCreateIndexMaps() {
   const { tiptap } = useTiptapStore();
-  const doc = computed<Node>(() => tiptap.value!.state.doc);
 
-  const decorations: Decoration[] =
-    ANNOTATION_DECORATION_KEY.getState(tiptap.value!.state)?.all.find() ?? [];
+  if (!tiptap.value) {
+    throw new Error("useCreateIndexMaps() requires an initialised tiptap editor.");
+  }
+
+  const doc: Node = tiptap.value.state.doc;
+
+  const decorations: Decoration[] = ANNOTATION_DECORATION_KEY.getState(tiptap.value.state)?.all.find() ?? [];
 
   // Maps for standoff indices
   const decorationIndexMap = ref<IndexMap>(new Map());
@@ -61,7 +65,7 @@ export function useCreateIndexMaps() {
    */
   function buildStructureIndexMap(): IndexMap {
     const map: IndexMap = new Map();
-    traverseNode(doc.value, 0, map);
+    traverseNode(doc, 0, map);
     structureBlockIndexMap.value = map;
 
     return map;
@@ -92,9 +96,11 @@ export function useCreateIndexMaps() {
         current = walk(child, current);
       });
 
-      const semanticBlocks: { uuid: string; type: string }[] = node.attrs?._semanticBlocks ?? [];
+      const semanticBlocks: NodeStatusObject<AnnotationNode>[] = node.attrs?._semanticBlocks ?? [];
 
-      semanticBlocks.forEach(({ uuid }) => {
+      semanticBlocks.forEach((block) => {
+        const { uuid } = block.node.data;
+
         const existing = map.get(uuid);
 
         if (!existing) {
@@ -108,7 +114,7 @@ export function useCreateIndexMaps() {
       return current;
     }
 
-    walk(doc.value, 0);
+    walk(doc, 0);
 
     semanticBlockIndexMap.value = map;
 
@@ -122,7 +128,7 @@ export function useCreateIndexMaps() {
    */
   function buildZeroPointIndexMap(): IndexMap {
     const map: IndexMap = new Map();
-    traverseForInlineNode(doc.value, 0, 'zeroPointAnnotation', map);
+    traverseForInlineNode(doc, 0, "zeroPointAnnotation", map);
     zeroPointIndexMap.value = map;
 
     return map;
@@ -135,7 +141,7 @@ export function useCreateIndexMaps() {
    */
   function buildHardBreakIndexMap(): IndexMap {
     const map: IndexMap = new Map();
-    traverseForInlineNode(doc.value, 0, 'hardBreak', map);
+    traverseForInlineNode(doc, 0, "hardBreak", map);
     hardBreakIndexMap.value = map;
 
     return map;
@@ -150,9 +156,7 @@ export function useCreateIndexMaps() {
    */
   function buildDecorationIndexMap(): IndexMap {
     // All available decoration positions that need remapping
-    const sortedPositions: number[] = [...new Set(decorations.flatMap(d => [d.from, d.to]))].sort(
-      (a, b) => a - b,
-    );
+    const sortedPositions: number[] = [...new Set(decorations.flatMap((d) => [d.from, d.to]))].sort((a, b) => a - b);
     const positionMap = new Map<number, number>();
 
     // The index of the character in the plain text (counts only char positions, not doc positions)
@@ -161,7 +165,7 @@ export function useCreateIndexMaps() {
     // Loop index for sortedPositions array
     let i: number = 0;
 
-    doc.value.descendants((node: Node, nodePos: number) => {
+    doc.descendants((node: Node, nodePos: number) => {
       if (i >= sortedPositions.length) {
         return false;
       }
@@ -183,9 +187,16 @@ export function useCreateIndexMaps() {
     const map: IndexMap = new Map();
 
     for (const deco of decorations) {
+      const startIndex: number | undefined = positionMap.get(deco.from);
+      const endIndex: number | undefined = positionMap.get(deco.to);
+
+      if (!startIndex || !endIndex) {
+        console.error("Decoration position not found in position map:", deco);
+        continue;
+      }
       map.set(deco.spec._uuid, {
-        startIndex: positionMap.get(deco.from)!,
-        endIndex: positionMap.get(deco.to)! - 1,
+        startIndex,
+        endIndex: endIndex - 1,
       });
     }
 
@@ -212,7 +223,7 @@ export function useCreateIndexMaps() {
     const startIndex: number = charIndex;
     let current: number = charIndex;
 
-    node.forEach(child => {
+    node.forEach((child) => {
       current = traverseNode(child, current, map);
     });
 
@@ -237,12 +248,7 @@ export function useCreateIndexMaps() {
    * @param map - Accumulator map; entries are added in place.
    * @returns The updated `charIndex` (unchanged when the current node is the target inline atom).
    */
-  function traverseForInlineNode(
-    node: Node,
-    charIndex: number,
-    nodeTypeName: string,
-    map: IndexMap,
-  ): number {
+  function traverseForInlineNode(node: Node, charIndex: number, nodeTypeName: string, map: IndexMap): number {
     // Collect character count recursively
     if (node.isText) {
       return charIndex + node.text!.length;
@@ -254,7 +260,7 @@ export function useCreateIndexMaps() {
     }
 
     let current = charIndex;
-    node.forEach(child => {
+    node.forEach((child) => {
       current = traverseForInlineNode(child, current, nodeTypeName, map);
     });
 
