@@ -770,6 +770,7 @@ function toggleViewMode(direction: TabView): void {
 .label-section {
   line-break: auto;
   min-height: 3rem;
+  text-align: center;
 
   h3 {
     margin: 0;
