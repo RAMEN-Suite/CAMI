@@ -55,6 +55,11 @@ export type AnnotationMapping = DeepReadonly<{
 export const EDITOR_OWNED_ATTRIBUTES = ["level", "colspan", "rowspan"] as const;
 
 /**
+ * Allowed levels for the `heading` annotation type.
+ */
+export const HEADING_LEVELS = [1, 2, 3, 4, 5, 6] as const;
+
+/**
  * Built-in structural annotation types that only contain inline content (text, zero-point annotations, hardBreaks),
  * and never recurse into structural children.
  *
