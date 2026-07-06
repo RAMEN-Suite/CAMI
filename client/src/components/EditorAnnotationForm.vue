@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, toRef } from "vue";
+import { computed, ref, toRef, useTemplateRef } from "vue";
 import { useEditorStore } from "../store/editor.ts";
 import { useGuidelinesStore } from "../store/guidelines.ts";
 import Button from "primevue/button";
@@ -18,6 +18,8 @@ import { Range } from "../models/types.ts";
 import { findDecorationBoundariesByUuid, findNodeBoundariesByUuid } from "../utils/helper/tiptapHelper.ts";
 import { DecorationSet } from "@tiptap/pm/view";
 import { ANNOTATION_DECORATION_KEY } from "../editors/text/extensions/annotationDecoration.ts";
+import { onClickOutside } from "@vueuse/core";
+import { useAppStore } from "../store/app.ts";
 
 const props = defineProps<{
   annotation: NodeStatusObject<AnnotationNode>;
@@ -28,6 +30,7 @@ const workingData = ref<NodeStatusObject<AnnotationNode>>(cloneDeep(props.annota
 
 const confirm = useConfirm();
 
+const { addToastMessage } = useAppStore();
 const { tiptap, annotations } = useTiptapStore();
 const { isRedrawMode, redrawMode } = useEditorStore();
 const { getAnnotationConfig, getAnnotationFields } = useGuidelinesStore();
@@ -49,6 +52,25 @@ const previewText = computed<string>(() => {
 /* eslint-disable -- Will be needed when redraw modes is re-implemented */
 const redrawButtonicon = computed<string>(() => (redrawMode.value?.direction === "on" ? "pi pi-times" : "pi pi-pencil"));
 const redrawButtonTitle = computed<string>(() => (isRedrawMode.value ? "Cancel redraw operation" : "Redraw annotation"));
+
+const formEl = useTemplateRef<HTMLDivElement>("annotationForm");
+
+onClickOutside(formEl, (event) => {
+  if (mode.value === "edit") {
+    event.preventDefault();
+
+    showUnsavedChangesWarning();
+  }
+});
+
+function showUnsavedChangesWarning() {
+  addToastMessage({
+    severity: "warn",
+    summary: "You have unsaved changes in annotation form",
+    detail: "Please save or discard your changes.",
+    life: 3000,
+  });
+}
 
 function handleDeleteAnnotation(event: MouseEvent): void {
   confirm.require({
@@ -205,7 +227,13 @@ function updateData(): void {
 </script>
 
 <template>
-  <div class="annotation-card mb-3" :data-annotation-uuid="workingData.node.data.uuid" :data-mode="mode">
+  <div
+    :id="props.annotation.node.data.uuid"
+    ref="annotationForm"
+    class="annotation-card mb-3"
+    :data-annotation-uuid="workingData.node.data.uuid"
+    :data-mode="mode"
+  >
     <div class="annotation-card-header">
       <div class="flex items-center gap-1 align-items-center">
         <div class="icon-container">
