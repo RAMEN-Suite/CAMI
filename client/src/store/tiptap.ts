@@ -1,6 +1,7 @@
 import { ref, shallowRef, watch } from "vue";
 import { NodeDto, Annotation, NodeStatusObject, AnnotationNode, ToCItem, SemanticBlockRange } from "../models/types";
 import { Editor } from "@tiptap/vue-3";
+import { Editor as TiptapEditor } from "@tiptap/core";
 import { Node } from "@tiptap/pm/model";
 import Heading from "@tiptap/extension-heading";
 import Document from "@tiptap/extension-document";
@@ -38,6 +39,7 @@ const initialStructuralAnnotations = ref<Map<string, Annotation>>();
 const initialAnnotations = ref<Map<string, Annotation>>();
 let initialDoc: ReturnType<Editor["getJSON"]> | null = null;
 let initialPlainText: string | null = null;
+let resizeObserver: ResizeObserver | null = null;
 
 const tableOfContent = ref<ToCItem[]>([]);
 const semanticBlockRanges = ref<SemanticBlockRange[]>([]);
@@ -156,7 +158,7 @@ function initializeTiptap(standoffObject: { text: string; annotations: NodeDto[]
       // console.log('initial tiptap json: ', initialDoc);
       initialPlainText = editor.state.doc.textContent;
 
-      initializeEventListeners();
+      initializeEventListeners(editor);
 
       updateTableOfContent(editor.state.doc);
       computeSemanticBlockRanges(tiptap.value);
@@ -165,10 +167,14 @@ function initializeTiptap(standoffObject: { text: string; annotations: NodeDto[]
       updateTableOfContent(transaction.doc);
       computeSemanticBlockRanges(tiptap.value);
     },
+    onDestroy: () => {
+      resizeObserver?.disconnect();
+      resizeObserver = null;
+    },
   });
 }
 
-function computeSemanticBlockRanges(editor: Editor | null): void {
+function computeSemanticBlockRanges(editor: TiptapEditor | null): void {
   if (!editor) {
     semanticBlockRanges.value = [];
     return;
@@ -201,11 +207,14 @@ function computeSemanticBlockRanges(editor: Editor | null): void {
   semanticBlockRanges.value = [...uuidMap.values()];
 }
 
-function initializeEventListeners(): void {
-  const scrollContainer: HTMLElement | null | undefined = tiptap.value?.view.dom.parentElement;
+function initializeEventListeners(editor: TiptapEditor): void {
+  const scrollContainer: HTMLElement | null | undefined = editor.view.dom.parentElement;
 
   // TODO: Should this maybe moved directly to the plugin?
   useEventListener(scrollContainer, "scroll", handleScroll);
+
+  resizeObserver = new ResizeObserver(() => computeSemanticBlockRanges(editor));
+  resizeObserver.observe(editor.view.dom);
 }
 
 function initializeDecorationView(annotations: Map<string, NodeStatusObject<AnnotationNode>>): void {
