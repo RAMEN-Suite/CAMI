@@ -16,7 +16,6 @@ import {
   CollectionAccessStatusObject,
   NodeStatusObject,
 } from "../models/types";
-import Tag from "primevue/tag";
 import {
   capitalize,
   cloneDeep,
@@ -45,7 +44,8 @@ import ValidationError from "../utils/errors/validation.error";
 import { useBookmarks } from "../composables/useBookmarks";
 import AnnotationButton from "./AnnotationButton.vue";
 import { useCreateAnnotation } from "../composables/useCreateAnnotation";
-import AnnotationFormAdditionalNodesSection from "./AnnotationFormAdditionalNodesSection.vue";
+import AnnotationReferencesSection from "./AnnotationReferencesSection.vue";
+import AnnotationAnnotationsSection from "./AnnotationAnnotationsSection.vue";
 import NodeStatusBadge from "./NodeStatusBadge.vue";
 
 type TabView = "annotations" | "details" | "texts";
@@ -633,13 +633,9 @@ function toggleViewMode(direction: TabView): void {
                 :mode="mode"
               />
             </Fieldset>
-            <AnnotationFormAdditionalNodesSection
-              v-model="annotation.connectedNodes"
-              :mode="mode"
-              :annotation-config="
-                getCollectionAnnotationConfig(temporaryWorkData.collection.node.nodeLabels, annotation.node.data.type)
-              "
-            />
+            <AnnotationReferencesSection v-model="annotation.connectedNodes" :mode="mode" />
+            <AnnotationAnnotationsSection v-model="annotation.connectedNodes" :mode="mode" />
+
             <div class="action-buttons flex justify-content-center">
               <Button
                 v-if="mode === 'edit'"

@@ -6,7 +6,8 @@ import Fieldset from "primevue/fieldset";
 import FormPropertiesSection from "./FormPropertiesSection.vue";
 import { Annotation, AnnotationType, PropertyConfig } from "../models/types";
 import { useGuidelinesStore } from "../store/guidelines";
-import AnnotationFormAdditionalNodesSection from "./AnnotationFormAdditionalNodesSection.vue";
+import AnnotationReferencesSection from "./AnnotationReferencesSection.vue";
+import AnnotationAnnotationsSection from "./AnnotationAnnotationsSection.vue";
 import { DynamicDialogInstance } from "primevue/dynamicdialogoptions";
 
 const route = useRoute();
@@ -91,11 +92,8 @@ function handleSubmitClick(): void {
         </template>
         <FormPropertiesSection v-model="annotationTemplate.node.data" :fields="propertyFields" mode="edit" />
       </Fieldset>
-      <AnnotationFormAdditionalNodesSection
-        v-model="annotationTemplate.connectedNodes"
-        :mode="'edit'"
-        :annotation-config="config"
-      />
+      <AnnotationReferencesSection v-model="annotationTemplate.connectedNodes" mode="edit" />
+      <AnnotationAnnotationsSection v-model="annotationTemplate.connectedNodes" mode="edit" />
     </div>
 
     <div class="footer flex justify-content-center gap-2">

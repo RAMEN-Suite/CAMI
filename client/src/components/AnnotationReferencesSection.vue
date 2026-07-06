@@ -4,17 +4,8 @@ import Fieldset from "primevue/fieldset";
 import EntityCard from "./EntityCard.vue";
 import CollectionCard from "./CollectionCard.vue";
 import TextCard from "./TextCard.vue";
-import {
-  AnnotationNode,
-  AnnotationType,
-  BaseNodeLabel,
-  CollectionNode,
-  EntityNode,
-  NodeStatusObject,
-  TextNode,
-} from "../models/types";
-import { isAnnotationNode, isCollectionNode, isContentNode, isEntityNode } from "../utils/helper/helper";
-import AnnotationCard from "./AnnotationCard.vue";
+import { BaseNodeLabel, CollectionNode, EntityNode, NodeStatusObject, TextNode } from "../models/types";
+import { isCollectionNode, isContentNode, isEntityNode } from "../utils/helper/helper";
 import Button from "primevue/button";
 import Menu from "primevue/menu";
 import AddNodeModal from "./AddNodeModal.vue";
@@ -25,7 +16,6 @@ const nodes = defineModel<NodeStatusObject[]>({ required: true });
 
 const props = defineProps<{
   mode: "edit" | "view";
-  annotationConfig: AnnotationType;
 }>();
 
 const { createModalInstance, destroyModalInstance } = useAppStore();
@@ -33,11 +23,9 @@ const dialog: ReturnType<typeof useDialog> = useDialog();
 
 const sectionIsCollapsed = ref<boolean>(false);
 
-const menu = useTemplateRef("menu");
+const menu = useTemplateRef<InstanceType<typeof Menu>>("menu");
 
 function startAddingNode(nodeLabel: BaseNodeLabel): void {
-  console.log(`Start adding a new ${nodeLabel} node`);
-
   createModalInstance(
     dialog.open(AddNodeModal, {
       props: {
@@ -70,34 +58,32 @@ function startAddingNode(nodeLabel: BaseNodeLabel): void {
   );
 }
 
-function addNode(node: NodeStatusObject) {
-  console.log("Node added: ", node);
-
+function addNode(node: NodeStatusObject): void {
   nodes.value.push(node);
 }
 
-/**
- * Handles the removal of a node from the list.
- *
- * Called when a temporary nodes is removed (was added during the current session - does not need to be sent to the server).
- *
- * @param {NodeStatusObject<CollectionNode | EntityNode | TextNode>} node - The node to be removed.
- */
 function handleRemoveNode(node: NodeStatusObject<CollectionNode | EntityNode | TextNode>): void {
   nodes.value = nodes.value.filter((n) => n.node.data.uuid !== node.node.data.uuid);
 }
 
 /**
- * Helper function to determine whether a node is not deleted or removed in the
- * current session. Used for centralizing styling of these nodees (do not show, show "removed" flag etc.).
+ * Checks if the passed node is a reference node (Entity/Collection/Content) and not an Annotation node
+ * (Annotations) are handled by {@link AnnotationAnnotationsSection}.
+ *
+ * @param node - The node to check.
+ * @returns `True` if the node is a reference node, `false` otherwise.
  */
+function isReference(node: NodeStatusObject): boolean {
+  return isEntityNode(node) || isCollectionNode(node) || isContentNode(node);
+}
+
 function isNotDeleted(node: NodeStatusObject): boolean {
   return node.meta.status !== "deleted" && node.meta.status !== "removed";
 }
 
 const nodeOptions = ref([
   {
-    label: "Possible Nodes",
+    label: "Reference types",
     items: [
       {
         label: "Collection",
@@ -115,17 +101,17 @@ const nodeOptions = ref([
   },
 ]);
 
-function toggleMenu(event: PointerEvent) {
+function handleAddNodeClick(event: PointerEvent): void {
   menu.value?.toggle(event);
 }
 </script>
 
 <template>
   <Fieldset
-    legend="Nodes"
+    legend="References"
     :toggleable="true"
     :toggle-button-props="{
-      title: `${sectionIsCollapsed ? 'Expand' : 'Collapse'} nodes`,
+      title: `${sectionIsCollapsed ? 'Expand' : 'Collapse'} references`,
     }"
     @toggle="sectionIsCollapsed = !sectionIsCollapsed"
   >
@@ -134,7 +120,7 @@ function toggleMenu(event: PointerEvent) {
     </template>
 
     <template v-for="(node, index) in nodes" :key="node.node.data.uuid">
-      <template v-if="isNotDeleted(node)">
+      <template v-if="isNotDeleted(node) && isReference(node)">
         <EntityCard
           v-if="isEntityNode(node)"
           v-model="nodes![index] as NodeStatusObject<EntityNode>"
@@ -153,47 +139,23 @@ function toggleMenu(event: PointerEvent) {
           :mode="props.mode"
           @remove-node="handleRemoveNode(node)"
         />
-        <AnnotationCard
-          v-else-if="isAnnotationNode(node)"
-          v-model="nodes![index] as NodeStatusObject<AnnotationNode>"
-          mode="view"
-          @remove-node="handleRemoveNode(node)"
-        />
-
-        <div v-else>
-          <p>Unsupported node type: {{ node.node.nodeLabels }}</p>
-        </div>
       </template>
     </template>
+
     <Button
-      v-if="mode === 'edit'"
+      v-if="props.mode === 'edit'"
       type="button"
-      label="Add Node"
+      label="Add Reference"
       icon="pi pi-plus"
       class="w-full"
       severity="secondary"
       aria-haspopup="true"
-      aria-controls="overlay_menu"
-      @click="toggleMenu"
+      aria-controls="references_overlay_menu"
+      title="Add new reference"
+      @click="handleAddNodeClick"
     />
-    <Menu id="overlay_menu" ref="menu" :model="nodeOptions" :popup="true" />
+    <Menu id="references_overlay_menu" ref="menu" :model="nodeOptions" :popup="true" />
   </Fieldset>
 </template>
 
-<style scoped>
-.preview.collapsed {
-  --fade-start: 50%;
-  max-height: 4rem;
-  mask-image: linear-gradient(to bottom, white var(--fade-start), transparent);
-  transition: max-height 500ms;
-}
-
-.preview.expanded {
-  max-height: auto;
-  max-height: calc-size(auto);
-}
-
-.hidden {
-  display: none;
-}
-</style>
+<style scoped></style>

@@ -10,7 +10,8 @@ import { Annotation, AnnotationNode, AnnotationType, NodeStatusObject, PropertyC
 import AnnotationTypeIcon from "./AnnotationTypeIcon.vue";
 import FormPropertiesSection from "./FormPropertiesSection.vue";
 import { useTiptapStore } from "../store/tiptap.ts";
-import AnnotationFormAdditionalNodesSection from "./AnnotationFormAdditionalNodesSection.vue";
+import AnnotationReferencesSection from "./AnnotationReferencesSection.vue";
+import AnnotationAnnotationsSection from "./AnnotationAnnotationsSection.vue";
 import { cloneDeep } from "../utils/helper/helper.ts";
 import NodeStatusBadge from "./NodeStatusBadge.vue";
 import { Range } from "../models/types.ts";
@@ -254,7 +255,8 @@ function updateData(): void {
         </template>
         <FormPropertiesSection v-model="workingData.node.data" :fields="propertyFields" :mode="mode" />
       </Fieldset>
-      <AnnotationFormAdditionalNodesSection v-model="workingData.connectedNodes" :mode="mode" :annotation-config="config" />
+      <AnnotationReferencesSection v-model="workingData.connectedNodes" :mode="mode" />
+      <AnnotationAnnotationsSection v-model="workingData.connectedNodes" :mode="mode" />
     </div>
 
     <div class="annotation-card-footer">

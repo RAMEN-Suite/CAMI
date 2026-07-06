@@ -48,12 +48,6 @@ function closeModal(): void {
     <Fieldset legend="Properties" :toggleable="false">
       <FormPropertiesSection v-model="annotation.node.data" :fields="propertyFields" mode="edit" />
     </Fieldset>
-    <AnnotationFormAdditionalNodesSection
-      v-if="config.hasEntities === true"
-      v-model="annotation.connectedNodes"
-      mode="view"
-      :annotation-config="config"
-    />
   </div>
   <div class="flex justify-content-center gap-2 mt-4 w-full">
     <Button label="Update" icon="pi pi-check" title="Update annotation" @click="handleUpdateClick" />
