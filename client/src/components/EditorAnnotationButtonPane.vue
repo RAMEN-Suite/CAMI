@@ -15,6 +15,7 @@ import { useTiptapStore } from "../store/tiptap";
 import { useValidateTextSelection } from "../composables/useValidateTextSelection";
 import { Selection } from "@tiptap/pm/state";
 import Button from "primevue/button";
+import SplitButton from "primevue/splitbutton";
 import TableInsertPopover from "./TableInsertPopover.vue";
 import TieredMenu from "primevue/tieredmenu";
 import { MenuItem, MenuItemCommandEvent } from "primevue/menuitem";
@@ -24,6 +25,7 @@ import TabList from "primevue/tablist";
 import Tab from "primevue/tab";
 import TabPanels from "primevue/tabpanels";
 import TabPanel from "primevue/tabpanel";
+import { HEADING_LEVELS } from "../config/editor.ts";
 
 const { isValid: isSelectionValid } = useValidateTextSelection();
 const { groupedAnnotationTypes, annotationHasConstraints, getAnnotationConfig, isBuiltinStructuralType, isZeroPoint } =
@@ -156,6 +158,15 @@ function openTableMenu(event: Event): void {
 // These get a generic wrapIn/lift toggle button rather than a dedicated tiptap command button.
 const customStructureTypes = computed(() =>
   (groupedAnnotationTypes.value?.structure ?? []).filter((t) => t.isBlock && !isBuiltinStructuralType(t.type)),
+);
+
+// Dropdown model for the headings SplitButton — one entry per level, each toggling that heading.
+const headingMenuItems = computed<MenuItem[]>(() =>
+  HEADING_LEVELS.map((level) => ({
+    label: `Heading ${level}`,
+    class: tiptap.value?.isActive("heading", { level }) ? "is-active" : undefined,
+    command: () => tiptap.value?.chain().focus().toggleHeading({ level }).run(),
+  })),
 );
 
 /**
@@ -366,30 +377,14 @@ function handleBlockAnnotationClick(data: { type: string; subType?: string | num
       </TabPanel>
       <TabPanel value="structure">
         <div class="flex flex-wrap gap-3">
-          <Button
-            v-tooltip.hover.top="{ value: 'h1', showDelay: 50 }"
+          <SplitButton
+            v-tooltip.hover.top="{ value: 'heading', showDelay: 50 }"
+            label="H1"
             severity="secondary"
+            :model="headingMenuItems"
             :class="{ 'is-active': tiptap?.isActive('heading', { level: 1 }) }"
             @click="tiptap?.chain().focus().toggleHeading({ level: 1 }).run()"
-          >
-            H1
-          </Button>
-          <Button
-            v-tooltip.hover.top="{ value: 'h2', showDelay: 50 }"
-            severity="secondary"
-            :class="{ 'is-active': tiptap?.isActive('heading', { level: 2 }) }"
-            @click="tiptap?.chain().focus().toggleHeading({ level: 2 }).run()"
-          >
-            H2
-          </Button>
-          <Button
-            v-tooltip.hover.top="{ value: 'h3', showDelay: 50 }"
-            severity="secondary"
-            :class="{ 'is-active': tiptap?.isActive('heading', { level: 3 }) }"
-            @click="tiptap?.chain().focus().toggleHeading({ level: 3 }).run()"
-          >
-            H3
-          </Button>
+          />
           <Button
             v-tooltip.hover.top="{ value: 'paragraph', showDelay: 50 }"
             severity="secondary"

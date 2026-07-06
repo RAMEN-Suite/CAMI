@@ -24,6 +24,15 @@ RUN addgroup -S webuser \
 COPY --from=build --chown=webuser:webuser /app/dist /usr/share/caddy
 COPY NOTICES.md NOTICES.md
 
+RUN cat > /etc/caddy/Caddyfile <<'EOF'
+:8080 {
+	root * /usr/share/caddy
+	encode gzip
+	try_files {path} {path}/ /index.html
+	file_server
+}
+EOF
+
 USER webuser
 EXPOSE 8080
 
