@@ -38,7 +38,7 @@ The following npm package may be included in this product:
  - statuses@2.0.2
 
 This package contains the following license:
-    
+
 The MIT License (MIT)
 
 Copyright (c) 2014 Jonathan Ong <me@jongleberry.com>
