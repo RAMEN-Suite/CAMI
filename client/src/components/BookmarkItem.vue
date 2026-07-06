@@ -14,7 +14,7 @@ const props = defineProps<{
 const { removeBookmark } = useBookmarks();
 
 const uuid: string = props.bookmarkData.data.data.uuid;
-const isCollection: boolean = props.bookmarkData.type === "collection";
+const isCollection: boolean = props.bookmarkData.data.nodeLabels.includes("Collection");
 
 async function handleItemSelect(): Promise<void> {
   const urlParam: "collections" | "contents" = isCollection ? "collections" : "contents";
@@ -24,7 +24,7 @@ async function handleItemSelect(): Promise<void> {
 
 const htmlTitle = computed<string>(
   () =>
-    `Go go ${props.bookmarkData.type} ${isCollection ? (props.bookmarkData.data as CollectionNode).data.label : "with UUID " + props.bookmarkData.data.data.uuid}`,
+    `Go go ${props.bookmarkData} ${isCollection ? (props.bookmarkData.data as CollectionNode).data.label : "with UUID " + props.bookmarkData.data.data.uuid}`,
 );
 
 // TODO: This should be in a helper function

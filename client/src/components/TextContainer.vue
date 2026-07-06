@@ -34,7 +34,7 @@ const isBookmarked = computed<boolean>(() => {
 });
 
 function handleBookmarkAction() {
-  toggleBookmark({ data: props.text.node, type: "text" });
+  toggleBookmark({ data: props.text.node });
 }
 
 const PREVIEW_LENGTH: number = 300;

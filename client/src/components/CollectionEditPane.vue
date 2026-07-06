@@ -335,7 +335,11 @@ async function handleApplyChanges(): Promise<void> {
 }
 
 function handleBookmarkAction(): void {
-  toggleBookmark({ data: temporaryWorkData.value.collection.node, type: "collection" });
+  if (!temporaryWorkData.value) {
+    return;
+  }
+
+  toggleBookmark({ data: temporaryWorkData.value.collection.node });
 }
 
 function handleDeleteColletion(): void {
