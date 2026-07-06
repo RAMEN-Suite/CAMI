@@ -70,8 +70,9 @@ function createDecoration(from: number, to: number, annotation: AnnotationNode):
     to,
     {
       nodeName: "span",
-      class: [annotation.data.type, annotation.data.subType].filter(Boolean).join(" "),
-      "data-anno-uuid": annotation.data.uuid,
+      "data-annotation-type": annotation.data.type,
+      "data-annotation-uuid": annotation.data.uuid,
+      "data-annotation-subtype": annotation.data.subType?.toString() ?? "",
     },
     { inclusiveEnd: true, _type: annotation.data.type, _uuid: annotation.data.uuid },
   );

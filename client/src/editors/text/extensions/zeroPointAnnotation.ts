@@ -30,10 +30,10 @@ export const ZeroPointAnnotation = Node.create({
         default: null,
         keepOnSplit: true,
         isRequired: true,
-        parseHTML: (element: HTMLElement) => element.getAttribute("data-anno-uuid"),
+        parseHTML: (element: HTMLElement) => element.getAttribute("data-annotation-uuid"),
         renderHTML: (attributes: ZeroPointAttributes) => {
           return {
-            "data-anno-type": attributes.annotationData.data.type,
+            "data-annotation-type": attributes.annotationData.data.type,
           };
         },
       },
@@ -41,10 +41,10 @@ export const ZeroPointAnnotation = Node.create({
         default: null,
         keepOnSplit: true,
         isRequired: true,
-        parseHTML: (element: HTMLElement) => element.getAttribute("data-anno-uuid"),
+        parseHTML: (element: HTMLElement) => element.getAttribute("data-annotation-uuid"),
         renderHTML: (attributes: ZeroPointAttributes) => {
           return {
-            "data-uuid": attributes.annotationData.data.uuid,
+            "data-annotation-uuid": attributes.annotationData.data.uuid,
           };
         },
       },
@@ -54,7 +54,7 @@ export const ZeroPointAnnotation = Node.create({
   parseHTML() {
     return [
       {
-        tag: "span[data-anno-uuid]",
+        tag: "span[data-annotation-uuid]",
       },
     ];
   },
@@ -64,8 +64,10 @@ export const ZeroPointAnnotation = Node.create({
     return (nodeProps: NodeViewRendererProps) => {
       const elm: HTMLElement = document.createElement("span");
       const annotationType = nodeProps.node.attrs.annotationData.data.type;
+      const annotationSubType: string | number | undefined = nodeProps.node.attrs.annotationData.data.subType;
 
-      elm.setAttribute("data-anno-type", annotationType);
+      elm.setAttribute("data-annotation-type", annotationType);
+      elm.setAttribute("data-annotation-subType", annotationSubType?.toString() ?? "");
 
       elm.classList.add(`annotation-type-marker-${annotationType}`);
 
