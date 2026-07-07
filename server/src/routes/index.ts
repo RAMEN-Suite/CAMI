@@ -8,6 +8,7 @@ import textRoutes from "./text.routes.js";
 import networkRoutes from "./network.routes.js";
 import healthRoutes from "./health.routes.js";
 import searchRoutes from "./search.routes.js";
+import toolRoutes from "./tool.routes.js";
 
 const router: Router = express.Router();
 
@@ -20,5 +21,6 @@ router.use("/favicon", faviconRoutes);
 router.use("/texts", textRoutes);
 router.use("/search", searchRoutes);
 router.use("/network", networkRoutes);
+router.use("/tool", toolRoutes);
 
 export default router;

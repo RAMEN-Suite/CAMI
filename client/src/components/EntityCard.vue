@@ -18,7 +18,6 @@ const node = defineModel<NodeStatusObject<EntityNode>>({ required: true });
 const infoIcon = useTemplateRef("info-icon");
 
 function handleRemoveNode(): void {
-  console.log("handle remove :)");
   if (node.value.meta.status === "added") {
     emit("remove-node");
   } else {
@@ -34,13 +33,36 @@ function togglePopover(event: MouseEvent): void {
   infoIcon.value?.toggle(event);
 }
 
+/**
+ * Handles a click event on the Card component, which will open the corresponding entity in the tool
+ * that manages Entities. The URL is resolved server-side.
+ *
+ * @param {PointerEvent | KeyboardEvent} event - The click or enter/space key event.
+ * @returns {void} This function does not return any value.
+ */
+function handleSelectContainer(event: PointerEvent | KeyboardEvent): void {
+  if ((event.target as HTMLElement).closest("button")) {
+    return;
+  }
+
+  window.open(`/api/tool/awen/entities/${node.value.node.data.uuid}`, "_blank", "noopener noreferrer");
+}
+
 const tableData = Object.entries(node.value.node.data).map(([property, value]) => {
   return { property, value };
 });
 </script>
 
 <template>
-  <div class="node-card-container">
+  <div
+    class="node-card-container"
+    title="Open entity in external tool"
+    tabindex="0"
+    role="link"
+    @click="handleSelectContainer"
+    @keydown.enter="handleSelectContainer"
+    @keydown.space.prevent="handleSelectContainer"
+  >
     <NodeCardHeader :node="node!" :mode="props.mode" @remove="handleRemoveNode" />
     <span>
       {{ node!.node.data.label }}
@@ -91,7 +113,7 @@ const tableData = Object.entries(node.value.node.data).map(([property, value]) =
 
 <style scoped>
 .node-card-container {
-  cursor: auto;
+  cursor: pointer;
   border: 1px solid gray;
   border-radius: 5px;
   margin-bottom: 0.5rem;

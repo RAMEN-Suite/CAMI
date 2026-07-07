@@ -2,6 +2,8 @@ import { Request } from "express";
 import { int, isDate, isDateTime, isDuration, isInt, isLocalDateTime, isLocalTime, isTime, types } from "neo4j-driver";
 import { CursorData, PropertyConfig } from "../models/types.js";
 import ICharacter from "../models/ICharacter.js";
+import NotFoundError from "../errors/notFound.error.js";
+import { TOOL_URL_MAPPING } from "../constants.js";
 
 /**
  * Capitalizes the first letter of a given string.
@@ -122,6 +124,33 @@ export function isValidHttpUrl(string: string): boolean {
   } catch (err: unknown) {
     return false;
   }
+}
+
+/**
+ * Resolves the base URL of a per-project external tool from the environment.
+ *
+ * The tool name is looked up in the `TOOL_URL_MAPPING` whitelist to find the
+ * environment variable holding its base URL. Only known tool names resolve, so arbitrary environment
+ * variables cannot be probed via the request path.
+ *
+ * @param {string} toolName - The name of the tool as provided in the request path.
+ * @throws {NotFoundError} If the tool name is unknown or no valid URL is configured for it.
+ * @return {string} The configured base URL of the tool.
+ */
+export function getToolUrl(toolName: string): string {
+  const envKey: string | undefined = TOOL_URL_MAPPING[toolName];
+
+  if (!envKey) {
+    throw new NotFoundError(`Unknown tool: "${toolName}"`);
+  }
+
+  const url: string | undefined = process.env[envKey];
+
+  if (!url || !isValidHttpUrl(url)) {
+    throw new NotFoundError(`No URL is configured for tool "${toolName}"`);
+  }
+
+  return url;
 }
 
 /**
