@@ -598,7 +598,7 @@ async function handleSaveChanges(): Promise<void> {
   // }
 
   const nodesWithoutChildrenOrText = getEmptyNodes();
-  const joined: string = nodesWithoutChildrenOrText.map((n) => n.type.name).join(",");
+  const joined: string = nodesWithoutChildrenOrText.map((n) => getAnnotationType(n.type.name)).join(",");
 
   if (nodesWithoutChildrenOrText.length > 0) {
     console.warn("Some nodes have no text: ", joined);

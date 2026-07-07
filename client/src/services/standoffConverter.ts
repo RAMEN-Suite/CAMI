@@ -41,7 +41,6 @@ export default class StandoffConverter {
   private static readonly EXCLUDED_FROM_BLOCK_CHILDREN = new Set(["hardBreak"]);
 
   constructor(newStandoffJson: ApiJson) {
-    console.log("standoff json: ", newStandoffJson);
     this.standoffJson = newStandoffJson;
     this.structuralAnnotationTypes = new Set(getStructuralAnnotationConfigs().map((c) => c.type));
 
