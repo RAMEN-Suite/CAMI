@@ -190,7 +190,7 @@ export function useCreateIndexMaps() {
       const startIndex: number | undefined = positionMap.get(deco.from);
       const endIndex: number | undefined = positionMap.get(deco.to);
 
-      if (!startIndex || !endIndex) {
+      if (startIndex === undefined || endIndex === undefined) {
         console.error("Decoration position not found in position map:", deco);
         continue;
       }
