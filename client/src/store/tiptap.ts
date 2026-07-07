@@ -26,6 +26,9 @@ import { history } from "prosemirror-history";
 import { type Extensions } from "@tiptap/core";
 import { useEditorSettingsStore } from "./editorSettings";
 import { AnnotationHighlight } from "../editors/text/extensions/annotationHighlight";
+import { Slice } from "@tiptap/pm/model";
+import { EditorView } from "@tiptap/pm/view";
+import { pastedSliceToRawText } from "../utils/helper/tiptapHelper";
 
 const { selectedOptions } = useFilterStore();
 const { settings } = useEditorSettingsStore();
@@ -143,6 +146,7 @@ function initializeTiptap(standoffObject: { text: string; annotations: NodeDto[]
       attributes: {
         class: "tiptap-editor-pane",
       },
+      transformPasted: (slice: Slice, view: EditorView): Slice => pastedSliceToRawText(slice, view.state.schema),
     },
     onCreate: ({ editor }) => {
       // Needs to be initialized after creation since full text is needed to calculate visible range
