@@ -270,15 +270,19 @@ export default class StandoffConverter {
     }
 
     const nodes: TiptapNode[] = [];
+
     let cursor: number = startIndex;
 
     for (const { pos, node } of inlineNodes) {
-      if (cursor <= pos) {
-        nodes.push(...this.createTextNode(cursor, pos));
+      // Zero-point/hard-break offset semantics: `pos` (the annotation's startIndex) is the offset
+      // BEFORE which the atom sits. Emit the text up to (but excluding) `pos`, then the atom, so the
+      // character at `pos` follows it. Co-located atoms stay adjacent before that character.
+      if (cursor < pos) {
+        nodes.push(...this.createTextNode(cursor, pos - 1));
       }
       nodes.push(node);
 
-      cursor = pos + 1;
+      cursor = pos;
     }
 
     if (cursor <= endIndex) {

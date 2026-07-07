@@ -67,7 +67,7 @@ const {
   setNewInitialState,
 } = useTiptapStore();
 
-const { getStructuralAnnotationConfig, getAnnotationType, getEditorOwnedProperties, isBuiltinStructuralType } =
+const { getStructuralAnnotationConfig, getAnnotationType, getEditorOwnedProperties, isBuiltinStructuralType, isZeroPoint } =
   useGuidelinesStore();
 
 onUnmounted(() => destroyTiptap());
@@ -228,11 +228,15 @@ function findChangedAnnotations(indexMap: IndexMap, plainText: string): Annotati
     }
 
     const { startIndex, endIndex } = value;
-    const textSlice: string = plainText.slice(startIndex, endIndex + 1);
+
+    // Zero-point annotations (including hardBreaks) occupy an offset between characters - they have no
+    // range and therefore no text content
+    const isZeroPointAnno: boolean = isZeroPoint(currentEntry.node);
+    const textSlice: string = isZeroPointAnno ? "" : plainText.slice(startIndex, endIndex + 1);
 
     const hasNewStart: boolean = initialEntry?.node.data.startIndex !== startIndex;
     const hasNewEnd: boolean = initialEntry?.node.data.endIndex !== endIndex;
-    const hasChangedText: boolean = initialEntry?.node.data.text !== textSlice;
+    const hasChangedText: boolean = isZeroPointAnno ? false : initialEntry?.node.data.text !== textSlice;
     const isEditedOrDeleted: boolean = ["created", "deleted", "modified"].includes(currentEntry.meta.status);
 
     if (hasNewStart || hasNewEnd || hasChangedText || isEditedOrDeleted) {
