@@ -6,8 +6,8 @@ const router: Router = express.Router();
 
 /**
  * Redirects to a per-project external tool. Any path following the tool name is forwarded onto the
- * tool's server-configured base URL, e.g. GET /api/tool/awen/entities/:uuid redirects to
- * <tool-base-url>/entities/:uuid. Without a trailing path it redirects to the tool's base URL itself.
+ * tool's server-configured base URL, e.g. GET /api/tool/awen/entity/:uuid redirects to
+ * <tool-base-url>/entity/:uuid. Without a trailing path it redirects to the tool's base URL itself.
  *
  * @param {Request} req - The Express request object.
  * @param {Response} res - The Express response object.
