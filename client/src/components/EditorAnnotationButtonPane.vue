@@ -49,6 +49,12 @@ const annotationCategories = computed(() =>
 
 const selectedCategory = ref<string>("");
 
+// Project-defined custom block types: isBlock:true entries that are not pre-configured built-ins.
+// These get a generic wrapIn/lift toggle button rather than a dedicated tiptap command button.
+const customStructureTypes = computed(() =>
+  (groupedAnnotationTypes.value?.structure ?? []).filter((t) => t.isBlock && !isBuiltinStructuralType(t.type)),
+);
+
 watchEffect(() => {
   if (!selectedCategory.value && annotationCategories.value.length > 0) {
     selectedCategory.value = annotationCategories.value[0][0];
@@ -147,9 +153,6 @@ function buildTableMenuItems(): MenuItem[] {
 }
 
 /**
- */
-
-/**
  * Opens the TieredMenu for table commands.
  *
  * @param {PointerEvent} event - The click event
@@ -159,12 +162,6 @@ function openTableMenu(event: Event): void {
   tableMenuItems.value = buildTableMenuItems();
   tableMenu.value?.toggle(event);
 }
-
-// Project-defined custom block types: isBlock:true entries that are not pre-configured built-ins.
-// These get a generic wrapIn/lift toggle button rather than a dedicated tiptap command button.
-const customStructureTypes = computed(() =>
-  (groupedAnnotationTypes.value?.structure ?? []).filter((t) => t.isBlock && !isBuiltinStructuralType(t.type)),
-);
 
 // Dropdown model for the headings SplitButton — one entry per level, each toggling that heading.
 const headingMenuItems = computed<MenuItem[]>(() =>
