@@ -30,7 +30,7 @@ const workingData = ref<NodeStatusObject<AnnotationNode>>(cloneDeep(props.annota
 
 const confirm = useConfirm();
 
-const { addToastMessage } = useAppStore();
+const { activeModal, addToastMessage } = useAppStore();
 const { tiptap, annotations } = useTiptapStore();
 const { isRedrawMode, redrawMode } = useEditorStore();
 const { getAnnotationConfig, getAnnotationFields } = useGuidelinesStore();
@@ -56,11 +56,17 @@ const redrawButtonTitle = computed<string>(() => (isRedrawMode.value ? "Cancel r
 const formEl = useTemplateRef<HTMLDivElement>("annotationForm");
 
 onClickOutside(formEl, (event) => {
-  if (mode.value === "edit") {
-    event.preventDefault();
-
-    showUnsavedChangesWarning();
+  if (mode.value === "view") {
+    return;
   }
+
+  if (activeModal.value) {
+    return;
+  }
+
+  event.preventDefault();
+
+  showUnsavedChangesWarning();
 });
 
 function showUnsavedChangesWarning() {
@@ -112,7 +118,7 @@ function handleEditAnnotation(): void {
   toggleFormMode("edit");
 }
 
-function handleSaveChanges(): void {
+function handleUpdate(): void {
   updateData();
   toggleFormMode("view");
 }
@@ -364,12 +370,12 @@ function updateData(): void {
         />
         <Button
           v-if="mode === 'edit'"
-          label="Save"
-          title="Save changes"
+          label="Update"
+          title="Update annotation"
           severity="primary"
           icon="pi pi-check"
           size="small"
-          @click="handleSaveChanges"
+          @click="handleUpdate"
         />
         <Button
           v-if="mode === 'edit'"
