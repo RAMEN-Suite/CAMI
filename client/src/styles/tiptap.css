@@ -129,6 +129,11 @@
   .block-deco-tag-semantic {
     padding: 0 5px;
   }
+
+  .highlight,
+  .highlight * {
+    background-color: yellow !important;
+  }
 }
 
 .tiptap-editor-pane:focus-visible {
