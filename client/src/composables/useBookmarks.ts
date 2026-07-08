@@ -29,13 +29,12 @@ export function useBookmarks(): UseBookmarksReturnType {
    * @returns {void} This function does not return any value.
    */
   function addBookmark(params: BookmarkParams): void {
-    const { data, type } = params;
+    const { data } = params;
 
     const dateString: string = new Date().toISOString();
 
     bookmarks.value.push({
       data,
-      type,
       createdAt: dateString,
       updatedAt: dateString,
     });

@@ -22,22 +22,22 @@ const route: RouteLocationNormalized = useRoute();
 const popover = useTemplateRef<InstanceType<typeof Popover>>("popover");
 const searchbar = useTemplateRef<ComponentPublicInstance>("searchbar");
 
-const selectedBookmarkType = ref<"collection" | "text">("collection");
+const selectedBookmarkType = ref<"Collection" | "Content">("Collection");
 const searchValue = ref<string>("");
 
-watch(route, () => popover.value.hide());
+watch(route, () => popover.value?.hide());
 
 watch(selectedBookmarkType, () => focusSearchBar());
 
 const displayedItems = computed<DeepReadonly<Bookmark[]>>(() =>
   bookmarks.value.filter((bookmark) => {
     const stringToCheck: string =
-      selectedBookmarkType.value === "collection"
+      selectedBookmarkType.value === "Collection"
         ? (bookmark.data as CollectionNode).data.label
         : (bookmark.data as TextNode).data.text;
 
     if (
-      bookmark.type === selectedBookmarkType.value &&
+      bookmark.data.nodeLabels.includes(selectedBookmarkType.value) &&
       stringToCheck.toLowerCase().includes(searchValue.value.toLocaleLowerCase())
     ) {
       return true;
@@ -45,8 +45,12 @@ const displayedItems = computed<DeepReadonly<Bookmark[]>>(() =>
   }),
 );
 
-const collectionCount = computed<number>(() => bookmarks.value.filter((bookmark) => bookmark.type === "collection").length);
-const textCount = computed<number>(() => bookmarks.value.filter((bookmark) => bookmark.type === "text").length);
+const collectionCount = computed<number>(
+  () => bookmarks.value.filter((bookmark) => bookmark.data.nodeLabels.includes("Collection")).length,
+);
+const textCount = computed<number>(
+  () => bookmarks.value.filter((bookmark) => bookmark.data.nodeLabels.includes("Content")).length,
+);
 
 // TODO: Hardcoded since some Primevue variables are missing somehow -> Fix when updating Primevue version?
 const searchBarStylingOptions: Partial<CSSStyleDeclaration> = {
@@ -61,7 +65,7 @@ const searchBarStylingOptions: Partial<CSSStyleDeclaration> = {
  * @returns {void} This function does not return any value.
  */
 function focusSearchBar(): void {
-  searchbar.value.$el?.focus();
+  searchbar.value?.$el?.focus();
 }
 
 /**
@@ -97,7 +101,7 @@ function resetSearch(): void {
  * @returns {void} This function does not return any value.
  */
 function toggle(event: PointerEvent): void {
-  popover.value.toggle(event);
+  popover.value?.toggle(event);
 }
 
 /**
@@ -105,7 +109,7 @@ function toggle(event: PointerEvent): void {
  *
  * @param {string} direction - The direction to toggle the view mode. Can be either 'collection' or 'text'.
  */
-function toggleBookmarkTypeView(direction: "collection" | "text"): void {
+function toggleBookmarkTypeView(direction: "Collection" | "Content"): void {
   selectedBookmarkType.value = direction;
 }
 </script>
@@ -127,20 +131,20 @@ function toggleBookmarkTypeView(direction: "collection" | "text"): void {
     <div class="tab-buttons mb-2">
       <ButtonGroup class="w-full flex">
         <ToggleButton
-          :model-value="selectedBookmarkType === 'collection'"
+          :model-value="selectedBookmarkType === 'Collection'"
           class="w-full"
           :on-label="`Collections (${collectionCount})`"
           :off-label="`Collections (${collectionCount})`"
           title="Show collections"
-          @change="toggleBookmarkTypeView('collection')"
+          @change="toggleBookmarkTypeView('Collection')"
         />
         <ToggleButton
-          :model-value="selectedBookmarkType === 'text'"
+          :model-value="selectedBookmarkType === 'Content'"
           class="w-full"
           :on-label="`Texts (${textCount})`"
           :off-label="`Texts (${textCount})`"
           title="Show texts"
-          @change="toggleBookmarkTypeView('text')"
+          @change="toggleBookmarkTypeView('Content')"
         />
       </ButtonGroup>
     </div>
@@ -166,12 +170,7 @@ function toggleBookmarkTypeView(direction: "collection" | "text"): void {
         <template v-if="searchValue === ''"> Currently there is no bookmarked {{ capitalize(selectedBookmarkType) }}. </template>
         <template v-else> There are no bookmarks matching your search query. </template>
       </div>
-      <BookmarkItem
-        v-for="item in displayedItems"
-        :key="item.data.data.uuid"
-        :bookmark-data="item as Bookmark"
-        :type="item.type"
-      />
+      <BookmarkItem v-for="item in displayedItems" :key="item.data.data.uuid" :bookmark-data="item as Bookmark" />
 
       <div v-if="displayedItems.length > 0" class="disclaimer mt-4 text-xs font-italic flex align-items-center gap-2">
         <i class="pi pi-exclamation-circle"></i>

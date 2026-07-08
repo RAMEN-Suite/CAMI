@@ -25,21 +25,29 @@ function toggle(event: PointerEvent): void {
   />
   <Popover ref="popover">
     <div class="flex flex-column gap-3 p-2" style="min-width: 16rem">
+      <span class="font-bold">Document structures</span>
+
+      <div class="flex align-items-center justify-content-between gap-3" title="Toggle line break and paragraph symbols">
+        <label for="doc-structures">Show formatting marks</label>
+        <ToggleSwitch v-model="settings.documentStructures" input-id="doc-structures" />
+      </div>
+
       <span class="font-bold">Block decorations</span>
 
-      <div class="flex align-items-center justify-content-between gap-3">
+      <div
+        class="flex align-items-center justify-content-between gap-3"
+        title="Toggle outlines for document blocks (paragraphs, lists)"
+      >
         <label for="deco-outline">Show block outlines</label>
         <ToggleSwitch v-model="settings.blockDecorations.outline" input-id="deco-outline" />
       </div>
 
-      <div class="flex align-items-center justify-content-between gap-3">
+      <div
+        class="flex align-items-center justify-content-between gap-3"
+        title="Display block names (paragraphs, lists) on top of each block"
+      >
         <label for="deco-base">Show block names</label>
         <ToggleSwitch v-model="settings.blockDecorations.baseType" input-id="deco-base" />
-      </div>
-
-      <div class="flex align-items-center justify-content-between gap-3">
-        <label for="deco-semantic">Show semantic block names</label>
-        <ToggleSwitch v-model="settings.blockDecorations.semanticTypes" input-id="deco-semantic" />
       </div>
     </div>
   </Popover>

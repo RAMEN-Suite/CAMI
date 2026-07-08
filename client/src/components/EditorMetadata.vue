@@ -27,7 +27,7 @@ const isBookmarked = computed<boolean>(() => {
 });
 
 function handleBookmarkAction() {
-  toggleBookmark({ data: text.value, type: "text" });
+  toggleBookmark({ data: text.value });
 }
 
 async function handleCopy(): Promise<void> {

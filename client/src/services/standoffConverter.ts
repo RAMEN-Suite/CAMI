@@ -41,7 +41,6 @@ export default class StandoffConverter {
   private static readonly EXCLUDED_FROM_BLOCK_CHILDREN = new Set(["hardBreak"]);
 
   constructor(newStandoffJson: ApiJson) {
-    console.log("standoff json: ", newStandoffJson);
     this.standoffJson = newStandoffJson;
     this.structuralAnnotationTypes = new Set(getStructuralAnnotationConfigs().map((c) => c.type));
 
@@ -216,6 +215,26 @@ export default class StandoffConverter {
   }
 
   /**
+   * Checks whether a zero-point annotation is within a given text range, taking into account zero-point annotations
+   * that are at the end of the text (after the last character).
+   *
+   * A zero-point annotation's `startIndex` is an offset (`startIndex === endIndex === N` rather than the index
+   * of the first annotated character (there is no "range" to be covered by a zero-point annotation). Therefore,
+   * the rule is "insert before the character at index N", and its valid range is [0..standoffText.length]. If the annotation is
+   * at the very end of the text, its `startIndex` is would technically never be contained in a range. So in this case,
+   * the range to be checked is incremented by one.
+   *
+   * @param {Anno} a The zero-point (including hardBreak) annotation to test.
+   * @param {{ startIndex: number; endIndex: number }} range The leaf's inclusive char range.
+   * @returns {boolean} `true` if the annotation's offset belongs to this leaf, `false` otherwise
+   */
+  private inRange(a: Anno, range: { startIndex: number; endIndex: number }): boolean {
+    const rangeEnd: number = range.endIndex === this.standoffJson.text.length - 1 ? range.endIndex + 1 : range.endIndex;
+
+    return a.node.data.startIndex >= range.startIndex && a.node.data.startIndex <= rangeEnd;
+  }
+
+  /**
    * Builds the inline content of a leaf structural node, interweaving text with zero-point atom nodes
    * and hard breaks, all sorted by position, and returns the resulting array of Tiptap inline nodes.
    *
@@ -231,13 +250,9 @@ export default class StandoffConverter {
       node: TiptapNode;
     }
 
-    function inRange(a: Anno): boolean {
-      return a.node.data.startIndex >= startIndex && a.node.data.startIndex <= endIndex;
-    }
-
     // Resolve to atom nodes as configured in the custom `ZeroPointAnnotation` extension
     const zeroPointEntries: InlineEntry[] = [...this.inlineAnnotations.values()]
-      .filter((a) => isZeroPoint(a.node) && inRange(a))
+      .filter((a) => isZeroPoint(a.node) && this.inRange(a, { startIndex, endIndex }))
       .map((a) => ({
         pos: a.node.data.startIndex,
         node: {
@@ -251,7 +266,7 @@ export default class StandoffConverter {
 
     // Resolve to hard breaks
     const hardBreakEntries: InlineEntry[] = [...this.structuralAnnotations.values()]
-      .filter((a) => getEditorRole(a.node.data.type) === "hardBreak" && inRange(a))
+      .filter((a) => getEditorRole(a.node.data.type) === "hardBreak" && this.inRange(a, { startIndex, endIndex }))
       .map((a) => ({
         pos: a.node.data.startIndex,
         node: {
@@ -270,15 +285,19 @@ export default class StandoffConverter {
     }
 
     const nodes: TiptapNode[] = [];
+
     let cursor: number = startIndex;
 
     for (const { pos, node } of inlineNodes) {
-      if (cursor <= pos) {
-        nodes.push(...this.createTextNode(cursor, pos));
+      // Zero-point/hard-break offset semantics: `pos` (the annotation's startIndex) is the offset
+      // BEFORE which the atom sits. Emit the text up to (but excluding) `pos`, then the atom, so the
+      // character at `pos` follows it. Co-located atoms stay adjacent before that character.
+      if (cursor < pos) {
+        nodes.push(...this.createTextNode(cursor, pos - 1));
       }
       nodes.push(node);
 
-      cursor = pos + 1;
+      cursor = pos;
     }
 
     if (cursor <= endIndex) {

@@ -45,6 +45,7 @@ services:
       - NODE_ENV=${NODE_ENV}
       - PROTOCOL=${PROTOCOL}
       - STYLESHEET_URL=${STYLESHEET_URL}
+      - AWEN_URL=${AWEN_URL}
     depends_on:
       neo4j:
         condition: service_healthy

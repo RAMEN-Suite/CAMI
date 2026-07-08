@@ -190,7 +190,7 @@ export function useCreateIndexMaps() {
       const startIndex: number | undefined = positionMap.get(deco.from);
       const endIndex: number | undefined = positionMap.get(deco.to);
 
-      if (!startIndex || !endIndex) {
+      if (startIndex === undefined || endIndex === undefined) {
         console.error("Decoration position not found in position map:", deco);
         continue;
       }
@@ -238,9 +238,10 @@ export function useCreateIndexMaps() {
 
   /**
    * Recursively walks `node` and records the standoff position of every inline node of
-   * `nodeTypeName` that carries a `uuid` attr. The node is modelled as a zero-width gap between
-   * characters: `startIndex = charIndex - 1` (last char before) and `endIndex = charIndex`
-   * (first char after). The char counter is NOT advanced for the inline atom itself.
+   * `nodeTypeName` that carries a `uuid` attr. Zero-point annotations (including hardBreaks) use offset semantics:
+   * the atom sits before the character at plain-text offset `charIndex`, so it has no range and both bounds equal
+   * that offset (`startIndex === endIndex === charIndex`). The char counter is NOT advanced for the
+   * inline atom itself.
    *
    * @param node - The ProseMirror node to walk.
    * @param charIndex - Plain-text char offset at the start of this node.
@@ -255,7 +256,7 @@ export function useCreateIndexMaps() {
     }
 
     if (node.type.name === nodeTypeName && node.attrs.uuid) {
-      map.set(node.attrs.uuid, { startIndex: charIndex - 1, endIndex: charIndex });
+      map.set(node.attrs.uuid, { startIndex: charIndex, endIndex: charIndex });
       return charIndex;
     }
 

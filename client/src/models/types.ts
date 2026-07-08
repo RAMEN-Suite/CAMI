@@ -121,7 +121,6 @@ export type BaseNodeLabel = "Annotation" | "Character" | "Collection" | "Entity"
 
 export interface Bookmark {
   data: CollectionNode | TextNode;
-  type: "collection" | "text";
   createdAt: string; // ISO 8601 string
   updatedAt: string; // ISO 8601 string
 }
@@ -179,6 +178,7 @@ export interface EditorSettings {
     baseType: boolean;
     semanticTypes: boolean;
   };
+  documentStructures: boolean;
 }
 
 export interface NodeSearchParams {

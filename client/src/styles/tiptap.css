@@ -129,6 +129,16 @@
   .block-deco-tag-semantic {
     padding: 0 5px;
   }
+
+  /** Helper CSS for temporary paragraphs that must not be persisted in the DB. Keep for now
+  /* :is(li, td):not(:has(> p ~ p)) > p {
+    background-color: rgb(197, 146, 53);
+  } */
+
+  .highlight,
+  .highlight * {
+    background-color: yellow !important;
+  }
 }
 
 .tiptap-editor-pane:focus-visible {

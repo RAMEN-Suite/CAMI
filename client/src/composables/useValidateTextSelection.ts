@@ -40,15 +40,6 @@ export function useValidateTextSelection(): UseValidateTextSelectionReturnType {
       throw new AnnotationRangeError("To create zero-point annotations, place the caret between two characters");
     }
 
-    if (isCaret && config.isZeroPoint) {
-      const caretIsAtBeginning: boolean = selection.$from.nodeBefore === null;
-      const caretIsAtEnd: boolean = selection.$from.nodeAfter === null;
-
-      if (caretIsAtBeginning || caretIsAtEnd) {
-        throw new AnnotationRangeError("To create zero-point annotations, place the caret between two characters");
-      }
-    }
-
     return true;
   }
 
