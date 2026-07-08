@@ -33,6 +33,14 @@ const isBookmarked = computed<boolean>(() => {
   return bookmarks.value.some((b) => b.data.data.uuid === props.text?.node.data.uuid);
 });
 
+const shouldBeDisplayed = computed<boolean>(() => {
+  if (props.text.meta.status === "removed" || props.text.meta.status === "deleted") {
+    return false;
+  }
+
+  return true;
+});
+
 function handleBookmarkAction() {
   toggleBookmark({ data: props.text.node });
 }
@@ -81,6 +89,7 @@ function handleClickContainer(event: PointerEvent): void {
         style: {
           border: '1px solid gray',
           cursor: 'pointer',
+          display: shouldBeDisplayed ? 'block' : 'none',
         },
       },
       body: {

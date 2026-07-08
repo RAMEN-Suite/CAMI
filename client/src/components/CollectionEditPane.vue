@@ -392,33 +392,33 @@ async function updateView() {
  * according to the current node labels of the collection.
  *
  * This is necessary since on edit mode toggling the data object was filled with empty data entries temporarily
- * to form a data pool for the dynamically rendered input fields (see `enrichCollectionData`).
+ * to form a data pool for the dynamically rendered input fields (see {@linkcode enrichCollectionData}).
  *
  * @returns {void} This function does not return any value.
  */
-// function removeUnnecessaryDataBeforeSave(): void {
-//   // Get configured field names that are allowed to be saved
-//   const configuredFieldNames: string[] = getCollectionConfigFields(temporaryWorkData.value.collection.node.nodeLabels).map(
-//     (f) => f.name,
-//   );
+function removeUnnecessaryDataBeforeSave(): void {
+  // Get configured field names that are allowed to be saved
+  const configuredFieldNames: string[] = getCollectionConfigFields(temporaryWorkData.value.collection.node.nodeLabels).map(
+    (f) => f.name,
+  );
 
-//   // Remove data entries that are not configured
-//   Object.keys(temporaryWorkData.value.collection.node.data).forEach((key) => {
-//     if (!configuredFieldNames.includes(key) && key !== "uuid") {
-//       delete temporaryWorkData.value.collection.node.data[key];
-//     }
-//   });
-// }
+  // Remove data entries that are not configured
+  Object.keys(temporaryWorkData.value.collection.node.data).forEach((key) => {
+    if (!configuredFieldNames.includes(key) && key !== "uuid") {
+      delete temporaryWorkData.value.collection.node.data[key];
+    }
+  });
+}
 
 function wrapDataInSingleStructure(data: CollectionAccessStatusObject) {
   const { collection, texts, annotations } = data;
 
-  // Collection is set to "modified", along with all annotations. The annotation
-  // status handling could be more fine granular, but this here makes things
+  // Collection is set to "modified", along with all annotations and contents. The annotation
+  // and content status handling could be more fine granular, but this here makes things
   // easier (Collections won't have hundreds/thousands of annotations, query is
   // still performant)
-  const freshCollection: NodeStatusObject = { ...collection, meta: { status: "modified" } };
-  const freshAnnotations: NodeStatusObject[] = annotations.map((a) => {
+  const updatedCollection: NodeStatusObject = { ...collection, meta: { status: "modified" } };
+  const updatedAnnotations: NodeStatusObject[] = annotations.map((a) => {
     const newStatus = a.meta.status === "unchanged" ? "modified" : a.meta.status;
 
     return {
@@ -427,18 +427,27 @@ function wrapDataInSingleStructure(data: CollectionAccessStatusObject) {
     };
   });
 
+  const updatedTexts: NodeStatusObject[] = texts.map((t) => {
+    const newStatus = t.meta.status === "unchanged" ? "modified" : t.meta.status;
+
+    return {
+      ...t,
+      meta: { status: newStatus },
+    };
+  });
+
   return {
-    ...freshCollection,
-    connectedNodes: [...texts, ...freshAnnotations],
+    ...updatedCollection,
+    connectedNodes: [...updatedTexts, ...updatedAnnotations],
   };
 }
 
 async function updateCollection(): Promise<NodeDto<CollectionNode>> {
+  removeUnnecessaryDataBeforeSave();
+
   const updateObj = wrapDataInSingleStructure(temporaryWorkData.value);
 
   // console.log(flattenNodeTree(updateObj));
-  // TODO: Include this step
-  // removeUnnecessaryDataBeforeSave();
 
   // const collectionPostData: CollectionPostData = {
   //   data: temporaryWorkData.value,
