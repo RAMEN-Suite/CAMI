@@ -28,7 +28,7 @@ import {
 import MultiSelect from "primevue/multiselect";
 import DataInputComponent from "./DataInputComponent.vue";
 import DataInputGroup from "./DataInputGroup.vue";
-import { useConfirm, useDialog } from "primevue";
+import { useDialog } from "primevue";
 import ConfirmPopup from "primevue/confirmpopup";
 import AnnotationTypeIcon from "./AnnotationTypeIcon.vue";
 import Panel from "primevue/panel";
@@ -74,15 +74,11 @@ const {
   findCollectionInHierarchy,
   getUrlPath,
   removeTemporaryCollectionItems,
-  restorePath,
   setMode,
-  updateLevelsAndFetchData,
 } = useCollectionManagerStore();
 
 const { bookmarks, toggleBookmark } = useBookmarks();
 const { createCollectionAnnotation: createAnnotation } = useCreateAnnotation("Collection");
-
-const confirm = useConfirm();
 
 const temporaryWorkData = ref<CollectionAccessStatusObject | null>(null);
 const initialTemporaryWorkData = ref<CollectionAccessStatusObject | null>(null);
@@ -174,8 +170,16 @@ function clearTemporaryTexts(): void {
   temporaryTexts.value = [];
 }
 
-function deleteAnnotation(uuid: string): void {
-  temporaryWorkData.value.annotations = temporaryWorkData.value.annotations.filter((a) => a.node.data.uuid !== uuid);
+function setAnnotationDeleted(uuid: string): void {
+  const found: NodeStatusObject | undefined = temporaryWorkData.value.annotations.find((a) => a.node.data.uuid === uuid);
+
+  if (!found) {
+    console.error(`Annotation with UUID ${uuid} not found in existing annotations.`);
+
+    return;
+  }
+
+  found.meta.status = "deleted";
 }
 
 /**
@@ -235,35 +239,14 @@ function handleClickEditButton(): void {
 async function handleDiscardChanges(): Promise<void> {
   temporaryWorkData.value = cloneDeep(initialTemporaryWorkData.value);
 
-  if (mode.value === "create") {
-    restorePath();
-    await updateLevelsAndFetchData(pathToActiveCollection.value);
-  }
-
   removeTemporaryCollectionItems();
   clearTemporaryTexts();
 
   setMode("view");
 }
 
-function handleDeleteAnnotation(event: MouseEvent, uuid: string): void {
-  confirm.require({
-    target: event.currentTarget as HTMLButtonElement,
-    message: "Do you want to delete this annotation?",
-    icon: "pi pi-exclamation-triangle",
-    rejectProps: {
-      label: "Cancel",
-      severity: "secondary",
-      outlined: true,
-      title: "Cancel",
-    },
-    acceptProps: {
-      label: "Delete",
-      severity: "danger",
-      title: "Delete annotation",
-    },
-    accept: () => deleteAnnotation(uuid),
-  });
+function handleRemoveAnnotation(event: MouseEvent, uuid: string): void {
+  setAnnotationDeleted(uuid);
 }
 
 function handleRemoveText(text: NodeDto<TextNode>, status: "existing" | "temporary"): void {
@@ -427,6 +410,8 @@ function wrapDataInSingleStructure(data: CollectionAccessStatusObject) {
     };
   });
 
+  console.log(updatedAnnotations);
+
   const updatedTexts: NodeStatusObject[] = texts.map((t) => {
     const newStatus = t.meta.status === "unchanged" ? "modified" : t.meta.status;
 
@@ -445,6 +430,7 @@ function wrapDataInSingleStructure(data: CollectionAccessStatusObject) {
 async function updateCollection(): Promise<NodeDto<CollectionNode>> {
   removeUnnecessaryDataBeforeSave();
 
+  console.log(temporaryWorkData.value);
   const updateObj = wrapDataInSingleStructure(temporaryWorkData.value);
 
   // console.log(flattenNodeTree(updateObj));
@@ -592,6 +578,7 @@ function toggleViewMode(direction: TabView): void {
               v-for="type in availabeAnnotationTypes"
               :key="type.type"
               :type="type.type"
+              :disabled="false"
               :config="getCollectionAnnotationConfig(temporaryWorkData.collection.node.nodeLabels, type.type)"
               @clicked="handleAnnotationButtonClick($event)"
             />
@@ -602,7 +589,7 @@ function toggleViewMode(direction: TabView): void {
           </div>
 
           <Panel
-            v-for="annotation in temporaryWorkData.annotations"
+            v-for="(annotation, index) in temporaryWorkData.annotations"
             :key="annotation.node.data.uuid"
             class="annotation-form mb-3"
             :data-annotation-uuid="annotation.node.data.uuid"
@@ -613,6 +600,13 @@ function toggleViewMode(direction: TabView): void {
               title: 'Toggle full view',
               rounded: true,
               text: true,
+            }"
+            :pt="{
+              root: {
+                style: {
+                  display: temporaryWorkData.annotations[index].meta.status === 'deleted' ? 'none' : 'block',
+                },
+              },
             }"
           >
             <template #header>
@@ -652,12 +646,12 @@ function toggleViewMode(direction: TabView): void {
             <div class="action-buttons flex justify-content-center">
               <Button
                 v-if="mode === 'edit'"
-                label="Delete"
-                title="Delete annotation"
+                label="Remove"
+                title="Remove annotation from Collection"
                 severity="danger"
                 icon="pi pi-trash"
                 size="small"
-                @click="handleDeleteAnnotation($event, annotation.node.data.uuid)"
+                @click="handleRemoveAnnotation($event, annotation.node.data.uuid)"
               />
             </div>
             <ConfirmPopup></ConfirmPopup>
