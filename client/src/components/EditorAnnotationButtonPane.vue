@@ -28,14 +28,20 @@ import TabPanel from "primevue/tabpanel";
 import { HEADING_LEVELS } from "../config/editor.ts";
 
 const { isValid: isSelectionValid } = useValidateTextSelection();
-const { groupedAnnotationTypes, annotationHasConstraints, getAnnotationConfig, isBuiltinStructuralType, isZeroPoint } =
-  useGuidelinesStore();
+const {
+  groupedAnnotationTypes,
+  annotationHasConstraints,
+  getAnnotationConfig,
+  getStructuralAnnotationConfig,
+  isBuiltinStructuralType,
+  isZeroPoint,
+} = useGuidelinesStore();
 const { addToastMessage, createModalInstance, destroyModalInstance } = useAppStore();
 const { selectedOptions } = useFilterStore();
 const { tiptap, annotations } = useTiptapStore();
 const { createTextAnnotation: createAnnotation } = useCreateAnnotation("Content");
 
-const selectedTab = ref<"annotations" | "structure">("annotations");
+const selectedTab = ref<"annotations" | "structure">("structure");
 
 const annotationCategories = computed(() =>
   Object.entries(groupedAnnotationTypes.value ?? {}).filter(([category]) => category !== "structure"),
@@ -338,8 +344,9 @@ function handleBlockAnnotationClick(data: { type: string; subType?: string | num
 <template>
   <Tabs v-model:value="selectedTab">
     <TabList>
-      <Tab value="annotations">Annotations</Tab>
-      <Tab value="structure">Structure</Tab>
+      <Tab value="structure" title="Structure elements (paragraphs, lists, tables etc.)">Document</Tab>
+      <Tab value="semanticBlocks" title="Labels for structure elements (opener, closer, salute etc.)">Block labels</Tab>
+      <Tab value="annotations" title="Annotations (persons, places, transcriptions)">Annotations</Tab>
     </TabList>
     <TabPanels
       :pt="{
@@ -352,6 +359,59 @@ function handleBlockAnnotationClick(data: { type: string; subType?: string | num
         },
       }"
     >
+      <TabPanel value="structure">
+        <div class="flex flex-wrap gap-3">
+          <Button
+            v-tooltip.hover.top="{ value: 'paragraph', showDelay: 50 }"
+            severity="secondary"
+            icon="pi pi-align-justify"
+            :class="{ 'is-active': tiptap?.isActive('paragraph') }"
+            @click="tiptap?.chain().focus().setNode('paragraph').run()"
+          >
+          </Button>
+          <SplitButton
+            v-tooltip.hover.top="{ value: 'heading', showDelay: 50 }"
+            label="H1"
+            severity="secondary"
+            :model="headingMenuItems"
+            :class="{ 'is-active': tiptap?.isActive('heading', { level: 1 }) }"
+            @click="tiptap?.chain().focus().toggleHeading({ level: 1 }).run()"
+          />
+          <Button
+            v-tooltip.hover.top="{ value: 'list', showDelay: 50 }"
+            severity="secondary"
+            icon="pi pi-list"
+            :class="{ 'is-active': tiptap?.isActive('bulletList') }"
+            @click="tiptap?.chain().focus().toggleBulletList().run()"
+          ></Button>
+          <Button
+            v-tooltip.hover.top="{ value: 'table', showDelay: 50 }"
+            severity="secondary"
+            icon="pi pi-table"
+            aria-haspopup="true"
+            :class="{ 'is-active': tiptap?.isActive('table') }"
+            @click="openTableMenu($event)"
+          >
+          </Button>
+        </div>
+      </TabPanel>
+      <TabPanel value="semanticBlocks">
+        <div class="buttons">
+          <AnnotationButton
+            v-for="blockType in customStructureTypes"
+            :key="blockType.type"
+            v-tooltip.hover.top="{ value: blockType.type, showDelay: 50 }"
+            severity="secondary"
+            :type="blockType.type"
+            :disabled="!selectedOptions.includes(blockType.type)"
+            :class="{ 'is-active': true }"
+            :config="getStructuralAnnotationConfig(blockType.type)!"
+            @click="handleBlockAnnotationClick({ type: blockType.type })"
+          >
+            {{ blockType.type }}
+          </AnnotationButton>
+        </div>
+      </TabPanel>
       <TabPanel value="annotations">
         <Tabs v-model:value="selectedCategory">
           <TabList>
@@ -374,52 +434,6 @@ function handleBlockAnnotationClick(data: { type: string; subType?: string | num
             </TabPanel>
           </TabPanels>
         </Tabs>
-      </TabPanel>
-      <TabPanel value="structure">
-        <div class="flex flex-wrap gap-3">
-          <SplitButton
-            v-tooltip.hover.top="{ value: 'heading', showDelay: 50 }"
-            label="H1"
-            severity="secondary"
-            :model="headingMenuItems"
-            :class="{ 'is-active': tiptap?.isActive('heading', { level: 1 }) }"
-            @click="tiptap?.chain().focus().toggleHeading({ level: 1 }).run()"
-          />
-          <Button
-            v-tooltip.hover.top="{ value: 'paragraph', showDelay: 50 }"
-            severity="secondary"
-            icon="pi pi-align-justify"
-            :class="{ 'is-active': tiptap?.isActive('paragraph') }"
-            @click="tiptap?.chain().focus().setNode('paragraph').run()"
-          >
-          </Button>
-          <Button
-            v-tooltip.hover.top="{ value: 'list', showDelay: 50 }"
-            severity="secondary"
-            icon="pi pi-list"
-            :class="{ 'is-active': tiptap?.isActive('bulletList') }"
-            @click="tiptap?.chain().focus().toggleBulletList().run()"
-          ></Button>
-          <Button
-            v-tooltip.hover.top="{ value: 'table', showDelay: 50 }"
-            severity="secondary"
-            icon="pi pi-table"
-            aria-haspopup="true"
-            :class="{ 'is-active': tiptap?.isActive('table') }"
-            @click="openTableMenu($event)"
-          >
-          </Button>
-          <Button
-            v-for="blockType in customStructureTypes"
-            :key="blockType.type"
-            v-tooltip.hover.top="{ value: blockType.type, showDelay: 50 }"
-            severity="secondary"
-            :class="{ 'is-active': true }"
-            @click="handleBlockAnnotationClick({ type: blockType.type })"
-          >
-            {{ blockType.type }}
-          </Button>
-        </div>
       </TabPanel>
     </TabPanels>
   </Tabs>
