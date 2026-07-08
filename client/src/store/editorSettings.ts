@@ -7,6 +7,7 @@ const DEFAULT_SETTINGS: EditorSettings = {
     baseType: false,
     semanticTypes: false,
   },
+  documentStructures: false,
 };
 
 // Module-level singleton so every consumer (the block-decoration extension, the

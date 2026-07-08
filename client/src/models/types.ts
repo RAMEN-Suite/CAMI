@@ -178,6 +178,7 @@ export interface EditorSettings {
     baseType: boolean;
     semanticTypes: boolean;
   };
+  documentStructures: boolean;
 }
 
 export interface NodeSearchParams {

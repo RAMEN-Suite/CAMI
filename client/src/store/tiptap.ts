@@ -13,6 +13,7 @@ import HardBreak from "@tiptap/extension-hard-break";
 import { TableKit } from "@tiptap/extension-table";
 import { UndoRedo } from "@tiptap/extensions";
 import { Gapcursor } from "@tiptap/extensions";
+import InvisibleCharacters, { HardBreakNode, ParagraphNode } from "@tiptap/extension-invisible-characters";
 import { ZeroPointAnnotation } from "../editors/text/extensions/zeroPointAnnotation";
 import StandoffConverter from "../services/standoffConverter";
 import { buildDocStructure, cloneDeep, getVisibleDocRange } from "../utils/helper/helper";
@@ -63,6 +64,10 @@ function getConfiguredExtensions(): Extensions {
     UndoRedo,
     ZeroPointAnnotation,
     CustomBlock,
+    InvisibleCharacters.configure({
+      visible: false,
+      builders: [new ParagraphNode(), new HardBreakNode()],
+    }),
     AnnotationDecoration.configure({
       getAnnotationByUuid: (uuid: string) => annotations.value?.get(uuid)?.node ?? structuralAnnotations.value?.get(uuid)?.node,
     }),
@@ -250,6 +255,12 @@ watch(
     }
 
     tiptap.value.commands.setBlockDecorationSettings(newVal);
+
+    if (newVal.documentStructures === true) {
+      tiptap.value.commands.showInvisibleCharacters();
+    } else {
+      tiptap.value.commands.hideInvisibleCharacters();
+    }
   },
   { deep: true },
 );
