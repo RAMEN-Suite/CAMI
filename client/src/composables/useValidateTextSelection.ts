@@ -1,6 +1,7 @@
 import { Selection } from "@tiptap/pm/state";
-import { AnnotationType } from "../models/types";
+import { AnnotationType, AnnotationRole, AnnotationBehaviour } from "../models/types";
 import AnnotationRangeError from "../utils/errors/annotationRange.error";
+import { useGuidelinesStore } from "../store/guidelines";
 
 /**
  * Return type for the `useValidateTextSelection` composable.
@@ -16,6 +17,8 @@ interface UseValidateTextSelectionReturnType {
  * @returns {UseValidateTextSelectionReturnType} An object with a single function, `isValid`.
  */
 export function useValidateTextSelection(): UseValidateTextSelectionReturnType {
+  const { getAnnotationRole, getAnnotationBehaviour } = useGuidelinesStore();
+
   /**
    * Checks if the currently selected text is valid for creating an annotation of the given type.
    * If the text selection is not valid, it throws an `AnnotationRangeError` with a descriptive error message.
@@ -31,12 +34,14 @@ export function useValidateTextSelection(): UseValidateTextSelectionReturnType {
     }
 
     const isCaret: boolean = selection.empty;
+    const role: AnnotationRole = getAnnotationRole(config.type);
+    const behaviour: AnnotationBehaviour = getAnnotationBehaviour(config.type);
 
-    if (isCaret && !config.isZeroPoint && !config.isBlock) {
+    if (isCaret && behaviour === "range" && role === "inline") {
       throw new AnnotationRangeError("Select some text to annotate.");
     }
 
-    if (!isCaret && config.isZeroPoint) {
+    if (!isCaret && behaviour === "zeroPoint") {
       throw new AnnotationRangeError("To create zero-point annotations, place the caret between two characters");
     }
 

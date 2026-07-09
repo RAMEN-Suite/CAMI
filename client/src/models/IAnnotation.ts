@@ -7,4 +7,6 @@ export type IAnnotation = BaseNodeData & {
   subType?: string | number;
   text: string;
   type: string;
+  /** Only present and `true` for zero-point annotations (omitted otherwise)*/
+  isZeroPoint?: true;
 };

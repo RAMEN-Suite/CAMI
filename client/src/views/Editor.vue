@@ -67,8 +67,14 @@ const {
   setNewInitialState,
 } = useTiptapStore();
 
-const { getStructuralAnnotationConfig, getAnnotationType, getEditorOwnedProperties, isBuiltinStructuralType, isZeroPoint } =
-  useGuidelinesStore();
+const {
+  getStructuralAnnotationConfig,
+  getAnnotationType,
+  getAnnotationBehaviour,
+  getEditorOwnedProperties,
+  isBuiltinStructuralType,
+  isZeroPoint,
+} = useGuidelinesStore();
 
 onUnmounted(() => destroyTiptap());
 
@@ -256,6 +262,13 @@ function findChangedAnnotations(indexMap: IndexMap, plainText: string): Annotati
       // Get slice of plain text
       cloned.node.data.text = textSlice;
 
+      // Presence-only zero-point marker: keep persisted data self-describing about the index semantics.
+      if (isZeroPointAnno) {
+        cloned.node.data.isZeroPoint = true;
+      } else {
+        delete cloned.node.data.isZeroPoint;
+      }
+
       // Update status explicitly for changed indices. Otherwised changed/added/deleted annotations keep their status
       if (currentEntry.meta.status !== "created" && (hasNewStart || hasNewEnd)) {
         cloned.meta.status = "modified";
@@ -331,6 +344,11 @@ function assembleStructuralAnnotationData(node: DocNode): Record<string, any> {
   // 3. Authorative properties: type and uuid non-configurable, must always exist
   neo4jProperties.uuid = node.attrs.uuid;
   neo4jProperties.type = annotationType;
+
+  // Structural zero-points (hardBreaks) carry the presence-only marker like any other zero-point.
+  if (getAnnotationBehaviour(annotationType) === "zeroPoint") {
+    neo4jProperties.isZeroPoint = true;
+  }
 
   return neo4jProperties;
 }

@@ -33,7 +33,7 @@ const {
   annotationHasConstraints,
   getAnnotationConfig,
   getStructuralAnnotationConfig,
-  isBuiltinStructuralType,
+  getAnnotationRole,
   isZeroPoint,
 } = useGuidelinesStore();
 const { addToastMessage, createModalInstance, destroyModalInstance } = useAppStore();
@@ -49,10 +49,8 @@ const annotationCategories = computed(() =>
 
 const selectedCategory = ref<string>("");
 
-// Project-defined custom block types: isBlock:true entries that are not pre-configured built-ins.
-// These get a generic wrapIn/lift toggle button rather than a dedicated tiptap command button.
-const customStructureTypes = computed(() =>
-  (groupedAnnotationTypes.value?.structure ?? []).filter((t) => t.isBlock && !isBuiltinStructuralType(t.type)),
+const semanticBlockTypes = computed<AnnotationType[]>(() =>
+  (groupedAnnotationTypes.value?.structure ?? []).filter((t) => getAnnotationRole(t.type) === "semanticBlock"),
 );
 
 watchEffect(() => {
@@ -395,14 +393,14 @@ function handleBlockAnnotationClick(data: { type: string; subType?: string | num
       <TabPanel value="semanticBlocks">
         <div class="buttons">
           <AnnotationButton
-            v-for="blockType in customStructureTypes"
+            v-for="blockType in semanticBlockTypes"
             :key="blockType.type"
             v-tooltip.hover.top="{ value: blockType.type, showDelay: 50 }"
             severity="secondary"
             :type="blockType.type"
             :disabled="!selectedOptions.includes(blockType.type)"
             :class="{ 'is-active': true }"
-            :config="getStructuralAnnotationConfig(blockType.type)!"
+            :config="getAnnotationConfig(blockType.type)!"
             @click="handleBlockAnnotationClick({ type: blockType.type })"
           >
             {{ blockType.type }}
