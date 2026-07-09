@@ -12,6 +12,8 @@ export const FETCH_DELAY: number = 300;
 export const BUILTIN_STRUCTURAL_CONFIGS: AnnotationType[] = [
   {
     type: "paragraph",
+    role: "structure",
+    behaviour: "range",
     isBlock: true,
     contains: [],
     topLevel: true,
@@ -24,6 +26,8 @@ export const BUILTIN_STRUCTURAL_CONFIGS: AnnotationType[] = [
   },
   {
     type: "heading",
+    role: "structure",
+    behaviour: "range",
     isBlock: true,
     contains: [],
     topLevel: true,
@@ -46,6 +50,8 @@ export const BUILTIN_STRUCTURAL_CONFIGS: AnnotationType[] = [
   },
   {
     type: "hardBreak",
+    role: "structure",
+    behaviour: "zero-point",
     isBlock: true,
     contains: [],
     topLevel: false,
@@ -58,6 +64,8 @@ export const BUILTIN_STRUCTURAL_CONFIGS: AnnotationType[] = [
   },
   {
     type: "table",
+    role: "structure",
+    behaviour: "range",
     isBlock: true,
     // caption/heading can be added later by extending contains via guidelines JSON
     contains: ["tableRow"],
@@ -71,6 +79,8 @@ export const BUILTIN_STRUCTURAL_CONFIGS: AnnotationType[] = [
   },
   {
     type: "tableRow",
+    role: "structure",
+    behaviour: "range",
     isBlock: true,
     contains: ["tableHeader", "tableCell"],
     topLevel: false,
@@ -83,6 +93,8 @@ export const BUILTIN_STRUCTURAL_CONFIGS: AnnotationType[] = [
   },
   {
     type: "tableCell",
+    role: "structure",
+    behaviour: "range",
     isBlock: true,
     contains: ["paragraph", "heading", "bulletList", "table"],
     topLevel: false,
@@ -98,6 +110,8 @@ export const BUILTIN_STRUCTURAL_CONFIGS: AnnotationType[] = [
   },
   {
     type: "tableHeader",
+    role: "structure",
+    behaviour: "range",
     isBlock: true,
     contains: ["paragraph", "heading", "bulletList", "table"],
     topLevel: false,
@@ -113,6 +127,8 @@ export const BUILTIN_STRUCTURAL_CONFIGS: AnnotationType[] = [
   },
   {
     type: "bulletList",
+    role: "structure",
+    behaviour: "range",
     isBlock: true,
     // caption/heading can be added later by extending contains via guidelines JSON
     contains: ["listItem"],
@@ -126,6 +142,8 @@ export const BUILTIN_STRUCTURAL_CONFIGS: AnnotationType[] = [
   },
   {
     type: "listItem",
+    role: "structure",
+    behaviour: "range",
     isBlock: true,
     contains: ["paragraph", "heading", "bulletList", "table"],
     topLevel: false,

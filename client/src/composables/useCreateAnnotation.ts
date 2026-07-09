@@ -23,7 +23,7 @@ interface UseCreateAnnotationReturnType {
  * @returns {UseCreateAnnotationReturnType} An object containing the functions to create annotations.
  */
 export function useCreateAnnotation(scope: "Content" | "Collection"): UseCreateAnnotationReturnType {
-  const { getAnnotationFields, getCollectionAnnotationFields } = useGuidelinesStore();
+  const { getAnnotationFields, getCollectionAnnotationFields, getAnnotationBehaviour } = useGuidelinesStore();
 
   /**
    * Creates an annotation object with the given parameters.
@@ -121,6 +121,10 @@ export function useCreateAnnotation(scope: "Content" | "Collection"): UseCreateA
       nodeData.endIndex = 0;
       // Empty string since value is added in createTextAnnotation() and will be calculated on save anyway (connected characters).
       nodeData.text = "";
+
+      if (getAnnotationBehaviour(params.type) === "zero-point") {
+        nodeData.isZeroPoint = true;
+      }
     }
 
     return nodeData;

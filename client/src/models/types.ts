@@ -44,9 +44,29 @@ export interface AnnotationData {
   properties: IAnnotation;
 }
 
+/**
+ * CAMI-internal role of the annotation in a text document. Defines how an annotation is represented
+ * in the tiptap editor. Options are:
+ * - `structure`: document scaffolding (paragraph, heading, table, hardBreak etc.). Used by
+ *    the built-in types, can be (partially) overriden by the user with custom type names and additional properties
+ * - `semanticBlock`: whole-block labels. Are always attached to a whole built-in document blocks and give them as semantic meaning.
+ *    Mirror TEI-like block elements (opener, closer, addrLine etc.) to a certain extent.
+ * - `inline`: user interpretation of a text range (font styling, commentaries, entities). Kind of the default annotation.
+ */
+export type AnnotationRole = "structure" | "inline" | "semanticBlock";
+
+/**
+ * How an annotation sits in the text.
+ * - `range`: covers a range in the text, marked with `startIndex` and `endIndex` (both inclusive).
+ *    Required for annotations with role `semanticBlock`.
+ * - `zero-point`: an atom between two characters; `startIndex` is an offset, not a range start.
+ */
+export type AnnotationBehaviour = "zero-point" | "range";
+
 export interface AnnotationType {
   category: string; // CAMI
   defaultSelected: boolean; // CAMI
+  /** @deprecated Use `behaviour: "zero-point"`. Kept as a legacy input the normalization derives from. */
   isZeroPoint?: boolean; // CAMI and NORI
   hasAdditionalTexts?: boolean; // Derived from NORI
   hasEntities?: boolean; // Derived from NORI
@@ -55,10 +75,13 @@ export interface AnnotationType {
   shortcut: string[]; // CAMI
   text: string; // CAMI
   type: string; // NORI -> discriminator, also property there
+  /** @deprecated Use `role`. Kept as a legacy input the normalization derives from. */
   isBlock?: boolean; // CAMI
   contains?: string[]; // CAMI -> only for builtin structural elements
   topLevel?: boolean; // CAMI -> deprecated, but keep for now
   priority?: number; // CAMI
+  role?: AnnotationRole; // CAMI -> operational category (structure/inline/semanticBlock)
+  behaviour?: AnnotationBehaviour; // CAMI -> zero-point vs range
 }
 
 export interface AnnotationReference {

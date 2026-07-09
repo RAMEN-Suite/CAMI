@@ -10,6 +10,8 @@ import {
   BuiltinEditorAttribute,
   BuiltinStructuralType,
   AnnotationMapping,
+  AnnotationRole,
+  AnnotationBehaviour,
 } from "../models/types";
 import { BUILTIN_STRUCTURAL_CONFIGS } from "../config/constants";
 import { EDITOR_OWNED_ATTRIBUTES, DEFAULT_ANNOTATION_MAPPING } from "../config/editor";
@@ -348,22 +350,15 @@ export function useGuidelinesStore() {
   }
 
   /**
-   * Returns whether an annotation is a zero-point annotation, based on its type
-   * config.
+   * Returns whether an annotation is a zero-point annotation, based on its type's configured behaviour.
+   * Configuration always beats instance data here; if it is configured as zero point, it will be treated
+   * as zero point and it's `isZeroPoint` property will be updated to `true` on the next save.
    *
    * @param annotation - The annotation to check.
    * @returns {boolean} `true` if the annotation is a zero-point annotation, `false` otherwise.
    */
   function isZeroPoint(annotation: AnnotationNode): boolean {
-    const config: AnnotationType | undefined = getAnnotationConfig(annotation.data.type);
-
-    if (!config) {
-      console.error(`The configuration of annotation type "${annotation.data.type} could not be found`);
-
-      return false;
-    }
-
-    return config.isZeroPoint ?? false;
+    return getAnnotationBehaviour(annotation.data.type) === "zero-point";
   }
 
   /**
@@ -525,7 +520,7 @@ export function useGuidelinesStore() {
 
     // 2. All types in the custom configuration
     for (const entry of guidelinesData.annotations.types) {
-      if (!entry.isBlock) {
+      if (entry.role !== "structure") {
         continue;
       }
 
@@ -543,6 +538,68 @@ export function useGuidelinesStore() {
     }
 
     return builtInDerived;
+  }
+
+  /**
+   * Canonical behaviour of the built-in editor role that `type` maps to (via the mapping). Used to force
+   * a type that maps to a built-in onto the built-in's behaviour (e.g. a `lb` mapped to `hardBreak` is
+   * always zero-point).
+   *
+   * @param {string} type The project annotation type
+   * @returns {AnnotationBehaviour} The built-in's canonical behaviour (defaults to `range`)
+   */
+  function getBuiltinBehaviour(type: string): AnnotationBehaviour {
+    const editorRole: string = getEditorRole(type);
+    const config: AnnotationType | undefined = BUILTIN_STRUCTURAL_CONFIGS.find((c) => c.type === editorRole);
+
+    return config?.behaviour ?? "range";
+  }
+
+  /**
+   * Returns the operational role of an annotation type (`structure`/`inline`/`semanticBlock`), computed on
+   * demand from the config. A built-in mapping always wins (early return); otherwise the config's explicit
+   * `role` wins, falling back to the legacy `isBlock` flag. Unknown/collection types degrade to `inline`.
+   *
+   * NOTE: this is the annotation's *classification*, distinct from {@linkcode getEditorRole}, which returns
+   * the tiptap node name of a structural type.
+   *
+   * @param {string} type The project annotation type
+   * @returns {AnnotationRole} The resolved role
+   */
+  function getAnnotationRole(type: string): AnnotationRole {
+    if (isBuiltinStructuralType(type)) {
+      return "structure";
+    }
+
+    const config: AnnotationType | undefined = getAnnotationConfig(type);
+
+    if (!config.role) {
+      console.error('No role found for annotation type "' + type + '"');
+    }
+
+    return config?.role ?? "inline";
+  }
+
+  /**
+   * Returns the behaviour of an annotation type (`zero-point`/`range`), computed on demand. A built-in mapping
+   * uses the built-in's canonical behaviour; otherwise the config's explicit `behaviour` wins, falling back
+   * to the legacy `isZeroPoint` flag. Unknown/collection types degrade to `range`.
+   *
+   * @param {string} type The project annotation type
+   * @returns {AnnotationBehaviour} The resolved behaviour
+   */
+  function getAnnotationBehaviour(type: string): AnnotationBehaviour {
+    if (isBuiltinStructuralType(type)) {
+      return getBuiltinBehaviour(type);
+    }
+
+    const config: AnnotationType | undefined = getAnnotationConfig(type);
+
+    if (!config.behaviour) {
+      console.error('No behaviour found for annotation type "' + type + '"');
+    }
+
+    return config?.behaviour ?? "range";
   }
 
   return {
@@ -574,6 +631,8 @@ export function useGuidelinesStore() {
     getStructuralAnnotationConfig,
     getEditorRole,
     getAnnotationType,
+    getAnnotationRole,
+    getAnnotationBehaviour,
     isBuiltinStructuralType,
     initializeGuidelines,
     setAnnotationMapping,

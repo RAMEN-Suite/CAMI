@@ -39,6 +39,12 @@ export type NodeDto<T extends Node<BaseNodeData> = AnnotationNode | EntityNode |
  */
 export type NodeStatus = "added" | "removed" | "created" | "deleted" | "modified" | "unchanged";
 
+/** CAMI-internal operational category of an annotation (mirror of the client type). */
+export type AnnotationRole = "structure" | "inline" | "semanticBlock";
+
+/** How an annotation sits in the text: offset between characters vs covered span (mirror of the client type). */
+export type AnnotationBehaviour = "zero-point" | "range";
+
 export type AnnotationType = {
   category: string;
   defaultSelected: boolean;
@@ -51,6 +57,8 @@ export type AnnotationType = {
   shortcut: string[];
   text: string;
   type: string;
+  role?: AnnotationRole;
+  behaviour?: AnnotationBehaviour;
 };
 
 export type AnnotationReference = {

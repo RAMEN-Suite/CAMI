@@ -33,7 +33,7 @@ const confirm = useConfirm();
 const { activeModal, addToastMessage } = useAppStore();
 const { tiptap, annotations } = useTiptapStore();
 const { isRedrawMode, redrawMode } = useEditorStore();
-const { getAnnotationConfig, getAnnotationFields } = useGuidelinesStore();
+const { getAnnotationConfig, getAnnotationFields, getAnnotationBehaviour } = useGuidelinesStore();
 
 const config: AnnotationType = getAnnotationConfig(workingData.value.node.data.type);
 // TODO: Maybe give whole config instead of only fields...?
@@ -164,7 +164,7 @@ function handleSpyClick() {
   let range: Range | null = null;
 
   const uuid: string = workingData.value.node.data.uuid;
-  const renderType: "range" | "zeroPoint" = config.isZeroPoint ? "zeroPoint" : "range";
+  const renderType: "range" | "zeroPoint" = getAnnotationBehaviour(config.type) === "zero-point" ? "zeroPoint" : "range";
 
   if (renderType === "range") {
     const decorationSet: DecorationSet | undefined = ANNOTATION_DECORATION_KEY.getState(tiptap.value.state)?.all;
@@ -187,7 +187,7 @@ function handleSpyClick() {
 }
 
 function handleSpyHover(direction: "on" | "off"): void {
-  const renderType: "range" | "zeroPoint" = config.isZeroPoint ? "zeroPoint" : "range";
+  const renderType: "range" | "zeroPoint" = getAnnotationBehaviour(config.type) === "zero-point" ? "zeroPoint" : "range";
 
   tiptap.value?.commands.toggleAnnotationHighlight(direction, props.annotation.node.data.uuid, { renderType });
 }
