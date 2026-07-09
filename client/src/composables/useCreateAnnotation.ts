@@ -122,7 +122,7 @@ export function useCreateAnnotation(scope: "Content" | "Collection"): UseCreateA
       // Empty string since value is added in createTextAnnotation() and will be calculated on save anyway (connected characters).
       nodeData.text = "";
 
-      if (getAnnotationBehaviour(params.type) === "zero-point") {
+      if (getAnnotationBehaviour(params.type) === "zeroPoint") {
         nodeData.isZeroPoint = true;
       }
     }

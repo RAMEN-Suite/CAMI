@@ -41,7 +41,7 @@ export function useValidateTextSelection(): UseValidateTextSelectionReturnType {
       throw new AnnotationRangeError("Select some text to annotate.");
     }
 
-    if (!isCaret && behaviour === "zero-point") {
+    if (!isCaret && behaviour === "zeroPoint") {
       throw new AnnotationRangeError("To create zero-point annotations, place the caret between two characters");
     }
 

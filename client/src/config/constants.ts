@@ -51,7 +51,7 @@ export const BUILTIN_STRUCTURAL_CONFIGS: AnnotationType[] = [
   {
     type: "hardBreak",
     role: "structure",
-    behaviour: "zero-point",
+    behaviour: "zeroPoint",
     isBlock: true,
     contains: [],
     topLevel: false,

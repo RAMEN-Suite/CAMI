@@ -346,7 +346,7 @@ function assembleStructuralAnnotationData(node: DocNode): Record<string, any> {
   neo4jProperties.type = annotationType;
 
   // Structural zero-points (hardBreaks) carry the presence-only marker like any other zero-point.
-  if (getAnnotationBehaviour(annotationType) === "zero-point") {
+  if (getAnnotationBehaviour(annotationType) === "zeroPoint") {
     neo4jProperties.isZeroPoint = true;
   }
 

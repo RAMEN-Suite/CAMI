@@ -43,7 +43,7 @@ export type NodeStatus = "added" | "removed" | "created" | "deleted" | "modified
 export type AnnotationRole = "structure" | "inline" | "semanticBlock";
 
 /** How an annotation sits in the text: offset between characters vs covered span (mirror of the client type). */
-export type AnnotationBehaviour = "zero-point" | "range";
+export type AnnotationBehaviour = "zeroPoint" | "range";
 
 export type AnnotationType = {
   category: string;

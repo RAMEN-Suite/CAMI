@@ -164,7 +164,7 @@ function handleSpyClick() {
   let range: Range | null = null;
 
   const uuid: string = workingData.value.node.data.uuid;
-  const renderType: "range" | "zeroPoint" = getAnnotationBehaviour(config.type) === "zero-point" ? "zeroPoint" : "range";
+  const renderType: "range" | "zeroPoint" = getAnnotationBehaviour(config.type) === "zeroPoint" ? "zeroPoint" : "range";
 
   if (renderType === "range") {
     const decorationSet: DecorationSet | undefined = ANNOTATION_DECORATION_KEY.getState(tiptap.value.state)?.all;
@@ -187,7 +187,7 @@ function handleSpyClick() {
 }
 
 function handleSpyHover(direction: "on" | "off"): void {
-  const renderType: "range" | "zeroPoint" = getAnnotationBehaviour(config.type) === "zero-point" ? "zeroPoint" : "range";
+  const renderType: "range" | "zeroPoint" = getAnnotationBehaviour(config.type) === "zeroPoint" ? "zeroPoint" : "range";
 
   tiptap.value?.commands.toggleAnnotationHighlight(direction, props.annotation.node.data.uuid, { renderType });
 }

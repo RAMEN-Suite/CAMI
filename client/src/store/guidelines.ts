@@ -358,7 +358,7 @@ export function useGuidelinesStore() {
    * @returns {boolean} `true` if the annotation is a zero-point annotation, `false` otherwise.
    */
   function isZeroPoint(annotation: AnnotationNode): boolean {
-    return getAnnotationBehaviour(annotation.data.type) === "zero-point";
+    return getAnnotationBehaviour(annotation.data.type) === "zeroPoint";
   }
 
   /**

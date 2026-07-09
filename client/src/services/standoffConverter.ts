@@ -266,7 +266,7 @@ export default class StandoffConverter {
 
     // Resolve to hardBreaks (the only built-in type configured the way below)
     const hardBreakEntries: InlineEntry[] = [...this.structuralAnnotations.values()]
-      .filter((a) => getAnnotationBehaviour(a.node.data.type) === "zero-point" && this.inRange(a, { startIndex, endIndex }))
+      .filter((a) => getAnnotationBehaviour(a.node.data.type) === "zeroPoint" && this.inRange(a, { startIndex, endIndex }))
       .map((a) => ({
         pos: a.node.data.startIndex,
         node: {
@@ -658,7 +658,7 @@ export default class StandoffConverter {
    * @returns {boolean} `true` if the type is a structural zero-point, `false` otherwise.
    */
   private isStructuralZeroPoint(annotationType: string): boolean {
-    return getAnnotationRole(annotationType) === "structure" && getAnnotationBehaviour(annotationType) === "zero-point";
+    return getAnnotationRole(annotationType) === "structure" && getAnnotationBehaviour(annotationType) === "zeroPoint";
   }
 
   /** Checks if annotation of given type can be a top-level document node. Excludes structural zero-points

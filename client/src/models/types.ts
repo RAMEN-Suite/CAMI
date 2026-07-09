@@ -59,14 +59,14 @@ export type AnnotationRole = "structure" | "inline" | "semanticBlock";
  * How an annotation sits in the text.
  * - `range`: covers a range in the text, marked with `startIndex` and `endIndex` (both inclusive).
  *    Required for annotations with role `semanticBlock`.
- * - `zero-point`: an atom between two characters; `startIndex` is an offset, not a range start.
+ * - `zeroPoint`: an atom between two characters; `startIndex` is an offset, not a range start.
  */
-export type AnnotationBehaviour = "zero-point" | "range";
+export type AnnotationBehaviour = "zeroPoint" | "range";
 
 export interface AnnotationType {
   category: string; // CAMI
   defaultSelected: boolean; // CAMI
-  /** @deprecated Use `behaviour: "zero-point"`. Kept as a legacy input the normalization derives from. */
+  /** @deprecated Use `behaviour: "zeroPoint"`. Kept as a legacy input the normalization derives from. */
   isZeroPoint?: boolean; // CAMI and NORI
   hasAdditionalTexts?: boolean; // Derived from NORI
   hasEntities?: boolean; // Derived from NORI
@@ -81,7 +81,7 @@ export interface AnnotationType {
   topLevel?: boolean; // CAMI -> deprecated, but keep for now
   priority?: number; // CAMI
   role?: AnnotationRole; // CAMI -> operational category (structure/inline/semanticBlock)
-  behaviour?: AnnotationBehaviour; // CAMI -> zero-point vs range
+  behaviour?: AnnotationBehaviour; // CAMI -> zeroPoint vs range
 }
 
 export interface AnnotationReference {
