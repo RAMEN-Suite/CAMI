@@ -4,10 +4,11 @@
 export const CONFIG_DIR: string = "/app/config";
 
 /**
- * Maps the tool names used CAMI-internally (e.g. by the frontend: `/api/tool/<name>/...`) to the environment
+ * Maps the tool names used CAMI-internally (e.g. by the frontend: `/api/tools/<name>/...`) to the environment
  * variable that holds that tool's base URL. The set of tool names is stable and maintained here; only
  * the URLs behind them change per deployment.
  */
 export const TOOL_URL_MAPPING: Record<string, string> = {
   awen: "AWEN_URL",
+  ora: "ORA_URL",
 };
