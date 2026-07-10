@@ -465,7 +465,7 @@ function toggleViewMode(direction: TabView): void {
     class="edit-pane-container h-full flex flex-column align-items-center p-2"
   >
     <div class="main flex-grow-1 flex flex-column w-full">
-      <div class="buttons text-right">
+      <div class="buttons flex justify-content-end gap-1">
         <Button
           type="button"
           severity="secondary"
@@ -478,6 +478,16 @@ function toggleViewMode(direction: TabView): void {
             },
           }"
           @click="handleBookmarkAction"
+        />
+        <Button
+          as="a"
+          :href="`/api/tools/ora/collections/${temporaryWorkData.collection.node.data.uuid}`"
+          target="_blank"
+          rel="noopener"
+          severity="secondary"
+          icon="pi pi-external-link"
+          size="small"
+          title="View collection on website"
         />
       </div>
 

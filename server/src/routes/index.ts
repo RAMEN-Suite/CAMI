@@ -21,6 +21,6 @@ router.use("/favicon", faviconRoutes);
 router.use("/texts", textRoutes);
 router.use("/search", searchRoutes);
 router.use("/network", networkRoutes);
-router.use("/tool", toolRoutes);
+router.use("/tools", toolRoutes);
 
 export default router;
