@@ -17,6 +17,9 @@ const displayedText = computed<string>(
   () => node.value.node.data.text.slice(0, PREVIEW_LENGTH) + (node.value.node.data.text.length > PREVIEW_LENGTH ? "..." : ""),
 );
 
+// A created node does not exist in the database yet, so there is nothing to open in the Editor
+const isCreated = computed<boolean>(() => node.value.meta.status === "created");
+
 /**
  * Handles a click event on the Card component, which will the corresponding text in a new tab. The click event is ignored
  * if the click target is part of button.
@@ -25,6 +28,10 @@ const displayedText = computed<string>(
  * @returns {void} This function does not return any value.
  */
 function handleSelectContainer(event: PointerEvent | KeyboardEvent): void {
+  if (isCreated.value) {
+    return;
+  }
+
   if ((event.target as HTMLElement).closest("button")) {
     return;
   }
@@ -32,8 +39,14 @@ function handleSelectContainer(event: PointerEvent | KeyboardEvent): void {
   window.open(`/contents/${node.value.node.data.uuid}`, "_blank", "noopener noreferrer");
 }
 
+/**
+ * Removes the node from its parent when it was never persisted ("added" or "created"), otherwise marks the existing
+ * relationship as "removed" so that the backend detaches it on the next save.
+ *
+ * @returns {void} This function does not return any value.
+ */
 function handleRemoveNode(): void {
-  if (node.value.meta.status === "added") {
+  if (node.value.meta.status === "added" || isCreated.value) {
     emit("remove-node");
   } else {
     setNodeStatus("removed");
@@ -48,8 +61,9 @@ function setNodeStatus(status: NodeStatus): void {
 <template>
   <div
     class="node-card-container"
-    title="Open text in Editor"
-    tabindex="0"
+    :class="{ 'is-created': isCreated }"
+    :title="isCreated ? 'Text is created once the changes are saved' : 'Open text in Editor'"
+    :tabindex="isCreated ? -1 : 0"
     @click="handleSelectContainer"
     @keydown.enter="handleSelectContainer"
     @keydown.space.prevent="handleSelectContainer"
@@ -68,6 +82,10 @@ function setNodeStatus(status: NodeStatus): void {
   border-radius: 5px;
   margin-bottom: 0.5rem;
   padding: 0.5rem;
+
+  &.is-created {
+    cursor: auto;
+  }
 
   & button {
     width: 1rem;
