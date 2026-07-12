@@ -19,10 +19,8 @@ import {
 import {
   capitalize,
   cloneDeep,
-  createNodeDtoFromNode,
-  createNodeStatusObjectFromRawData,
+  createContentNodeStatusObject,
   getDefaultValueForProperty,
-  createTextNode,
   filterBaseNodeLabel,
 } from "../utils/helper/helper";
 import MultiSelect from "primevue/multiselect";
@@ -218,17 +216,7 @@ function handleAddText(newText: NodeStatusObject<TextNode>) {
 }
 
 function handleAddTextClick(): void {
-  const newText: NodeStatusObject<TextNode> = createNodeStatusObjectFromRawData(
-    createNodeDtoFromNode(createTextNode()),
-  ) as NodeStatusObject<TextNode>;
-
-  if (!newText.node.nodeLabels.includes("Content")) {
-    newText.node.nodeLabels.push("Content");
-  }
-
-  newText.meta.status = "created";
-
-  temporaryTexts.value.push(newText);
+  temporaryTexts.value.push(createContentNodeStatusObject());
 }
 
 function handleClickEditButton(): void {

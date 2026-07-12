@@ -15,6 +15,8 @@ const severity = computed<string>(() => {
   switch (props.status) {
     case "added":
       return "success";
+    case "created":
+      return "info";
     case "removed":
       return "danger";
     case "modified":

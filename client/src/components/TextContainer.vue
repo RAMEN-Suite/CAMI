@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { NodeDto, NodeStatusObject, TextNode } from "../models/types";
+import { NodeStatusObject, TextNode } from "../models/types";
 import Card from "primevue/card";
 import NodeTag from "./NodeTag.vue";
 import Button from "primevue/button";
@@ -17,7 +17,7 @@ const props = defineProps<{
   mode: "view" | "edit";
 }>();
 
-const emit = defineEmits<(e: "textAdded" | "textRemoved", text: NodeDto<TextNode>) => void>();
+const emit = defineEmits<(e: "textAdded" | "textRemoved", text: NodeStatusObject<TextNode>) => void>();
 
 const { getAvailableContentLabels } = useGuidelinesStore();
 const { bookmarks, toggleBookmark } = useBookmarks();
@@ -32,6 +32,8 @@ const contentNodeLabels = computed<string[]>({
 const isBookmarked = computed<boolean>(() => {
   return bookmarks.value.some((b) => b.data.data.uuid === props.text?.node.data.uuid);
 });
+
+const isEmptyDraft = computed<boolean>(() => props.text.node.data.text.trim().length === 0);
 
 const shouldBeDisplayed = computed<boolean>(() => {
   if (props.text.meta.status === "removed" || props.text.meta.status === "deleted") {
@@ -176,7 +178,8 @@ function handleClickContainer(event: PointerEvent): void {
           v-if="props.status === 'temporary'"
           class="w-2"
           icon="pi pi-check"
-          title="Add new text to Collection"
+          :disabled="isEmptyDraft"
+          :title="isEmptyDraft ? 'Enter a text first' : 'Confirm new text'"
           @click.stop="handleAddTextClick"
         />
 

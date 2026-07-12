@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { computed, inject, watch, toValue, Ref } from "vue";
+import { computed, inject, ref, watch, toValue, Ref } from "vue";
 import Button from "primevue/button";
+import Divider from "primevue/divider";
 import { useAddNode } from "../composables/useAddNode";
 import { RouteLocationNormalizedLoaded, useRoute } from "vue-router";
 import { BaseNodeLabel, NodeStatusObject, CollectionNode, TextNode, EntityNode } from "../models/types";
 import NodeSearchbar from "./NodeSearchbar.vue";
 import CollectionCard from "./CollectionCard.vue";
 import TextCard from "./TextCard.vue";
+import TextContainer from "./TextContainer.vue";
 import EntityCard from "./EntityCard.vue";
+import { createContentNodeStatusObject } from "../utils/helper/helper";
 import { DynamicDialogInstance } from "primevue/dynamicdialogoptions";
 
 const dialogRef = inject<Ref<DynamicDialogInstance>>("dialogRef");
@@ -30,6 +33,9 @@ const emit = defineEmits<{
 const nodeAsCollection = computed(() => (nodeToAdd.value ?? undefined) as NodeStatusObject<CollectionNode> | undefined);
 const nodeAsText = computed(() => (nodeToAdd.value ?? undefined) as NodeStatusObject<TextNode> | undefined);
 const nodeAsEntity = computed(() => (nodeToAdd.value ?? undefined) as NodeStatusObject<EntityNode> | undefined);
+
+const canCreateNode = computed<boolean>(() => baseNodeLabel === "Content");
+const draftNode = ref<NodeStatusObject<TextNode> | null>(null);
 
 watch(() => route.path, closeModal);
 
@@ -54,6 +60,29 @@ function handleSearchItemSelected(item: CollectionNode | TextNode | EntityNode) 
   setPipelineStep("finishing");
 }
 
+function handleStartDraft(): void {
+  draftNode.value = createContentNodeStatusObject();
+}
+
+function handleDiscardDraft(): void {
+  draftNode.value = null;
+}
+
+/**
+ * Takes over the finished draft node as the node to add.
+ *
+ * @param {NodeStatusObject<TextNode>} newNode - The drafted Content node.
+ * @returns {void} This function does not return any value.
+ */
+function handleDraftConfirmed(newNode: NodeStatusObject<TextNode>): void {
+  newNode.node.data.text = newNode.node.data.text.replace(/(\r\n|\n|\r)/g, " ");
+
+  setNode(newNode);
+  setPipelineStep("finishing");
+
+  draftNode.value = null;
+}
+
 function handleGoBack(): void {
   setNode(null);
   setPipelineStep("choosing");
@@ -68,6 +97,30 @@ function closeModal(): void {
   <div class="container">
     <template v-if="currentStep === 'choosing'">
       <NodeSearchbar :base-node-label="baseNodeLabel" @item-selected="handleSearchItemSelected" />
+
+      <template v-if="canCreateNode">
+        <Divider align="center">
+          <span class="text-sm">or create a new one</span>
+        </Divider>
+
+        <TextContainer
+          v-if="draftNode"
+          :text="draftNode"
+          mode="edit"
+          status="temporary"
+          @text-added="handleDraftConfirmed"
+          @text-removed="handleDiscardDraft"
+        />
+        <Button
+          v-else
+          label="Create new Content"
+          icon="pi pi-plus"
+          severity="secondary"
+          class="w-full"
+          title="Create a new Content node"
+          @click="handleStartDraft"
+        />
+      </template>
     </template>
     <template v-if="currentStep === 'editing'">
       <h2>Edit your data here :)</h2>
@@ -84,4 +137,10 @@ function closeModal(): void {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+/* The dialog has a fixed height, so the searchbar plus the draft area need to stay scrollable */
+.container {
+  height: 100%;
+  overflow-y: auto;
+}
+</style>

@@ -204,6 +204,29 @@ export function createTextNode(): TextNode {
 }
 
 /**
+ * Creates a new, not yet persisted Content node wrapped in a node status object, ready to be filled in by the user.
+ *
+ * The node is marked as "created" so that the backend creates it once the parent node is saved. Note that
+ * {@link createTextNode} still applies the legacy "Text" label, so the "Content" base label is added here: Without it,
+ * {@link getBaseNodeLabel} throws and {@link isContentNode} does not recognize the node.
+ *
+ * @return {NodeStatusObject<TextNode>} A new Content node status object with default values.
+ */
+export function createContentNodeStatusObject(): NodeStatusObject<TextNode> {
+  const contentNode: NodeStatusObject<TextNode> = createNodeStatusObjectFromRawData(
+    createNodeDtoFromNode(createTextNode()),
+  ) as NodeStatusObject<TextNode>;
+
+  if (!contentNode.node.nodeLabels.includes("Content")) {
+    contentNode.node.nodeLabels.push("Content");
+  }
+
+  contentNode.meta.status = "created";
+
+  return contentNode;
+}
+
+/**
  * Creates a a valid node DTO object from a given raw node (Annotation, Entity, Collection, Text).
  * This is to match the structure of the generic {@link NodeDto} object used in the API data.
  *
