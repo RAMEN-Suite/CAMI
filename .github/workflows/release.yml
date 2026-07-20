@@ -279,10 +279,10 @@ jobs:
       contents: read # required for actions/checkout to fetch repo contents if this repo is private
       packages: read # required for docker login + docker compose pull to authenticate against and pull from the registry
     strategy:
+      fail-fast: false
       matrix:
         include:
           - environment: antjebrons
-          - environment: sbwi
     steps:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
